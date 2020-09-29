@@ -1,0 +1,13 @@
+{
+    "name": "alexstandiford/underpin",
+    "description": "Underpin WordPress framework",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alex Standiford",
+            "email": "a@alexstandiford.com"
+        }
+    ],
+    "require": {}
+}
