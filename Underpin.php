@@ -25,7 +25,7 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 	 * @since
 	 * @package
 	 */
-	class Underpin_Setup extends Abstracts\Underpin {
+	class Underpin extends Abstracts\Underpin {
 
 		protected $minimum_php_version = '5.6';
 		protected $minimum_wp_version = '5.0';
@@ -68,10 +68,10 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return Underpin_Setup|Abstracts\Underpin The bootstrap for this plugin
+	 * @return Underpin|Abstracts\Underpin The bootstrap for this plugin
 	 */
 	function underpin() {
-		return ( new Underpin_Setup )->get( __FILE__ );
+		return ( new Underpin )->get( __FILE__ );
 	}
 
 	underpin();
