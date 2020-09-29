@@ -9,5 +9,7 @@
             "email": "a@alexstandiford.com"
         }
     ],
-    "require": {}
+  "autoload": {
+    "files": ["Underpin.php"]
+  }
 }
