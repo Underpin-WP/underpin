@@ -29,7 +29,7 @@ trait Feature_Extension {
 	 *
 	 * @var string
 	 */
-	public $name = '';
+	protected $name = '';
 
 	/**
 	 * Callback to do the actions to register whatever this class is intended to extend.
