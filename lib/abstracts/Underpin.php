@@ -609,11 +609,15 @@ abstract class Underpin {
 		// Root file for this plugin. Used in activation hooks.
 		$this->file = $file;
 
-		// The URL for this plugin. Used in asset loading.
-		$this->url = plugin_dir_url( $file );
-
 		// Root directory for this plugin.
 		$this->dir = plugin_dir_path( $file );
+
+		// The URL for this plugin. Used in asset loading.
+		if ( false === strpos( "/wp-content" . DIRECTORY_SEPARATOR . "plugins/", $this->dir ) ) {
+			$this->url = plugin_dir_url( $file );
+		} else{
+			$this->url = get_template_directory_uri();
+		}
 
 		// The CSS URL for this plugin. Used in asset loading.
 		$this->css_url = $this->url . 'assets/css/build';
