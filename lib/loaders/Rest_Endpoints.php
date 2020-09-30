@@ -24,7 +24,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since   1.0.0
  * @package Underpin\Registries\Loaders
  */
-
 class Rest_Endpoints extends Loader_Registry {
 
 	/**

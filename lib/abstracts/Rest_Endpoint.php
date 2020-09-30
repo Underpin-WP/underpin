@@ -2,7 +2,7 @@
 /**
  * Rest Endpoint Abstraction
  *
- * @since 1.0.0
+ * @since   1.0.0
  * @package Underpin\Abstracts
  */
 
@@ -100,6 +100,7 @@ abstract class Rest_Endpoint {
 			);
 		}
 	}
+
 	public function __get( $key ) {
 		if ( isset( $this->$key ) ) {
 			return $this->$key;

@@ -105,7 +105,7 @@ trait Templates {
 	 *
 	 * @param $template_name string The template name to get.
 	 * @param $params        array of param values that can be used in the template via get_param().
-	 * @return string|WP_Error The template contents, or a WP_Error explaining why the template failed to load.
+	 * @return string The template contents.
 	 */
 	public function get_template( $template_name, array $params = [] ) {
 
@@ -141,7 +141,7 @@ trait Templates {
 			do_action( 'underpin/templates/invalid_template_not_in_schema', $template_name, $params, $template );
 		}
 
-		return $template;
+		return is_wp_error( $template ) ? '' : $template;
 	}
 
 	/**
@@ -314,19 +314,19 @@ trait Templates {
 			if ( $this->is_valid_template( $template_name ) ) {
 				$templates = $this->get_templates();
 
-				$result = isset( $templates[$template_name][ $arg ] ) ? $templates[$template_name][ $arg ] : $this->get_template_arg_defaults()[ $arg ];
+				$result = isset( $templates[ $template_name ][ $arg ] ) ? $templates[ $template_name ][ $arg ] : $this->get_template_arg_defaults()[ $arg ];
 			} else {
 				$result = underpin()->logger()->log_as_error(
 					'error',
 					'underpin_get_arg_invalid_template',
-					__( "Template $template_name argument $arg was not fetched because $template_name is not a valid template." ,'underpin' )
+					__( "Template $template_name argument $arg was not fetched because $template_name is not a valid template.", 'underpin' )
 				);
 			}
 		} else {
 			$result = underpin()->logger()->log_as_error(
 				'error',
 				'underpin_get_arg_invalid_argument',
-				__( "Template $template_name argument $arg was not fetched because $arg is not a valid template argument." ,'underpin' )
+				__( "Template $template_name argument $arg was not fetched because $arg is not a valid template argument.", 'underpin' )
 			);
 		}
 
