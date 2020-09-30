@@ -33,21 +33,6 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 		protected $root_namespace = 'Underpin';
 
 
-		protected function _setup_params( $file ) {
-			/**
-			 * Filters the root directory for Underpin.
-			 * This makes it possible to load Underpin as a separate plugin.
-			 *
-			 * @since 1.0.0
-			 */
-			$this->file         = $file;
-			$this->dir          = plugin_dir_path( $file );
-			$this->url          = plugin_dir_url( $this->file );
-			$this->css_url      = $this->url . 'assets/css/build';
-			$this->js_url       = $this->url . 'assets/js/build';
-			$this->template_dir = $this->dir . 'templates/';
-		}
-
 		protected function _setup() {
 			$this->cron_jobs();
 			$this->admin_bar_menus();

@@ -251,7 +251,7 @@ abstract class Underpin {
 	 * @return bool|string
 	 */
 	protected function _setup_autoloader() {
-		try{
+		try {
 			spl_autoload_register( function( $class ) {
 				$class = explode( '\\', $class );
 
@@ -260,7 +260,7 @@ abstract class Underpin {
 				$root_namespace = array_shift( $class );
 
 				// Bail early if the namespace roots do not match.
-				if($this->root_namespace !== $root_namespace){
+				if ( $this->root_namespace !== $root_namespace ) {
 					return false;
 				}
 
@@ -286,7 +286,7 @@ abstract class Underpin {
 
 				return false;
 			} );
-		}catch( Exception $e ){
+		} catch ( Exception $e ) {
 			$this->logger()->log_exception( 'autoload_failed', $e );
 
 			return $e->getMessage();
@@ -613,10 +613,13 @@ abstract class Underpin {
 		$this->dir = plugin_dir_path( $file );
 
 		// The URL for this plugin. Used in asset loading.
-		if ( false === strpos( "/wp-content" . DIRECTORY_SEPARATOR . "plugins/", $this->dir ) ) {
+		if ( false !== strpos( "/wp-content" . DIRECTORY_SEPARATOR . "plugins/", $this->dir ) ) {
 			$this->url = plugin_dir_url( $file );
-		} else{
-			$this->url = get_template_directory_uri();
+		} else {
+			$template              = '/' . get_template() . '/';
+			$template_dir_position = strpos( dirname( $file ), $template ) + strlen( $template );
+			$root                  = trailingslashit( get_stylesheet_directory_uri() );
+			$this->url             = trailingslashit( $root . substr( dirname( $file ), $template_dir_position ) );
 		}
 
 		// The CSS URL for this plugin. Used in asset loading.
