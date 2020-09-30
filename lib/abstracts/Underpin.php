@@ -55,6 +55,8 @@ abstract class Underpin {
 	 */
 	protected $root_namespace = "Underpin";
 
+	protected $text_domain = 'underpin';
+
 	protected $minimum_php_version;
 	protected $minimum_wp_version;
 	protected $version;
@@ -351,6 +353,28 @@ abstract class Underpin {
 	}
 
 	/**
+	 * Retrieves the sidebars loader.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Loaders\Sidebars
+	 */
+	public function sidebars() {
+		return $this->_get_loader( 'Sidebars' );
+	}
+
+	/**
+	 * Retrieves the menus loader.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Loaders\Menus
+	 */
+	public function menus() {
+		return $this->_get_loader( 'Menus' );
+	}
+
+	/**
 	 * Retrieves the cron jobs loader.
 	 *
 	 * @since 1.0.0
@@ -630,6 +654,20 @@ abstract class Underpin {
 
 		// The template directory. Used by the template loader to determine where templates are stored.
 		$this->template_dir = $this->dir . 'templates/';
+	}
+
+	/**
+	 * Retrieve the translation of $text.
+	 *
+	 * If there is no translation, or the text domain isn't loaded, the original text is returned.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $text   Text to translate.
+	 * @return string Translated text.
+	 */
+	public function __( $text ) {
+		return __( $text, $this->text_domain );
 	}
 
 	/**
