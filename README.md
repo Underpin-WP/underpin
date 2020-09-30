@@ -1,8 +1,6 @@
 # Underpin WordPress Framework
 
-This boilerplate is designed to work well for large, complex WordPress plugins. The goal of this system is to create an
-opinionated pattern for creating a plugin in WordPress. It also adds support for useful utilities that plugins need as
-they mature, such as a solid error logging utility, a batch processor for upgrade routines, and a decision tree class that
+The goal of Underpin is to provide a pattern that makes building scaleable WordPress plugins and themes easier. It provides support for useful utilities that plugins need as they mature, such as a solid error logging utility, a batch processor for upgrade routines, and a decision tree class that
 makes extending _and_ debugging multi-layered decisions way easier than traditional WordPress hooks.
 
 ## Service Provider
@@ -14,6 +12,8 @@ called to do so.
 
 This service provider also serves as a "directory" of sorts, where a third-party developer can easily see all of the
 places in which they can interact with the plugin.
+
+Multiple, unique versions of the service provider can be created. This provides an effective way to structure plugin extensions.
 
 ## Loaders
 
@@ -34,7 +34,10 @@ things use nearly _exact_ same set of steps to register:
 1. Post Types
 1. Taxonomies
 1. Blocks
-1. Admin Pages, Admin sections, and settings fields that don't suck
+1. Admin Pages, Admin sections, and settings fields
+1. Theme menus
+1. Sidebars
+1. Admin notices
 
 This plugin also comes bundled with a handful of custom loaders that most plugins _need_ but WordPress doesn't _offer_
 out of the box.
@@ -51,12 +54,15 @@ can add those as well.
 ## Template System Trait
 
 This plugin also includes a powerful template system. This system clearly separates HTML markup from business logic, and
-provides ways to do things like set default params for values, and declare if a template should be public or private.
+provides ways to do things like set default params for values, and declare if a template should be public or private. Any time a class needs to output HTML on a screen, this trait can be used.
+
+## Debug Logger
+If you're logged in and add `underpin_debug=1` to the end of any URL, an "Underpin events" button appears in the admin bar. This provides a debugging interface that dumps out all of the items that were registered in the request, as well as any events that were logged in that request. This context can be useful, especially in production environments where debugging can be difficult.
 
 ## Event Logging Utility
 
 This plugin includes a utility that makes it possible to log events in this plugin. These logs are written to files in
-the `wp_uploads` directory, and comes equipped with a cron job that automatically purges old logs.
+the `wp_uploads` directory, and comes equipped with a cron job that automatically purges old logs. Additinally, the method in which the logger saves data can be extended by creating a custom Writer class.
 
 ### Using the Error Logger
 
@@ -434,11 +440,6 @@ plugin_name_replace_me()->decision_lists()->get('email')->add('custom_option',ne
 
 });
 ```
-
-## Webpack
-
-It comes with a webpack config that is tailored for WordPress. This works well-enough to make React apps in WordPress,
-and has been sufficient for my needs so-far.
 
 ## Admin Field Builder
 
