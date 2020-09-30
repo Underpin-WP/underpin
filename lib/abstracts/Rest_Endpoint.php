@@ -9,7 +9,7 @@
 namespace Underpin\Abstracts;
 
 use Underpin\Traits\Feature_Extension;
-use WP_Rest_Request;
+use WP_REST_Request;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,10 +42,10 @@ abstract class Rest_Endpoint {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param WP_Rest_Request $request The request object.
+	 * @param WP_REST_Request $request The request object.
 	 * @return mixed the REST endpoint response.
 	 */
-	abstract function endpoint( WP_Rest_Request $request );
+	abstract function endpoint( WP_REST_Request $request );
 
 	/**
 	 * Has permission callback.
@@ -55,7 +55,7 @@ abstract class Rest_Endpoint {
 	 * @param WP_Rest_Request $request The request object.
 	 * @return mixed the REST endpoint response.
 	 */
-	abstract function has_permission( WP_Rest_Request $request );
+	abstract function has_permission( WP_REST_Request $request );
 
 	/**
 	 * Rest_Endpoint constructor.
