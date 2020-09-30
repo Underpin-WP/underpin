@@ -51,10 +51,240 @@ Useful for db upgrade routines.
 It is also fairly straightforward to create custom loaders, so if you have your own extend-able registry of items, you
 can add those as well.
 
+### Registering Things
+
+Everything is registered using a PHP class, in one of three ways:
+
+1. A string reference to a class name
+1. An anonymous class
+1. An array containing the class name and the constructor arguments
+
+The class name you register must be an instance of the loader's `abstraction_class` value, so if you wanted to register a shortcode, you must make a class that extends `Underpin\Abstracts\Shortcode`.
+
+The examples below work with _any_ loader class, and work in basically the same way. The extended class houses all of the logic necessary to tie everything together.
+
+### EXAMPLE: Register A Shortcode
+
+Expanding on this example, let's say you wanted to register a new shortcode. It might look something like this:
+
+First you would create your Shortcode class. This class happens to have an abstract method, `shortcode_actions`.
+```php
+
+class Hello_World extends \Underpin\Abstracts\Shortcode {
+	
+	$shortcode = 'hello_world';
+	
+	public function shortcode_actions() {
+		// TODO: Implement shortcode_actions() method.
+	}
+}
+
+```
+
+Looking at the `Shortcode` abstract, we can see that our shortcode atts are stored in `$this->atts`, so we could access that directly if we needed. Since this is a simple example, however, we're simply going to return 'Hello world!"
+
+```php
+
+Namespace Underpin\Shortcodes;
+
+class Hello_World extends \Underpin\Abstracts\Shortcode {
+	
+	$shortcode = 'hello_world';
+	
+	public function shortcode_actions() {
+		return 'Hello world!'
+	}
+}
+
+```
+
+Now that our class has been created, we need to register this shortcode. This is done like this:
+
+```php
+underpin()->shortcodes()->add( 'hello_world','Underpin\Shortcodes\Hello_World' );
+```
+
+Alternatively, you can simply pass this as an abstract class directly if that's your thing. I don't personally like this because it registers the class into memory even when it is _not being used_.
+
+```php
+underpin()->shortcodes()->add( 'hello_world',new class extends \Underpin\Abstracts\Shortcode {
+	
+	public $shortcode = 'hello_world';
+	
+	public function shortcode_actions() {
+		return 'Hello world!'
+	}
+} );
+```
+
+Either way, this shortcode can be accessed using `do_shortcode('hello_world');`, or you can access the class, and its methods directly with `underpin()->shortcodes()->get( 'hello_world' )`;
+
+### Example with constructor
+
+Sometimes, it makes more sense dynamically register things using a constructor. This pattern works in the same manner as above, the only difference is how you pass your information to the `add()` method.
+
+Let's say you want to register a shortcode for every post type on the site. You could do with the help of a constructor. something like:
+
+```php
+
+class Post_Type_Shortcode extends \Underpin\Abstracts\Shortcode {
+
+	public function __construct( $post_type ) {
+		$this->shortcode = $post_type . '_is_the_best';
+
+		$this->post_type = $post_type;
+	}
+
+	public function shortcode_actions() {
+		echo $this->post_type . ' is the best post type';
+	}
+}
+
+```
+
+And then register each one like so:
+
+```php
+
+add_action( 'init', function() {
+	$post_types    = get_post_types( [], 'objects' );
+	$ignored_types = flare_wp_get_ignored_post_types();
+
+	foreach ( $post_types as $post_type ) {
+		if ( ! in_array( $post_type->name, $ignored_types ) ) {
+			$this->shortcodes()->add( $post_type->name . '_shortcode', [
+				'class' => 'Flare_WP\Shortcodes\Post_Type_Shortcode',
+				'args'  => [ $post_type ],
+			] );
+		}
+	}
+} );
+```
+
+The key part here is how differently we handled the `add` method. Instead of simply providing a instance name, we instead provide an array containing the `class`, and an array of ordered `args` to pass directly into the contstructor. As a result, we register this class to be constructed if it is ever needed.
+
 ## Template System Trait
 
 This plugin also includes a powerful template system. This system clearly separates HTML markup from business logic, and
 provides ways to do things like set default params for values, and declare if a template should be public or private. Any time a class needs to output HTML on a screen, this trait can be used.
+
+### Example: Expand Hello World Shortcode into a Template
+
+Let's take the registered `Hello_World` class above, and modify it so that it uses the template loader trait to get some actual HTML output, and a user name.
+
+```php
+
+Namespace Underpin\Shortcodes;
+
+
+class Hello_World extends \Underpin\Abstracts\Shortcode {
+	use \Underpin\Traits\Templates;
+
+	public $shortcode = 'hello_world';
+
+	public function shortcode_actions() {
+		return 'Hello world!';
+	}
+
+	public function get_templates() {
+		// TODO: Implement get_templates() method.
+	}
+
+	protected function get_template_group() {
+		// TODO: Implement get_template_group() method.
+	}
+
+	protected function get_template_root_path() {
+		// TODO: Implement get_template_root_path() method.
+	}
+}
+
+```
+
+The Template loader needs some fundamental information before it can be used futher. Let's fill those out a bit.
+
+```php
+
+class Hello_World extends \Underpin\Abstracts\Shortcode {
+	use \Underpin\Traits\Templates;
+
+	public $shortcode = 'hello_world';
+
+	public function shortcode_actions() {
+		
+		$params = [];
+		
+		if(is_user_logged_in()){
+			$params['name'] = wp_get_current_user()->user_nicename;
+		}
+		return $this->get_template( 'index', $params );
+	}
+
+	public function get_templates() {
+		return [
+			'index' => 'public',
+		];
+	}
+
+	protected function get_template_group() {
+		return 'hello-world';
+	}
+
+	protected function get_template_root_path() {
+		underpin()->template_dir();
+	}
+}
+
+```
+
+`get_templates` returns an array of templates that this class supports, as well as each template's visibility. This makes it possible for a plugin to create a template that can be overwritten by a theme by settin the template to `public`.
+
+`get_template_group` determines the subdirectory name to look for the templates, and `get_template_root_path` determines the path to the template directory root.
+
+Finally, `get_template` actually calls the template method, and passes the instance of the object into the included file. It also passes an array of paramaters.
+
+So based on this, we would need to add a new PHP file: `/path/to/directory/root/hello-world/index.php`
+
+And that file would look something like:
+
+```php
+<?php
+
+if ( ! isset( $template ) || ! $template instanceof Hello_World ) {
+	return;
+}
+
+?>
+
+<h1>Hello <?= $template->get_param( 'name', 'stranger' ) ?>!</h1>
+```
+
+`get_param` provides a second argument to provide a fallback value should the specified param not be set, or be invalid. In this case, if a name wasn't provided, the template will automatically replace it with `stranger`.
+
+### Nesting Templates
+
+Since the template loader passes the instance into the template, it's possible to load sub-templates inside of the template. A WordPress loop may look something like this:
+
+```php
+<?php
+
+if ( ! isset( $template ) || ! $template instanceof The_Loop ) {
+	return;
+}
+
+?>
+
+<div>
+<?php if( $template->query->has_posts() ): while( $template->query->has_posts() ) :$template->query->the_post() ?>
+	<?= $template->get_template( 'post' ) ?>
+<?php endwhile; ?>
+<?php else: ?>
+	<?= $template->get_template( 'no-posts' ); ?>
+<?php endif; ?>
+</div>
+```
+
+Where `post.php` and `no-posts.php` are separate PHP files in the same directory, and registered to `The_Loop` under `get_templates`.
 
 ## Debug Logger
 If you're logged in and add `underpin_debug=1` to the end of any URL, an "Underpin events" button appears in the admin bar. This provides a debugging interface that dumps out all of the items that were registered in the request, as well as any events that were logged in that request. This context can be useful, especially in production environments where debugging can be difficult.
