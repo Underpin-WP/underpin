@@ -15,6 +15,9 @@ places in which they can interact with the plugin.
 
 Multiple, unique versions of the service provider can be created. This provides an effective way to structure plugin extensions.
 
+## Boilerplates
+Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin. This will give you some examples on how Underpin can be used, and also provide you with a good starting point for your next project.
+
 ## Loaders
 
 A frustrating thing about WordPress is the myriad number of ways things get "added". Everything works _just a little
@@ -678,14 +681,15 @@ with the template loader, these fields make it easy to generate form fields usin
 
 ## Initial Setup
 
-1. Clone this repo, and delete the `.git` directory. Since this is a boilerplate, it's not intended to be updated by the source once cloned.
-1. Replace `PLUGIN_NAME_REPLACE_ME` with the abbreviation of your plugin, using UPPER_CASE format.
-1. Replace `Plugin_Name_Replace_Me` with the abbreviation of your plugin, using Upper_Snake_Case format.
-1. Replace `plugin-name-replace-me` with the abbreviation of your plugin, using lower-dash-case format.
-1. Replace `plugin_name_replace_me` with the abbreviation of your plugin, using snake_case format.
-1. Replace `plugin name replace me` with the abbreviation of your plugin, using Plugin Name format.
-1. (Optional) Open `bootstra.php` and change the constants as-necessary.
-1. Start writing.
+`composer require alexstandiford/underpin`
+
+Include the composer autoloader
+
+Start registering things to Underpin via loaders as mentioned above.
+
+### Recommended step - set up your own service provider
+This makes it possible to create your own loader registries, and makes it possible to better tailor your plugin to your needs. Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin to see how this works.
+
 
 ## Working With Scripts
 
