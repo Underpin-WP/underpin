@@ -63,8 +63,6 @@ abstract class Admin_Page extends Admin_Sub_Menu {
 	 * Admin_Page constructor.
 	 *
 	 * @since 1.0.0
-	 *
-	 * @param array $args List of arguments used to create this menu page.
 	 */
 	public function __construct() {
 		parent::__construct();
