@@ -139,8 +139,6 @@ abstract class Admin_Menu {
 	 * Adds the admin bar.
 	 *
 	 * @since 1.0.0
-	 *
-	 * @param WP_Admin_Bar $admin_bar The admin bar object.
 	 */
 	public function add_admin_menu() {
 
