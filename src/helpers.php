@@ -10,10 +10,6 @@
 namespace Underpin;
 
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 if ( ! function_exists( 'Underpin\underpin' ) ) :
 
 	/**
