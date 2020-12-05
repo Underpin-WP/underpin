@@ -25,14 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class Taxonomy {
 	use Feature_Extension;
-	/**
-	 * The taxonomy name.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var string The post type "$type" argument.
-	 */
-	protected $name = '';
+
 
 	/**
 	 * The post type args.
