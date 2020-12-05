@@ -9,7 +9,12 @@
             "email": "a@alexstandiford.com"
         }
     ],
-  "autoload": {
-    "files": ["Underpin.php"]
-  }
+    "autoload": {
+        "psr-4": {
+            "Underpin\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    }
 }

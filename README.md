@@ -84,7 +84,7 @@ class Hello_World extends \Underpin\Abstracts\Shortcode {
 
 ```
 
-Looking at the `Shortcode` abstract, we can see that our shortcode atts are stored in `$this->atts`, so we could access that directly if we needed. Since this is a simple example, however, we're simply going to return 'Hello world!"
+Looking at the `Shortcode` abstract, we can see that our shortcode atts are stored in `$this->atts`, so we could access that directly if we needed. Since this is a simple example, however, we're simply going to return 'Hello world!'
 
 ```php
 
@@ -786,10 +786,16 @@ Styles work in the exact same fashion as scripts. The only difference is you wor
 
 ## Autoloader
 
-This boilerplate includes a basic autoloading system. By default, the namespace will represent the subdirectories within
-the `lib` directory of the plugin.
+```php
+// After require_once __DIR_ . '/vendor/autoload.php';
 
-For Example, any file with `namespace Example_Plugin\Cron` would need to be located in `lib/cron/`.
+add_action( 'plugins_loaded', '\\Underpin\\underpin' );
+```
+
+This boilerplate includes a basic autoloading system. By default, the namespace will represent the subdirectories within
+the `src` directory of the plugin.
+
+For Example, any file with `namespace Example_Plugin\Cron` would need to be located in `src/Cron/`.
 
 As long as your namespaces line up, and you utilize the registries in the manners detailed in this document, you should
 _never_ need to manually require a file.

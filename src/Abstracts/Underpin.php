@@ -246,58 +246,6 @@ abstract class Underpin {
 	}
 
 	/**
-	 * Registers the autoloader.
-	 *
-	 * @sicne 1.0.0
-	 *
-	 * @return bool|string
-	 */
-	protected function _setup_autoloader() {
-		try {
-			spl_autoload_register( function( $class ) {
-				$class = explode( '\\', $class );
-
-				$root = trailingslashit( $this->dir ) . 'lib/';
-
-				$root_namespace = array_shift( $class );
-
-				// Bail early if the namespace roots do not match.
-				if ( $this->root_namespace !== $root_namespace ) {
-					return false;
-				}
-
-				$file_name = array_pop( $class );
-				$directory = str_replace( '_', '-', strtolower( implode( DIRECTORY_SEPARATOR, $class ) ) );
-				$file      = $root . $directory . '/' . $file_name . '.php';
-
-				// If the file exists in this form, use it.
-				if ( file_exists( $file ) ) {
-					require_once $file;
-
-					return true;
-				}
-
-				$lowercase_file = strtolower( $file );
-
-				// If it does not, try to retrieve a lowercase version. Some operating systems are sensitive to this.
-				if ( file_exists( $lowercase_file ) ) {
-					require_once $lowercase_file;
-
-					return true;
-				}
-
-				return false;
-			} );
-		} catch ( Exception $e ) {
-			$this->logger()->log_exception( 'autoload_failed', $e );
-
-			return $e->getMessage();
-		}
-
-		return false;
-	}
-
-	/**
 	 * Fetches the Logger instance.
 	 *
 	 * @since 1.0.0
@@ -605,9 +553,6 @@ abstract class Underpin {
 	 * @return void
 	 */
 	protected function setup() {
-
-		// Set up the autoloader for everything else.
-		$this->_setup_autoloader();
 
 		/**
 		 * Fires just before the bootstrap starts up.
