@@ -3,6 +3,30 @@
 The goal of Underpin is to provide a pattern that makes building scaleable WordPress plugins and themes easier. It provides support for useful utilities that plugins need as they mature, such as a solid error logging utility, a batch processor for upgrade routines, and a decision tree class that
 makes extending _and_ debugging multi-layered decisions way easier than traditional WordPress hooks.
 
+## Installation
+Underpin can be installed in any place you can write code for WordPress, including:
+
+1. As a part of a WordPress plugin.
+1. As a part of a WordPress theme.
+1. As a part of a WordPress must-use plugin.
+
+### Via Composer
+`composer install alexstandiford/underpin`
+
+### Manually
+If you're developing Underpin directly, or simply don't want to use Composer, follow these steps to use:
+
+1. Clone this repository
+1. Require `Underpin.php` from the root directory.
+
+### Boilerplates
+Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin. This will give you some examples on how Underpin can be used, and also provide you with a good starting point for your next project.
+
+## Minimum Requirements
+
+1. WordPress `5.0` or better.
+1. PHP `5.6` or better.
+
 ## Service Provider
 
 Absolutely everything, except for one-off helper functions in `functions.php` is encapsulated in a singleton-instance
@@ -14,9 +38,6 @@ This service provider also serves as a "directory" of sorts, where a third-party
 places in which they can interact with the plugin.
 
 Multiple, unique versions of the service provider can be created. This provides an effective way to structure plugin extensions.
-
-## Boilerplates
-Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin. This will give you some examples on how Underpin can be used, and also provide you with a good starting point for your next project.
 
 ## Loaders
 
