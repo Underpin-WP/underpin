@@ -24,7 +24,7 @@ Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerpla
 
 ## Minimum Requirements
 
-1. WordPress `5.0` or better.
+1. WordPress `5.1` or better.
 1. PHP `5.6` or better.
 
 ## Service Provider
