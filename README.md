@@ -22,6 +22,9 @@ If you're developing Underpin directly, or simply don't want to use Composer, fo
 ### Boilerplates
 Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin. This will give you some examples on how Underpin can be used, and also provide you with a good starting point for your next project.
 
+### Recommended step - set up your own service provider
+This makes it possible to create your own loader registries, and makes it possible to better tailor your plugin to your needs. Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin to see how this works.
+
 ## Minimum Requirements
 
 1. WordPress `5.1` or better.
@@ -699,18 +702,6 @@ plugin_name_replace_me()->decision_lists()->get('email')->add('custom_option',ne
 
 One _powerful_ feature this plugin comes with is a series of pre-built settings fields classes. When used
 with the template loader, these fields make it easy to generate form fields using the `place` method.
-
-## Initial Setup
-
-`composer require alexstandiford/underpin`
-
-Include the composer autoloader
-
-Start registering things to Underpin via loaders as mentioned above.
-
-### Recommended step - set up your own service provider
-This makes it possible to create your own loader registries, and makes it possible to better tailor your plugin to your needs. Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin to see how this works.
-
 
 ## Working With Scripts
 
