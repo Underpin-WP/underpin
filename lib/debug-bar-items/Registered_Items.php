@@ -32,6 +32,6 @@ class Registered_Items extends Debug_Bar_Section {
 	public $subtitle = "Here's what items were registered during this session.";
 
 	public function get_items() {
-		return Underpin::export();
+		return underpin()->export();
 	}
 }
