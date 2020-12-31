@@ -540,6 +540,17 @@ abstract class Underpin {
 	}
 
 	/**
+	 * Retrieves the Extensions Loader.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return \Underpin\Loaders\Extensions|WP_Error
+	 */
+	public function extensions() {
+		return $this->_get_loader('Extensions');
+	}
+
+	/**
 	 * Checks if the PHP version meets the minimum requirements.
 	 *
 	 * @since 1.0.0

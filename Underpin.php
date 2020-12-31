@@ -29,7 +29,7 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 
 		protected $minimum_php_version = '5.6';
 		protected $minimum_wp_version = '5.0';
-		protected $version = '1.0.0';
+		protected $version = '1.1.0';
 		protected $root_namespace = 'Underpin';
 
 
@@ -41,6 +41,7 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 			$this->options();
 			$this->logger();
 			$this->decision_lists();
+			$this->extensions();
 		}
 	}
 
