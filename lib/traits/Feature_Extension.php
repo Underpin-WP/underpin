@@ -1,9 +1,8 @@
 <?php
 /**
- * $FILE_DESCRIPTION
+ * Feature Extension Trait.
  *
- * @since   $VERSION
- * @package $PACKAGE
+ * @since   1.0.0
  */
 
 namespace Underpin\Traits;
@@ -16,7 +15,7 @@ trait Feature_Extension {
 
 
 	/**
-	 * A human-readable description of this event type.
+	 * A human-readable description of this feature.
 	 * This is used in debug logs to make it easier to understand why this exists.
 	 *
 	 * @var string
@@ -24,7 +23,7 @@ trait Feature_Extension {
 	public $description = '';
 
 	/**
-	 * A human-readable name for this event type.
+	 * A human-readable name for this feature.
 	 * This is used in debug logs to make it easier to understand what this is.
 	 *
 	 * @var string

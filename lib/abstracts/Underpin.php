@@ -452,6 +452,17 @@ abstract class Underpin {
 	}
 
 	/**
+	 * Retrieves the admin menus loader.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Loaders\Roles
+	 */
+	public function roles() {
+		return $this->_get_loader( 'Roles' );
+	}
+
+	/**
 	 * Retrieves the rest endpoints loader.
 	 *
 	 * @since 1.0.0
