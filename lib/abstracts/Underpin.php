@@ -364,6 +364,28 @@ abstract class Underpin {
 	}
 
 	/**
+	 * Retrieves the user meta loader.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Loaders\User_Meta
+	 */
+	public function user_meta() {
+		return $this->_get_loader( 'User_Meta' );
+	}
+
+	/**
+	 * Retrieves the post meta loader.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Loaders\Post_Meta
+	 */
+	public function post_meta() {
+		return $this->_get_loader( 'Post_Meta' );
+	}
+
+	/**
 	 * Retrieves the menus loader.
 	 *
 	 * @since 1.0.0
