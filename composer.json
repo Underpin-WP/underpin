@@ -11,5 +11,8 @@
     ],
   "autoload": {
     "files": ["Underpin.php"]
-  }
+  },
+    "require": {
+        "composer/installers": "^1.10"
+    }
 }
