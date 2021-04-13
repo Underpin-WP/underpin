@@ -1,7 +1,7 @@
 {
     "name": "alexstandiford/underpin",
     "description": "Underpin WordPress framework",
-    "type": "library",
+    "type": "wordpress-muplugin",
     "license": "MIT",
     "authors": [
         {
@@ -11,5 +11,8 @@
     ],
   "autoload": {
     "files": ["Underpin.php"]
-  }
+  },
+    "require": {
+        "composer/installers": "^1.10"
+    }
 }
