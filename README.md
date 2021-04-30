@@ -36,8 +36,12 @@ If you're developing Underpin directly, or simply don't want to use Composer, fo
 1. Clone this repository, preferably in the `mu-plugins` directory.
 1. Require `Underpin.php`, preferably as a `mu-plugin`.
 
-### Boilerplates
+## Boilerplates
 Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin. This will give you some examples on how Underpin can be used, and also provide you with a good starting point for your next project.
+
+## Local Dev Environment With Underpin
+
+Along with these options, I also put together a local development environment using Docker Compose and Composer with Underpin. We use this for our custom site builds at [DesignFrame](https://www.designframesolutions.com), and it works pretty well. You can learn more about that [here](https://github.com/DesignFrame/website-template).
 
 ### Recommended step - set up your own service provider
 This makes it possible to create your own loader registries, and makes it possible to better tailor your plugin to your needs. Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin to see how this works.
