@@ -13,11 +13,28 @@ Underpin can be installed in any place you can write code for WordPress, includi
 ### Via Composer
 `composer install alexstandiford/underpin`
 
+**Note** This will add Underpin as a `mu-plugin`, but due to how WordPress handles must-use plugins, this does _not actually add the plugin to your site_. You must also manually require the file in a mu-plugin PHP file:
+
+```php
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Load Underpin
+$underpin = plugin_dir_path( __FILE__ ) . 'vendor/alexstandiford/underpin/Underpin.php';
+
+if ( file_exists( $underpin ) ) {
+	require_once( $underpin );
+}
+```
+
 ### Manually
 If you're developing Underpin directly, or simply don't want to use Composer, follow these steps to use:
 
-1. Clone this repository
-1. Require `Underpin.php` from the root directory.
+1. Clone this repository, preferably in the `mu-plugins` directory.
+1. Require `Underpin.php`, preferably as a `mu-plugin`.
 
 ### Boilerplates
 Check out the [Theme](https://github.com/alexstandiford/underpin-theme-boilerplate) and [Plugin](https://github.com/alexstandiford/underpin-plugin-boilerplate) boilerplates that use Underpin. This will give you some examples on how Underpin can be used, and also provide you with a good starting point for your next project.
