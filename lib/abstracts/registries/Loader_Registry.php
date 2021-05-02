@@ -82,12 +82,14 @@ abstract class Loader_Registry extends Registry {
 		if ( self::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
 			$this->get( $key )->do_actions();
 
-			underpin()->logger()->log(
-				'notice',
-				'loader_actions_ran',
-				'The actions for the ' . $this->registry_id . ' item called ' . $key . ' ran.',
-				[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
-			);
+			if ( ! is_wp_error( underpin()->logger() ) ) {
+				underpin()->logger()->log(
+					'notice',
+					'loader_actions_ran',
+					'The actions for the ' . $this->registry_id . ' item called ' . $key . ' ran.',
+					[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
+				);
+			}
 		}
 
 		return $valid;

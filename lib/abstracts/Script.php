@@ -149,7 +149,7 @@ abstract class Script {
 	 * @since 1.0.0
 	 *
 	 * @param string $key   The key for the localized value.
-	 * @param mixed $value The value
+	 * @param mixed  $value The value
 	 * @return true|WP_Error True if successful, \WP_Error if param was added too late.
 	 */
 	public function set_param( $key, $value ) {

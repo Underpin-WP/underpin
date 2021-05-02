@@ -1,5 +1,5 @@
 {
-    "name": "alexstandiford/underpin",
+    "name": "underpin/underpin",
     "description": "Underpin WordPress framework",
     "type": "wordpress-muplugin",
     "license": "MIT",
@@ -13,6 +13,7 @@
     "files": ["Underpin.php"]
   },
     "require": {
-        "composer/installers": "^1.10"
+        "composer/installers": "^1.10",
+        "underpin/loaders/admin-bar-menus": "^1.0"
     }
 }

@@ -35,7 +35,12 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 
 		protected function _setup() {
 			$this->cron_jobs();
-			$this->admin_bar_menus();
+
+			// Maybe setup the admin bar.
+			if ( underpin()->is_debug_mode_enabled() && ! is_wp_error( $this->admin_bar_menus() ) ) {
+				$this->admin_bar_menus()->add( 'debug_bar', 'Underpin\Utilities\Debug_Bar' );
+			}
+
 			$this->scripts();
 			$this->styles();
 			$this->options();

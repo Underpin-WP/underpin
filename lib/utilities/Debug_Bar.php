@@ -10,8 +10,8 @@
 namespace Underpin\Utilities;
 
 
-use Underpin\Abstracts\Admin_Bar_Menu;
 use Underpin\Traits\Underpin_Templates;
+use Underpin_Admin_Bar_Menu\Abstracts\Admin_Bar_Menu;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
