@@ -14,7 +14,7 @@
   },
     "require": {
         "composer/installers": "^1.10",
-        "underpin/loaders/admin-bar-menus": "^1.0",
-        "underpin/loaders/cron-jobs": "^1.0"
+        "underpin/admin-bar-menu-loader": "^1.0",
+        "underpin/cron-job-loader": "^1.0"
     }
 }
