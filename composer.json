@@ -1,5 +1,5 @@
 {
-    "name": "alexstandiford/underpin",
+    "name": "underpin/underpin",
     "description": "Underpin WordPress framework",
     "type": "wordpress-muplugin",
     "license": "MIT",
