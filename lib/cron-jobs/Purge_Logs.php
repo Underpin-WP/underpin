@@ -9,9 +9,9 @@
 
 namespace Underpin\Cron_Jobs;
 
+use Underpin_Cron_Jobs\Abstracts\Cron_Job;
 use function Underpin\Underpin;
 
-use Underpin\Abstracts\Cron_Task;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since   1.0.0
  * @package Underpin\Cron
  */
-class Purge_Logs extends Cron_Task {
+class Purge_Logs extends Cron_Job {
 
 	public $description = 'Purges logged events that are older than 30 days. This keeps the log files from becoming massive.';
 

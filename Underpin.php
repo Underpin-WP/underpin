@@ -34,17 +34,16 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 
 
 		protected function _setup() {
-			$this->cron_jobs();
+			$this->cron_jobs()->add( 'purge_logs', 'Underpin\Cron_Jobs\Purge_Logs' );
 
 			// Maybe setup the admin bar.
-			if ( underpin()->is_debug_mode_enabled() && ! is_wp_error( $this->admin_bar_menus() ) ) {
+			if ( underpin()->is_debug_mode_enabled() ) {
 				$this->admin_bar_menus()->add( 'debug_bar', 'Underpin\Utilities\Debug_Bar' );
 			}
 
 			$this->scripts();
 			$this->styles();
 			$this->options();
-			$this->logger();
 			$this->decision_lists();
 			$this->extensions();
 		}
