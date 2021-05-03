@@ -231,7 +231,7 @@ abstract class Loader_Registry extends Registry {
 					$type = count( $processed ) > 1 ? $processed[1] : 'in';
 
 					// Bail early if this field is not in this object.
-					if ( ! isset( $item->$field ) ) {
+					if ( ! property_exists( $item, $field ) ) {
 						continue;
 					}
 
