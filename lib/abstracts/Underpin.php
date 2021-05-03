@@ -24,21 +24,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since   1.0.0
  * @package Underpin\Abstracts
- * @method Loaders\Batch_Tasks|\WP_Error        batch_tasks
- * @method Loaders\Blocks|\WP_Error             blocks
- * @method Loaders\Custom_Post_Types|\WP_Error  custom_post_types
- * @method Loaders\Debug_Bar_Sections|\WP_Error debug_bar_sections
- * @method Loaders\Erasers|\WP_Error            erasers
- * @method Loaders\Exporters|\WP_Error          exporters
- * @method Loaders\Menus|\WP_Error              menus
- * @method Loaders\Options|\WP_Error            options
- * @method Loaders\Post_Meta|\WP_Error          post_meta
- * @method Loaders\Rest_Endpoints|\WP_Error     rest_endpoints
- * @method Loaders\Roles|\WP_Error              roles
- * @method Loaders\Shortcodes|\WP_Error         shortcodes
- * @method Loaders\Sidebars|\WP_Error           sidebars
- * @method Loaders\Taxonomies|\WP_Error         taxonomies
- * @method Loaders\User_Meta|\WP_Error          user_meta
  * @method Loaders\Widgets|\WP_Error            widgets
  */
 abstract class Underpin {
@@ -451,7 +436,7 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/before_setup', get_called_class() );
+		do_action( 'underpin/before_setup', $this );
 
 
 		// Set up classes that register things.
@@ -462,7 +447,7 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/after_setup', get_called_class() );
+		do_action( 'underpin/after_setup', $this );
 	}
 
 	protected function _setup_params( $file ) {
