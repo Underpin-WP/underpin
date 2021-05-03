@@ -10,8 +10,7 @@
 namespace Underpin\Utilities;
 
 
-use Underpin\Abstracts\Underpin;
-use Underpin\Abstracts\Script;
+use Underpin_Scripts\Abstracts\Script;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
