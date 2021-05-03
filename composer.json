@@ -17,7 +17,6 @@
         "underpin/admin-bar-menu-loader": "^1.0",
         "underpin/script-loader": "^1.0",
         "underpin/style-loader": "^1.0",
-        "underpin/logger-loader": "^1.0",
-        "underpin/cron-job-loader": "^1.0"
+        "underpin/logger-loader": "^1.0"
     }
 }

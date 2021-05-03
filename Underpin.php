@@ -34,13 +34,8 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 
 
 		protected function _setup() {
-			// Setup Cron jobs
-			$this->cron_jobs()->add( 'purge_logs', 'Underpin\Cron_Jobs\Purge_Logs' );
-
 			// Maybe setup the admin bar.
-			if ( underpin()->is_debug_mode_enabled() ) {
-				$this->admin_bar_menus()->add( 'debug_bar', 'Underpin\Utilities\Debug_Bar' );
-			}
+			$this->admin_bar_menus()->add( 'debug_bar', 'Underpin\Utilities\Debug_Bar' );
 
 			// Setup Scripts
 			$this->scripts()->add( 'debug', '\Underpin\Utilities\Debug_Bar_Script' );
@@ -49,9 +44,6 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 			// Setup Styles
 			$this->styles()->add( 'debug', '\Underpin\Utilities\Debug_Bar_Style' );
 			$this->styles()->add( 'batch', '\Underpin\Utilities\Batch_Style' );
-
-			// Setup Decision Lists
-			$this->decision_lists()->add( 'event_type_purge_frequency', 'Underpin\Decisions\Event_Type_Purge_Frequency\Event_Type_Purge_Frequency' );
 
 			// Activate Extensions
 			$this->extensions();

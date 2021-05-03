@@ -29,7 +29,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @method Loaders\Admin_Sub_Menus|\WP_Error    admin_sub_menus
  * @method Loaders\Batch_Tasks|\WP_Error        batch_tasks
  * @method Loaders\Blocks|\WP_Error             blocks
- * @method Loaders\Cron_Jobs|\WP_Error          cron_jobs
  * @method Loaders\Custom_Post_Types|\WP_Error  custom_post_types
  * @method Loaders\Debug_Bar_Sections|\WP_Error debug_bar_sections
  * @method Loaders\Decision_Lists|\WP_Error     decision_lists
@@ -40,10 +39,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @method Loaders\Post_Meta|\WP_Error          post_meta
  * @method Loaders\Rest_Endpoints|\WP_Error     rest_endpoints
  * @method Loaders\Roles|\WP_Error              roles
- * @method Loaders\Scripts|\WP_Error            scripts
  * @method Loaders\Shortcodes|\WP_Error         shortcodes
  * @method Loaders\Sidebars|\WP_Error           sidebars
- * @method Loaders\Styles|\WP_Error             styles
  * @method Loaders\Taxonomies|\WP_Error         taxonomies
  * @method Loaders\User_Meta|\WP_Error          user_meta
  * @method Loaders\Widgets|\WP_Error            widgets

@@ -48,9 +48,11 @@ class Debug_Bar extends Admin_Bar_Menu {
 
 	public function do_actions() {
 		parent::do_actions();
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ], 11 );
-		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ], 11 );
-		add_action( 'shutdown', [ $this, 'render_callback' ] );
+		if ( underpin()->is_debug_mode_enabled() ) {
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ], 11 );
+			add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ], 11 );
+			add_action( 'shutdown', [ $this, 'render_callback' ] );
+		}
 	}
 
 	/**
