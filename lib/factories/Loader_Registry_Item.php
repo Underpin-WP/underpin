@@ -10,8 +10,9 @@ class Loader_Registry_Item extends \Underpin\Abstracts\Registries\Loader_Registr
 
 	private $default_items;
 
-	public function __construct( $abstraction_class, $default_items = [] ) {
+	public function __construct( $abstraction_class, $default_factory, $default_items = [] ) {
 		$this->abstraction_class = $abstraction_class;
+		$this->default_factory   = $default_factory;
 		$this->default_items     = $default_items;
 		parent::__construct();
 	}

@@ -39,11 +39,9 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 
 			// Setup Scripts
 			$this->scripts()->add( 'debug', '\Underpin\Utilities\Debug_Bar_Script' );
-			$this->scripts()->add( 'batch', '\Underpin\Utilities\Batch_Script' );
 
 			// Setup Styles
 			$this->styles()->add( 'debug', '\Underpin\Utilities\Debug_Bar_Style' );
-			$this->styles()->add( 'batch', '\Underpin\Utilities\Batch_Style' );
 
 			// Activate Extensions
 			$this->extensions();

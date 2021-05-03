@@ -11,7 +11,7 @@ Underpin can be installed in any place you can write code for WordPress, includi
 1. As a part of a WordPress must-use plugin.
 
 ### Via Composer
-`composer install alexstandiford/underpin`
+`composer install underpin/underpin`
 
 **Note** This will add Underpin as a `mu-plugin`, but due to how WordPress handles must-use plugins, this does _not actually add the plugin to your site_. You must also manually require the file in a mu-plugin PHP file:
 
@@ -22,12 +22,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Load Underpin
-$underpin = plugin_dir_path( __FILE__ ) . 'vendor/alexstandiford/underpin/Underpin.php';
+// Load Underpin, and its dependencies.
+$autoload = plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
-if ( file_exists( $underpin ) ) {
-	require_once( $underpin );
-}
+require_once( $autoload );
 ```
 
 ### Manually
@@ -338,99 +336,6 @@ Where `post.php` and `no-posts.php` are separate PHP files in the same directory
 
 One _powerful_ feature this plugin comes with is a series of pre-built settings fields classes. When used
 with the template loader, these fields make it easy to generate form fields using the `place` method.
-
-## Working With Scripts
-
-This boilerplate comes with baked-in support for working with scripts and styles. This uses the same pattern as any other
-loader registry. To register a script, you need to do the following:
-
-1. Add an entry point for your script in `webpack.config.js`
-1. Create a new Script, or Style loader
-1. Add the loader to the appropriate registry.
-1. Enqueue with `plugin_name_replace_me()->scripts()->enqueue('script-handle')`
-
-### 1.) Add an entry point
-
-First off, you need to add the entry point to the `webpack.config.js` file.
-
-```js
-// webpack.config.js
-//...
-	entry: {
-		// JS.
-		scriptName: './assets/js/src/script-name.js'
-	}
-//...
-```
-
-### 2.) Create the PHP Loader
-
-Create a new loader in `lib/loaders/scripts/` directory. You can pass the same params through `parent::__construct()` as
-what is typically passed to `wp_register_script`, however you only _need_ to specify the `handle`.
-
-If no path is specified, it will automatically assume the path to the script is:
-`./assets/js/build/HANDLE.min.js`
-
-So, as long as your `handle` matches what you specify for the `entry` in `webpack.config.js`, you need not
-specify a path at all.
-
-You can also specify what should be passed to the Javascript via `wp_localize_script`. This is done by returning an
-array of values in `get_localized_params`.
-
-The script is localized just before it is enqueued. If you need to localize earlier, you can manually run
-`Script::localize()` at any time.
-
-```php
-<?php
-
-namespace Plugin_Name_Replace_Me\Loaders\Scripts;
-
-
-use Plugin_Name_Replace_Me\Abstracts\Script;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-class Test_Script extends Script {
-
-	public function __construct() {
-		parent::__construct( 'scriptName' );
-	}
-
-	public function get_localized_params() {
-		return [
-			'scriptName' => 'This goes to the javascript',
-		];
-	}
-
-}
-
-```
-
-## Register the script in `registries/loaders/Scripts.php`
-
-Register the script in `set_default_items`.
-
-```php
-<?php
-//...
-
-	/**
-	 * @inheritDoc
-	 */
-	protected function set_default_items() {
-        // Registers the test script
-		$this->add( 'scriptName', '\Plugin_Name_Replace_Me\Loaders\Scripts\Test_Script' );
-	}
-
-//...
-```
-
-## Working With Styles
-
-Styles work in the exact same fashion as scripts. The only difference is you work with the `Styles` abstraction and the
-`Styles` loader registry.
 
 ## Autoloader
 

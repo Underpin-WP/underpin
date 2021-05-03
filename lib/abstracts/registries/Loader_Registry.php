@@ -36,6 +36,15 @@ abstract class Loader_Registry extends Registry {
 	protected $abstraction_class = '';
 
 	/**
+	 * The default factory name.
+	 * When generating a new instance without specifying a class, this factory will be used by default.
+	 *
+	 * @since 1.2.0
+	 * @var string The name of the abstract class this service locator uses.
+	 */
+	protected $default_factory = '';
+
+	/**
 	 * Loader_Registry constructor.
 	 *
 	 */
@@ -66,8 +75,21 @@ abstract class Loader_Registry extends Registry {
 				$this[ $key ]             = new $value;
 				$this->class_list[ $key ] = $value;
 			} elseif ( is_array( $value ) ) {
-				$class                    = $value['class'];
-				$args                     = isset( $value['args'] ) ? $value['args'] : [];
+
+				if ( isset( $value['class'] ) ) {
+					$class    = $value['class'];
+					$args     = isset( $value['args'] ) ? $value['args'] : [];
+				} else {
+					$class = $this->default_factory;
+					$args  = $value;
+				}
+
+				$is_assoc = count( array_filter( array_keys( $args ), 'is_string' ) ) > 0;
+				// Convert single-level associative array to first argument using the array.
+				if ( $is_assoc ) {
+					$args = [ $args ];
+				}
+
 				$this[ $key ]             = new $class( ...$args );
 				$this->class_list[ $key ] = $value['class'];
 			} else {
@@ -135,7 +157,7 @@ abstract class Loader_Registry extends Registry {
 	public function validate_item( $key, $value ) {
 
 		if ( is_array( $value ) ) {
-			$value = isset( $value['class'] ) ? $value['class'] : '';
+			$value = isset( $value['class'] ) ? $value['class'] : $this->default_factory;
 		}
 
 		if ( $value === $this->abstraction_class || is_subclass_of( $value, $this->abstraction_class ) || $value instanceof $this->abstraction_class ) {

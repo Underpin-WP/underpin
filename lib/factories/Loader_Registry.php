@@ -40,7 +40,8 @@ class Loader_Registry extends Registry {
 	protected function _add( $key, $value ) {
 		// Maybe auto-set the registry.
 		if ( ! isset( $value['registry'] ) ) {
-			$value['registry'] = new Loader_Registry_Item( $value['instance'] );
+			$default           = isset( $value['default'] ) ? $value['default'] : '';
+			$value['registry'] = new Loader_Registry_Item( $value['instance'], $default );
 		}
 
 		return parent::_add( $key, $value );
@@ -59,10 +60,10 @@ class Loader_Registry extends Registry {
 			);
 		}
 
-		if ( ! isset( $value['instance'] ) ) {
+		if ( ! isset( $value['instance'] ) && ! isset( $value['registry'] ) ) {
 			$errors->add(
-				'loader_item_must_provide_instance',
-				'The registered specification for the loader did not provide an instance.',
+				'loader_item_must_provide_instance_or_registry',
+				'The registered specification for the loader did not provide an instance, or a registry.',
 				[
 					'value' => $value,
 					'key'   => $key,
