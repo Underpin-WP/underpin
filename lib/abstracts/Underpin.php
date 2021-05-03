@@ -24,14 +24,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since   1.0.0
  * @package Underpin\Abstracts
- * @method Loaders\Admin_Menus|\WP_Error        admin_menus
- * @method Loaders\Admin_Notices|\WP_Error      admin_notices
- * @method Loaders\Admin_Sub_Menus|\WP_Error    admin_sub_menus
  * @method Loaders\Batch_Tasks|\WP_Error        batch_tasks
  * @method Loaders\Blocks|\WP_Error             blocks
  * @method Loaders\Custom_Post_Types|\WP_Error  custom_post_types
  * @method Loaders\Debug_Bar_Sections|\WP_Error debug_bar_sections
- * @method Loaders\Decision_Lists|\WP_Error     decision_lists
  * @method Loaders\Erasers|\WP_Error            erasers
  * @method Loaders\Exporters|\WP_Error          exporters
  * @method Loaders\Menus|\WP_Error              menus

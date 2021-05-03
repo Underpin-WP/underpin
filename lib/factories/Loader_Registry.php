@@ -4,6 +4,7 @@ namespace Underpin\Factories;
 
 use Underpin\Abstracts\Registries\Registry;
 use WP_Error;
+use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -13,13 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Loader_Registry extends Registry {
 
 	protected function set_default_items() {
-		// Extensions are loaded externally.
+		// Loaders are added externally.
 	}
 
 	/**
 	 * @param string $key
 	 *
-	 * @return Loader|WP_Error Extension instance, if it exists. WP_Error, otherwise.
+	 * @return object|WP_Error Extension instance, if it exists. WP_Error, otherwise.
 	 */
 	public function get( $key ) {
 		$valid = parent::get( $key );
@@ -46,15 +47,35 @@ class Loader_Registry extends Registry {
 	}
 
 	protected function validate_item( $key, $value ) {
+		$errors = new WP_Error();
 		if ( ! is_array( $value ) ) {
-			// Items must be an array
+			$errors->add(
+				'loader_item_must_be_array',
+				'The registered specification for the loader passed something other than an array.',
+				[
+					'value' => $value,
+					'key'   => $key,
+				]
+			);
 		}
 
 		if ( ! isset( $value['instance'] ) ) {
-			// Items must have an instance.
+			$errors->add(
+				'loader_item_must_provide_instance',
+				'The registered specification for the loader did not provide an instance.',
+				[
+					'value' => $value,
+					'key'   => $key,
+				]
+			);
 		}
 
-		return true;
+		// Log errors, if possible.
+		if ( ! is_wp_error( underpin()->logger() ) ) {
+			underpin()->logger()->log_wp_error( 'error', $errors );
+		}
+
+		return ! $errors->has_errors();
 	}
 
 }
