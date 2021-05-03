@@ -47,9 +47,13 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 			$this->scripts()->add( 'batch', '\Underpin\Utilities\Batch_Script' );
 
 			// Setup Styles
-			$this->styles();
-			$this->options();
-			$this->decision_lists();
+			$this->styles()->add( 'debug', '\Underpin\Utilities\Debug_Bar_Style' );
+			$this->styles()->add( 'batch', '\Underpin\Utilities\Batch_Style' );
+
+			// Setup Decision Lists
+			$this->decision_lists()->add( 'event_type_purge_frequency', 'Underpin\Decisions\Event_Type_Purge_Frequency\Event_Type_Purge_Frequency' );
+
+			// Activate Extensions
 			$this->extensions();
 		}
 	}
@@ -68,6 +72,4 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 	function underpin() {
 		return ( new Underpin )->get( __FILE__ );
 	}
-
-	underpin();
 }

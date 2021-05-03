@@ -175,7 +175,7 @@ abstract class Underpin {
 	}
 
 	/**
-	 * @return \Underpin\Loaders\Logger|WP_Error
+	 * @return \Underpin_Logger\Loaders\Logger|WP_Error
 	 */
 	public function logger() {
 		if ( ! isset( $this->loader_registry['logger'] ) ) {
@@ -452,10 +452,6 @@ abstract class Underpin {
 		$this->_setup_autoloader();
 		$this->loader_registry = new Loader_Registry( get_called_class() );
 		$this->loaders()->add( 'extensions', [ 'instance' => '\\Underpin\Abstracts\Extension' ] );
-		$this->loaders()->add( 'logger', [
-			'instance' => '\\Underpin\Abstracts\Logger',
-			'registry' => '\\Underpin\Loaders\Logger',
-		] );
 
 		/**
 		 * Fires just before the bootstrap starts up.

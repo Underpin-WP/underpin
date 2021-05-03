@@ -141,7 +141,7 @@ abstract class Registry extends ArrayIterator {
 		} else {
 			$error = new WP_Error( 'key_not_set', 'Specified key is not set.', [ 'key' => $key ] );
 
-			if ( ! is_wp_error( underpin()->logger() ) && underpin()->is_debug_mode_enabled() ) {
+			if ( 'logger' !== $key && ! is_wp_error( underpin()->logger() ) && underpin()->is_debug_mode_enabled() ) {
 				underpin()->logger()->log_wp_error( 'warning', $error );
 			}
 

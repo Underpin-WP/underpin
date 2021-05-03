@@ -10,8 +10,7 @@
 namespace Underpin\Utilities;
 
 
-use Underpin\Abstracts\Style;
-use Underpin\Abstracts\Underpin;
+use Underpin_Styles\Abstracts\Style;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {

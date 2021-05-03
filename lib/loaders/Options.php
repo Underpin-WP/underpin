@@ -35,15 +35,6 @@ class Options extends Loader_Registry {
 	 * @inheritDoc
 	 */
 	protected function set_default_items() {
-		$this->add( 'debug_mode_enabled', [
-			'class' => 'Underpin\Factories\Option',
-			'args'  => [
-				'underpin_debug_mode_enabled',
-				'Determines if Debug Mode is on',
-				'Debug Mode',
-				false,
-			],
-		] );
 	}
 
 	/**

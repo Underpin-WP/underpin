@@ -9,8 +9,8 @@
 
 namespace Underpin\Abstracts;
 
-use Underpin\Loaders\Logger;
 use Underpin\Traits\Underpin_Templates;
+use Underpin_Logger\Loaders\Logger;
 use WP_Error;
 use function Underpin\underpin;
 

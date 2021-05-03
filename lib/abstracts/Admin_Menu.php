@@ -11,8 +11,8 @@ namespace Underpin\Abstracts;
 
 
 use Underpin\Traits\Feature_Extension;
+use Underpin_Logger\Loaders\Logger;
 use WP_Admin_Bar;
-use Underpin\Loaders\Logger;
 use function Underpin\Underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
