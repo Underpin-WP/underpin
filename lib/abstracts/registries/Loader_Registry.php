@@ -11,6 +11,7 @@
 namespace Underpin\Abstracts\Registries;
 
 use Underpin\Abstracts\Feature_Extension;
+use Underpin\Abstracts\Underpin;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -71,31 +72,7 @@ abstract class Loader_Registry extends Registry {
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
 		if ( true === $valid ) {
-			if ( is_string( $value ) ) {
-				$this[ $key ]             = new $value;
-				$this->class_list[ $key ] = $value;
-			} elseif ( is_array( $value ) ) {
-
-				if ( isset( $value['class'] ) ) {
-					$class    = $value['class'];
-					$args     = isset( $value['args'] ) ? $value['args'] : [];
-				} else {
-					$class = $this->default_factory;
-					$args  = $value;
-				}
-
-				$is_assoc = count( array_filter( array_keys( $args ), 'is_string' ) ) > 0;
-				// Convert single-level associative array to first argument using the array.
-				if ( $is_assoc ) {
-					$args = [ $args ];
-				}
-
-				$this[ $key ]             = new $class( ...$args );
-				$this->class_list[ $key ] = $value['class'];
-			} else {
-				$this[ $key ]             = $value;
-				$this->class_list[ $key ] = get_class( $this[ $key ] );
-			}
+			$this[$key] = Underpin::make_class( $value, $this->default_factory );
 		} else{
 			$this[ $key ] = $valid;
 		}

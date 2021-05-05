@@ -24,7 +24,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since   1.0.0
  * @package Underpin\Abstracts
- * @method Loaders\Widgets|\WP_Error            widgets
  */
 abstract class Underpin {
 
@@ -198,7 +197,7 @@ abstract class Underpin {
 			return true;
 		}
 
-		return apply_filters( 'underpin/debug_mode_enabled', false );
+		return apply_filters( 'underpin/debug_mode_enabled', false, get_called_class() );
 	}
 
 	public function template_dir() {
@@ -485,11 +484,65 @@ abstract class Underpin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $text   Text to translate.
+	 * @param string $text Text to translate.
+	 *
 	 * @return string Translated text.
 	 */
 	public function __( $text ) {
 		return __( $text, $this->text_domain );
+	}
+
+	/**
+	 * Helper function used to construct factory classes from a standard array syntax.
+	 *
+	 * @since 1.2
+	 *
+	 * @param mixed $value The value used to generate the class.
+	 *                     Can be an array with "class" and "args", an associative array, a string, or a class instance.
+	 *                     If it is an array with "class" and "args", make_class will construct the factory specified in
+	 *                     "class" using the provided "args"
+	 *                     If it is an associative array, make_class will construct the default factory, passing the array
+	 *                     of arguments to the constructor.
+	 *                     If it is a string, make_class will try to instantiate the class with no args.
+	 *                     If it is already a class, make_class will simply return the class directly.
+	 * @param string $default_factory The default factory to use if a class is not provided in $value.
+	 *
+	 * @return object The instantiated class.
+	 */
+	public static function make_class( $value = [], $default_factory = '' ) {
+		// If the value is a string, assume it's a class reference.
+		if ( is_string( $value ) ) {
+			$class = new $value;
+
+		// If the value is an array, the class still needs defined.
+		} elseif ( is_array( $value ) ) {
+
+			// If the class is specified, construct the class from the specified value.
+			if ( isset( $value['class'] ) ) {
+				$class = $value['class'];
+				$args  = isset( $value['args'] ) ? $value['args'] : [];
+
+			// Otherwise, fallback to the default, and use the value as an array of arguments for the default.
+			} else {
+
+				$class = $default_factory;
+				$args  = $value;
+			}
+
+			$is_assoc = count( array_filter( array_keys( $args ), 'is_string' ) ) > 0;
+			// Convert single-level associative array to first argument using the array.
+			if ( $is_assoc ) {
+				$args = [ $args ];
+			}
+
+			$class = new $class( ...$args );
+
+		// Otherwise, assume the class is already instantiated, and return it directly.
+		} else {
+			$class = $value;
+		}
+
+		return $class;
 	}
 
 	/**
@@ -498,6 +551,7 @@ abstract class Underpin {
 	 * @since        1.0.0
 	 *
 	 * @param string $file The complete path to the root file in this plugin. Usually the __FILE__ const.
+	 *
 	 * @return self
 	 */
 	public function get( $file ) {
