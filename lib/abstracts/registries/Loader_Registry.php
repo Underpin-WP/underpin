@@ -11,6 +11,7 @@
 namespace Underpin\Abstracts\Registries;
 
 use Underpin\Abstracts\Feature_Extension;
+use Underpin\Abstracts\Underpin;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -34,6 +35,15 @@ abstract class Loader_Registry extends Registry {
 	 * @var string The name of the abstract class this service locator uses.
 	 */
 	protected $abstraction_class = '';
+
+	/**
+	 * The default factory name.
+	 * When generating a new instance without specifying a class, this factory will be used by default.
+	 *
+	 * @since 1.2.0
+	 * @var string The name of the abstract class this service locator uses.
+	 */
+	protected $default_factory = '';
 
 	/**
 	 * Loader_Registry constructor.
@@ -62,18 +72,7 @@ abstract class Loader_Registry extends Registry {
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
 		if ( true === $valid ) {
-			if ( is_string( $value ) ) {
-				$this[ $key ]             = new $value;
-				$this->class_list[ $key ] = $value;
-			} elseif ( is_array( $value ) ) {
-				$class                    = $value['class'];
-				$args                     = isset( $value['args'] ) ? $value['args'] : [];
-				$this[ $key ]             = new $class( ...$args );
-				$this->class_list[ $key ] = $value['class'];
-			} else {
-				$this[ $key ]             = $value;
-				$this->class_list[ $key ] = get_class( $this[ $key ] );
-			}
+			$this[$key] = Underpin::make_class( $value, $this->default_factory );
 		} else{
 			$this[ $key ] = $valid;
 		}
@@ -82,12 +81,14 @@ abstract class Loader_Registry extends Registry {
 		if ( self::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
 			$this->get( $key )->do_actions();
 
-			underpin()->logger()->log(
-				'notice',
-				'loader_actions_ran',
-				'The actions for the ' . $this->registry_id . ' item called ' . $key . ' ran.',
-				[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
-			);
+			if ( !$this instanceof \Underpin_Logger\Loaders\Logger && ! is_wp_error( underpin()->logger() ) ) {
+				underpin()->logger()->log(
+					'notice',
+					'loader_actions_ran',
+					'The actions for the ' . $this->registry_id . ' item called ' . $key . ' ran.',
+					[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
+				);
+			}
 		}
 
 		return $valid;
@@ -133,7 +134,7 @@ abstract class Loader_Registry extends Registry {
 	public function validate_item( $key, $value ) {
 
 		if ( is_array( $value ) ) {
-			$value = isset( $value['class'] ) ? $value['class'] : '';
+			$value = isset( $value['class'] ) ? $value['class'] : $this->default_factory;
 		}
 
 		if ( $value === $this->abstraction_class || is_subclass_of( $value, $this->abstraction_class ) || $value instanceof $this->abstraction_class ) {
@@ -207,7 +208,7 @@ abstract class Loader_Registry extends Registry {
 					$type = count( $processed ) > 1 ? $processed[1] : 'in';
 
 					// Bail early if this field is not in this object.
-					if ( ! isset( $item->$field ) ) {
+					if ( ! property_exists( $item, $field ) ) {
 						continue;
 					}
 

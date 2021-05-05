@@ -10,11 +10,8 @@
 namespace Underpin\Abstracts;
 
 use Exception;
-use Underpin\Abstracts\Registries\Loader_Registry;
-use Underpin\Loaders;
+use Underpin\Factories\Loader_Registry;
 use WP_Error;
-use function Underpin\underpin;
-
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -47,6 +44,11 @@ abstract class Underpin {
 	protected static $instances = [];
 
 	/**
+	 * @var Loader_Registry
+	 */
+	private $loader_registry;
+
+	/**
 	 * The namespace for loaders. Used for loader autoloading.
 	 *
 	 * @since 1.0.0
@@ -55,48 +57,282 @@ abstract class Underpin {
 	 */
 	protected $root_namespace = "Underpin";
 
+	/**
+	 * Translation Text domain.
+	 *
+	 * Used by translation method for translations.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
 	protected $text_domain = 'underpin';
 
-	protected $minimum_php_version;
-	protected $minimum_wp_version;
-	protected $version;
+	/**
+	 * Minimum PHP Version.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
+	protected $minimum_php_version = '7.0';
+
+	/**
+	 * Current Version
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
+	protected $version = '1.2.0';
+
+	/**
+	 * Minimum WordPress Version.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
+	protected $minimum_wp_version = '5.1';
+
+	/**
+	 * Plugin URL.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $url;
+
+	/**
+	 * URL to CSS directory root.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $css_url;
+
+	/**
+	 * URL to JS Root.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $js_url;
+
+	/**
+	 * Plugin Root Dir.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $dir;
+
+	/**
+	 * Plugin Root __FILE__.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $file;
+
+	/**
+	 * Plugin Template Dir.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $template_dir;
 
+	/**
+	 * Function to setup this plugin.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return mixed
+	 */
+	abstract protected function _setup();
+
+	/**
+	 * Dynamically calls methods.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $method    The method to call
+	 * @param array  $arguments The arguments to pass to the method.
+	 *
+	 * @return mixed|WP_Error
+	 */
+	function __call( $method, $arguments ) {
+		// If this method exists, bail and just get the method.
+		if ( method_exists( $this, $method ) ) {
+			return $this->$method( ...$arguments );
+		}
+
+		// Try and get the loader.
+		$loader = $this->loader_registry->get( $method );
+
+		// If the loader was found, bail early and return it.
+		if ( ! is_wp_error( $loader ) ) {
+			return $loader;
+		}
+
+		// Otherwise, return and log an error.
+		if ( is_wp_error( $loader ) ) {
+			$loader = new WP_Error(
+				'method_not_found',
+				"The method could not be called. Either register this item as a loader, install an extension, or create a method for this call.",
+				[
+					'method'    => $method,
+					'args'      => $arguments,
+					'backtrace' => debug_backtrace(),
+				]
+			);
+
+			// Try to log the error.
+			if ( ! is_wp_error( $this->logger() ) ) {
+				return $this->logger()->log_wp_error( 'warning', $loader );
+			}
+		}
+		return $loader;
+	}
+
+	/**
+	 * Minimum PHP Version Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function minimum_php_version() {
 		return $this->minimum_php_version;
 	}
 
+	/**
+	 * Minimum WP Version Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function minimum_wp_version() {
 		return $this->minimum_wp_version;
 	}
 
+	/**
+	 * Plugin Version.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function version() {
 		return $this->version;
 	}
 
+	/**
+	 * URL Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function url() {
 		return trailingslashit( $this->url );
 	}
 
+	/**
+	 * CSS URL Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function css_url() {
 		return trailingslashit( $this->css_url );
 	}
 
+	/**
+	 * JS URL Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function js_url() {
 		return trailingslashit( $this->js_url );
 	}
 
+	/**
+	 * Directory Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function dir() {
 		return trailingslashit( $this->dir );
 	}
 
+	/**
+	 * __FILE__ Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function file() {
 		return $this->file;
+	}
+
+	/**
+	 * Template Directory Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
+	public function template_dir() {
+		return trailingslashit( $this->template_dir );
+	}
+
+	/**
+	 * Loader registry getter.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Loader_Registry
+	 */
+	public function loaders() {
+		return $this->loader_registry;
+	}
+
+	/**
+	 * Fetch logger instance.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @since 1.2.0 This can now return a WP_Error if-loaded too early.
+	 *
+	 * It is possible for the logger to be called before it is loaded. This adds a check to catch these errors and prevent
+	 * fatal errors.
+	 *
+	 * @return \Underpin_Logger\Loaders\Logger|WP_Error
+	 */
+	public function logger() {
+		if ( ! isset( $this->loader_registry['logger'] ) ) {
+			return new WP_Error(
+				'logger_not_set',
+				'The logger was called before it was ready.'
+			);
+		}
+
+		return $this->loader_registry->get( 'logger' );
 	}
 
 	/**
@@ -120,19 +356,9 @@ abstract class Underpin {
 			return true;
 		}
 
-		$debug_enabled_option = underpin()->options()->get( 'debug_mode_enabled' );
-		if ( isset( $_POST[ $debug_enabled_option->key ] ) && 'on' === $_POST[ $debug_enabled_option->key ] ) {
-			return false;
-		}
-
-		return (bool) $debug_enabled_option->get();
+		return apply_filters( 'underpin/debug_mode_enabled', false, get_called_class() );
 	}
 
-	public function template_dir() {
-		return trailingslashit( $this->template_dir );
-	}
-
-	abstract protected function _setup();
 
 	/**
 	 * Fetches the specified class, and constructs the class if it hasn't been constructed yet.
@@ -140,6 +366,7 @@ abstract class Underpin {
 	 * @since 1.0.0
 	 *
 	 * @param $class
+	 *
 	 * @return mixed
 	 */
 	protected function _get_class( $class ) {
@@ -156,17 +383,6 @@ abstract class Underpin {
 		}
 
 		return $this->class_registry[ $class ];
-	}
-
-	protected function _get_loader( $loader ) {
-		$class = underpin()->_get_class( 'Underpin\Loaders\\' . $loader );
-
-		// If this is not a core loader, attempt to get it from this plugin.
-		if ( is_wp_error( $class ) ) {
-			$class = $this->_get_class( $this->root_namespace . '\\Loaders\\' . $loader );
-		}
-
-		return $class;
 	}
 
 	public static function export() {
@@ -254,7 +470,7 @@ abstract class Underpin {
 	 */
 	protected function _setup_autoloader() {
 		try {
-			spl_autoload_register( function( $class ) {
+			spl_autoload_register( function ( $class ) {
 				$class = explode( '\\', $class );
 
 				$root = trailingslashit( $this->dir ) . 'lib/';
@@ -295,292 +511,6 @@ abstract class Underpin {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Fetches the Logger instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Logger
-	 */
-	public function logger() {
-		return $this->_get_loader( 'Logger' );
-	}
-
-	/**
-	 * Fetches the Options instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Options
-	 */
-	public function options() {
-		return $this->_get_loader( 'Options' );
-	}
-
-	/**
-	 * Fetches the Batch_Tasks instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Batch_Tasks
-	 */
-	public function batch_tasks() {
-		return $this->_get_loader( 'Batch_Tasks' );
-	}
-
-	/**
-	 * Fetches the Batch_Tasks instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Decision_Lists
-	 */
-	public function decision_lists() {
-		return $this->_get_loader( 'Decision_Lists' );
-	}
-
-	/**
-	 * Retrieves the scripts loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Scripts
-	 */
-	public function scripts() {
-		return $this->_get_loader( 'Scripts' );
-	}
-
-	/**
-	 * Retrieves the sidebars loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Sidebars
-	 */
-	public function sidebars() {
-		return $this->_get_loader( 'Sidebars' );
-	}
-
-	/**
-	 * Retrieves the user meta loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\User_Meta
-	 */
-	public function user_meta() {
-		return $this->_get_loader( 'User_Meta' );
-	}
-
-	/**
-	 * Retrieves the post meta loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Post_Meta
-	 */
-	public function post_meta() {
-		return $this->_get_loader( 'Post_Meta' );
-	}
-
-	/**
-	 * Retrieves the menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Menus
-	 */
-	public function menus() {
-		return $this->_get_loader( 'Menus' );
-	}
-
-	/**
-	 * Retrieves the cron jobs loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Cron_Jobs
-	 */
-	public function cron_jobs() {
-		return $this->_get_loader( 'Cron_Jobs' );
-	}
-
-	/**
-	 * Retrieves the debug bar items loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Debug_Bar_Sections
-	 */
-	public function debug_bar_sections() {
-		return $this->_get_loader( 'Debug_Bar_Sections' );
-	}
-
-	/**
-	 * Retrieves the cron jobs loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Erasers
-	 */
-	public function erasers() {
-		return $this->_get_loader( 'Erasers' );
-	}
-
-	/**
-	 * Retrieves the cron jobs loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Exporters
-	 */
-	public function exporters() {
-		return $this->_get_loader( 'Exporters' );
-	}
-
-	/**
-	 * Retrieves the blocks loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Blocks
-	 */
-	public function blocks() {
-		return $this->_get_loader( 'Blocks' );
-	}
-
-	/**
-	 * Retrieves the admin bar menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Bar_Menus
-	 */
-	public function admin_bar_menus() {
-		return $this->_get_loader( 'Admin_Bar_Menus' );
-	}
-
-	/**
-	 * Retrieves the admin menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Menus
-	 */
-	public function admin_menus() {
-		return $this->_get_loader( 'Admin_Menus' );
-	}
-
-	/**
-	 * Retrieves the admin menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Roles
-	 */
-	public function roles() {
-		return $this->_get_loader( 'Roles' );
-	}
-
-	/**
-	 * Retrieves the rest endpoints loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Rest_Endpoints
-	 */
-	public function rest_endpoints() {
-		return $this->_get_loader( 'Rest_Endpoints' );
-	}
-
-	/**
-	 * Retrieves the custom post types loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Custom_Post_Types
-	 */
-	public function custom_post_types() {
-		return $this->_get_loader( 'Custom_Post_Types' );
-	}
-
-	/**
-	 * Retrieves the taxonomies loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Taxonomies
-	 */
-	public function taxonomies() {
-		return $this->_get_loader( 'Taxonomies' );
-	}
-
-	/**
-	 * Retrieves the shortcodes loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Shortcodes
-	 */
-	public function shortcodes() {
-		return $this->_get_loader( 'Shortcodes' );
-	}
-
-	/**
-	 * Fetches the Batch_Tasks instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Notices
-	 */
-	public function admin_notices() {
-		return $this->_get_loader( 'Admin_Notices' );
-	}
-
-	/**
-	 * Retrieves the widgets loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Widgets
-	 */
-	public function widgets() {
-		return $this->_get_loader( 'Widgets' );
-	}
-
-	/**
-	 * Retrieves the admin_sub_menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Sub_Menus
-	 */
-	public function admin_sub_menus() {
-		return $this->_get_loader( 'Admin_Sub_Menus' );
-	}
-
-	/**
-	 * Retrieves the Styles loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Styles
-	 */
-	public function styles() {
-		return $this->_get_loader( 'Styles' );
-	}
-
-	/**
-	 * Retrieves the Extensions Loader.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return \Underpin\Loaders\Extensions|WP_Error
-	 */
-	public function extensions() {
-		return $this->_get_loader('Extensions');
 	}
 
 	/**
@@ -652,13 +582,14 @@ abstract class Underpin {
 
 		// Set up the autoloader for everything else.
 		$this->_setup_autoloader();
+		$this->loader_registry = new Loader_Registry( $this->get_registry_key() );
 
 		/**
 		 * Fires just before the bootstrap starts up.
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/before_setup', get_called_class() );
+		do_action( 'underpin/before_setup', $this );
 
 
 		// Set up classes that register things.
@@ -669,9 +600,16 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/after_setup', get_called_class() );
+		do_action( 'underpin/after_setup', $this );
 	}
 
+	/**
+	 * Setup plugin params using the provided __FILE__
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
 	protected function _setup_params( $file ) {
 
 		// Root file for this plugin. Used in activation hooks.
@@ -707,11 +645,78 @@ abstract class Underpin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $text   Text to translate.
+	 * @param string $text Text to translate.
+	 *
 	 * @return string Translated text.
 	 */
 	public function __( $text ) {
 		return __( $text, $this->text_domain );
+	}
+
+	/**
+	 * Helper function used to construct factory classes from a standard array syntax.
+	 *
+	 * @since 1.2
+	 *
+	 * @param mixed  $value           The value used to generate the class.
+	 *                                Can be an array with "class" and "args", an associative array, a string, or a class
+	 *                                instance. If it is an array with "class" and "args", make_class will construct the
+	 *                                factory specified in
+	 *                                "class" using the provided "args"
+	 *                                If it is an associative array, make_class will construct the default factory,
+	 *                                passing the array of arguments to the constructor. If it is a string, make_class
+	 *                                will try to instantiate the class with no args. If it is already a class,
+	 *                                make_class will simply return the class directly.
+	 * @param string $default_factory The default factory to use if a class is not provided in $value.
+	 *
+	 * @return mixed The instantiated class.
+	 */
+	public static function make_class( $value = [], $default_factory = 'Underpin\Factories\Underpin_Instance' ) {
+		// If the value is a string, assume it's a class reference.
+		if ( is_string( $value ) ) {
+			$class = new $value;
+
+			// If the value is an array, the class still needs defined.
+		} elseif ( is_array( $value ) ) {
+
+			// If the class is specified, construct the class from the specified value.
+			if ( isset( $value['class'] ) ) {
+				$class = $value['class'];
+				$args  = isset( $value['args'] ) ? $value['args'] : [];
+
+				// Otherwise, fallback to the default, and use the value as an array of arguments for the default.
+			} else {
+
+				$class = $default_factory;
+				$args  = $value;
+			}
+
+			$is_assoc = count( array_filter( array_keys( $args ), 'is_string' ) ) > 0;
+			// Convert single-level associative array to first argument using the array.
+			if ( $is_assoc ) {
+				$args = [ $args ];
+			}
+
+			$class = new $class( ...$args );
+
+			// Otherwise, assume the class is already instantiated, and return it directly.
+		} else {
+			$class = $value;
+		}
+
+		return $class;
+	}
+
+	/**
+	 * Retrieves the registry key for this instance.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string The registry hash.
+	 */
+	public function get_registry_key( $file = '' ) {
+		$file = empty( $file ) ? $this->file() : $file;
+		return md5( get_called_class() . $file );
 	}
 
 	/**
@@ -720,20 +725,20 @@ abstract class Underpin {
 	 * @since        1.0.0
 	 *
 	 * @param string $file The complete path to the root file in this plugin. Usually the __FILE__ const.
+	 *
 	 * @return self
-	 * @noinspection PhpUndefinedMethodInspection
 	 */
 	public function get( $file ) {
-		$class = get_called_class();
-		if ( ! isset( self::$instances[ $class ] ) ) {
+		$key = $this->get_registry_key( $file );
+		if ( ! isset( self::$instances[ $key ] ) ) {
 			$this->_setup_params( $file );
 
 			// First, check to make sure the minimum requirements are met.
 			if ( $this->plugin_is_supported() ) {
-				self::$instances[ $class ] = $this;
+				self::$instances[ $key ] = $this;
 
 				// Setup the plugin, if requirements were met.
-				self::$instances[ $class ]->setup();
+				self::$instances[ $key ]->setup();
 
 			} else {
 				// Run unsupported actions if requirements are not met.
@@ -741,6 +746,6 @@ abstract class Underpin {
 			}
 		}
 
-		return self::$instances[ $class ];
+		return self::$instances[ $key ];
 	}
 }
