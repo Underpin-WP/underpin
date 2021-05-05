@@ -10,10 +10,7 @@
         }
     ],
   "autoload": {
-    "files": [
-      "autoload.php",
-      "Underpin.php"
-    ]
+    "files": ["Underpin.php"]
   },
     "require": {
         "composer/installers": "^1.10",
