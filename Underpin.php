@@ -35,4 +35,6 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 	function underpin() {
 		return Underpin::make_class()->get( __FILE__ );
 	}
+
+	underpin();
 }
