@@ -10,7 +10,6 @@
 namespace Underpin\Abstracts;
 
 use Exception;
-use Underpin\Loaders;
 use Underpin\Factories\Loader_Registry;
 use WP_Error;
 
@@ -58,20 +57,111 @@ abstract class Underpin {
 	 */
 	protected $root_namespace = "Underpin";
 
+	/**
+	 * Translation Text domain.
+	 *
+	 * Used by translation method for translations.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
 	protected $text_domain = 'underpin';
 
-	protected $minimum_php_version;
-	protected $minimum_wp_version;
-	protected $version;
+	/**
+	 * Minimum PHP Version.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
+	protected $minimum_php_version = '7.0';
+
+	/**
+	 * Current Version
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
+	protected $version = '1.2.0';
+
+	/**
+	 * Minimum WordPress Version.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var string
+	 */
+	protected $minimum_wp_version = '5.1';
+
+	/**
+	 * Plugin URL.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $url;
+
+	/**
+	 * URL to CSS directory root.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $css_url;
+
+	/**
+	 * URL to JS Root.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $js_url;
+
+	/**
+	 * Plugin Root Dir.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $dir;
+
+	/**
+	 * Plugin Root __FILE__.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $file;
+
+	/**
+	 * Plugin Template Dir.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var
+	 */
 	protected $template_dir;
 
 	/**
+	 * Function to setup this plugin.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return mixed
+	 */
+	abstract protected function _setup();
+
+	/**
 	 * Dynamically calls methods.
+	 *
+	 * @since 1.2.0
 	 *
 	 * @param string $method    The method to call
 	 * @param array  $arguments The arguments to pass to the method.
@@ -90,13 +180,6 @@ abstract class Underpin {
 		// If the loader was found, bail early and return it.
 		if ( ! is_wp_error( $loader ) ) {
 			return $loader;
-		}
-
-		// Try to get the extension.
-		if ( ! is_wp_error( $this->extensions() ) ) {
-			// If the loader does not exist, get the extension
-			$loader = $this->extensions()->get( $method );
-
 		}
 
 		// Otherwise, return and log an error.
@@ -119,39 +202,126 @@ abstract class Underpin {
 		return $loader;
 	}
 
+	/**
+	 * Minimum PHP Version Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function minimum_php_version() {
 		return $this->minimum_php_version;
 	}
 
+	/**
+	 * Minimum WP Version Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function minimum_wp_version() {
 		return $this->minimum_wp_version;
 	}
 
+	/**
+	 * Plugin Version.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function version() {
 		return $this->version;
 	}
 
+	/**
+	 * URL Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function url() {
 		return trailingslashit( $this->url );
 	}
 
+	/**
+	 * CSS URL Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function css_url() {
 		return trailingslashit( $this->css_url );
 	}
 
+	/**
+	 * JS URL Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function js_url() {
 		return trailingslashit( $this->js_url );
 	}
 
+	/**
+	 * Directory Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function dir() {
 		return trailingslashit( $this->dir );
 	}
 
+	/**
+	 * __FILE__ Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
 	public function file() {
 		return $this->file;
 	}
 
 	/**
+	 * Template Directory Getter.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
+	public function template_dir() {
+		return trailingslashit( $this->template_dir );
+	}
+
+	/**
+	 * Loader registry getter.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Loader_Registry
+	 */
+	public function loaders() {
+		return $this->loader_registry;
+	}
+
+	/**
+	 * Fetch logger instance.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @since 1.2.0 This can now return a WP_Error if-loaded too early.
+	 *
+	 * It is possible for the logger to be called before it is loaded. This adds a check to catch these errors and prevent
+	 * fatal errors.
+	 *
 	 * @return \Underpin_Logger\Loaders\Logger|WP_Error
 	 */
 	public function logger() {
@@ -163,17 +333,6 @@ abstract class Underpin {
 		}
 
 		return $this->loader_registry->get( 'logger' );
-	}
-
-	/**
-	 * @return \Underpin\Loaders\Extensions|WP_Error
-	 */
-	public function extensions() {
-		return $this->loader_registry->get( 'extensions' );
-	}
-
-	public function loaders() {
-		return $this->loader_registry;
 	}
 
 	/**
@@ -200,11 +359,6 @@ abstract class Underpin {
 		return apply_filters( 'underpin/debug_mode_enabled', false, get_called_class() );
 	}
 
-	public function template_dir() {
-		return trailingslashit( $this->template_dir );
-	}
-
-	abstract protected function _setup();
 
 	/**
 	 * Fetches the specified class, and constructs the class if it hasn't been constructed yet.
@@ -212,6 +366,7 @@ abstract class Underpin {
 	 * @since 1.0.0
 	 *
 	 * @param $class
+	 *
 	 * @return mixed
 	 */
 	protected function _get_class( $class ) {
@@ -315,7 +470,7 @@ abstract class Underpin {
 	 */
 	protected function _setup_autoloader() {
 		try {
-			spl_autoload_register( function( $class ) {
+			spl_autoload_register( function ( $class ) {
 				$class = explode( '\\', $class );
 
 				$root = trailingslashit( $this->dir ) . 'lib/';
@@ -427,8 +582,7 @@ abstract class Underpin {
 
 		// Set up the autoloader for everything else.
 		$this->_setup_autoloader();
-		$this->loader_registry = new Loader_Registry( get_called_class() );
-		$this->loaders()->add( 'extensions', [ 'instance' => '\\Underpin\Abstracts\Extension' ] );
+		$this->loader_registry = new Loader_Registry( $this->get_registry_key() );
 
 		/**
 		 * Fires just before the bootstrap starts up.
@@ -449,6 +603,13 @@ abstract class Underpin {
 		do_action( 'underpin/after_setup', $this );
 	}
 
+	/**
+	 * Setup plugin params using the provided __FILE__
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
 	protected function _setup_params( $file ) {
 
 		// Root file for this plugin. Used in activation hooks.
@@ -497,24 +658,25 @@ abstract class Underpin {
 	 *
 	 * @since 1.2
 	 *
-	 * @param mixed $value The value used to generate the class.
-	 *                     Can be an array with "class" and "args", an associative array, a string, or a class instance.
-	 *                     If it is an array with "class" and "args", make_class will construct the factory specified in
-	 *                     "class" using the provided "args"
-	 *                     If it is an associative array, make_class will construct the default factory, passing the array
-	 *                     of arguments to the constructor.
-	 *                     If it is a string, make_class will try to instantiate the class with no args.
-	 *                     If it is already a class, make_class will simply return the class directly.
+	 * @param mixed  $value           The value used to generate the class.
+	 *                                Can be an array with "class" and "args", an associative array, a string, or a class
+	 *                                instance. If it is an array with "class" and "args", make_class will construct the
+	 *                                factory specified in
+	 *                                "class" using the provided "args"
+	 *                                If it is an associative array, make_class will construct the default factory,
+	 *                                passing the array of arguments to the constructor. If it is a string, make_class
+	 *                                will try to instantiate the class with no args. If it is already a class,
+	 *                                make_class will simply return the class directly.
 	 * @param string $default_factory The default factory to use if a class is not provided in $value.
 	 *
-	 * @return object The instantiated class.
+	 * @return mixed The instantiated class.
 	 */
-	public static function make_class( $value = [], $default_factory = '' ) {
+	public static function make_class( $value = [], $default_factory = 'Underpin\Factories\Underpin_Instance' ) {
 		// If the value is a string, assume it's a class reference.
 		if ( is_string( $value ) ) {
 			$class = new $value;
 
-		// If the value is an array, the class still needs defined.
+			// If the value is an array, the class still needs defined.
 		} elseif ( is_array( $value ) ) {
 
 			// If the class is specified, construct the class from the specified value.
@@ -522,7 +684,7 @@ abstract class Underpin {
 				$class = $value['class'];
 				$args  = isset( $value['args'] ) ? $value['args'] : [];
 
-			// Otherwise, fallback to the default, and use the value as an array of arguments for the default.
+				// Otherwise, fallback to the default, and use the value as an array of arguments for the default.
 			} else {
 
 				$class = $default_factory;
@@ -537,12 +699,24 @@ abstract class Underpin {
 
 			$class = new $class( ...$args );
 
-		// Otherwise, assume the class is already instantiated, and return it directly.
+			// Otherwise, assume the class is already instantiated, and return it directly.
 		} else {
 			$class = $value;
 		}
 
 		return $class;
+	}
+
+	/**
+	 * Retrieves the registry key for this instance.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string The registry hash.
+	 */
+	public function get_registry_key( $file = '' ) {
+		$file = empty( $file ) ? $this->file() : $file;
+		return md5( get_called_class() . $file );
 	}
 
 	/**
@@ -555,16 +729,16 @@ abstract class Underpin {
 	 * @return self
 	 */
 	public function get( $file ) {
-		$class = get_called_class();
-		if ( ! isset( self::$instances[ $class ] ) ) {
+		$key = $this->get_registry_key( $file );
+		if ( ! isset( self::$instances[ $key ] ) ) {
 			$this->_setup_params( $file );
 
 			// First, check to make sure the minimum requirements are met.
 			if ( $this->plugin_is_supported() ) {
-				self::$instances[ $class ] = $this;
+				self::$instances[ $key ] = $this;
 
 				// Setup the plugin, if requirements were met.
-				self::$instances[ $class ]->setup();
+				self::$instances[ $key ]->setup();
 
 			} else {
 				// Run unsupported actions if requirements are not met.
@@ -572,6 +746,6 @@ abstract class Underpin {
 			}
 		}
 
-		return self::$instances[ $class ];
+		return self::$instances[ $key ];
 	}
 }
