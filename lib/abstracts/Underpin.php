@@ -390,7 +390,7 @@ abstract class Underpin {
 
 		foreach ( Underpin::$instances as $key => $instance ) {
 			if ( $instance instanceof Underpin ) {
-				$results = $instance->export_registered_items( $results );
+				$results = Underpin\underpin()->get( $file )->export_registered_items( $results );
 			}
 		}
 
@@ -589,7 +589,7 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/before_setup', $this );
+		do_action( 'underpin/before_setup', $this->file() );
 
 
 		// Set up classes that register things.
@@ -600,7 +600,7 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/after_setup', $this );
+		do_action( 'underpin/after_setup', $this->file() );
 	}
 
 	/**
