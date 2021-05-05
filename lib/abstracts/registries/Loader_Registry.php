@@ -46,6 +46,15 @@ abstract class Loader_Registry extends Registry {
 	protected $default_factory = '';
 
 	/**
+	 * List of classes that have been instantiated, keyed by their IDs.
+	 *
+	 * @since 1.1.2
+	 *
+	 * @var array
+	 */
+	protected $class_list = [];
+
+	/**
 	 * Loader_Registry constructor.
 	 *
 	 */
@@ -73,6 +82,7 @@ abstract class Loader_Registry extends Registry {
 		$valid = $this->validate_item( $key, $value );
 		if ( true === $valid ) {
 			$this[$key] = Underpin::make_class( $value, $this->default_factory );
+			$this->class_list[ $key ] = get_class( $this[ $key ] );
 		} else{
 			$this[ $key ] = $valid;
 		}
