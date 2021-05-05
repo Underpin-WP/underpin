@@ -34,13 +34,16 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 
 
 		protected function _setup() {
-			$this->cron_jobs();
-			$this->admin_bar_menus();
-			$this->scripts();
-			$this->styles();
-			$this->options();
-			$this->logger();
-			$this->decision_lists();
+			// Maybe setup the admin bar.
+			$this->admin_bar_menus()->add( 'debug_bar', 'Underpin\Utilities\Debug_Bar' );
+
+			// Setup Scripts
+			$this->scripts()->add( 'debug', '\Underpin\Utilities\Debug_Bar_Script' );
+
+			// Setup Styles
+			$this->styles()->add( 'debug', '\Underpin\Utilities\Debug_Bar_Style' );
+
+			// Activate Extensions
 			$this->extensions();
 		}
 	}
@@ -59,6 +62,4 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 	function underpin() {
 		return ( new Underpin )->get( __FILE__ );
 	}
-
-	underpin();
 }

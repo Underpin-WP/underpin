@@ -75,6 +75,6 @@ class Underpin_Admin_Pages extends WP_UnitTestCase {
 	 * @inheritDoc
 	 */
 	protected function get_loader() {
-		return Underpin()->admin_menus();
+		return Underpin()->admin_pages();
 	}
 }

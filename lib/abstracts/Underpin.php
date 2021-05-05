@@ -10,11 +10,9 @@
 namespace Underpin\Abstracts;
 
 use Exception;
-use Underpin\Abstracts\Registries\Loader_Registry;
 use Underpin\Loaders;
+use Underpin\Factories\Loader_Registry;
 use WP_Error;
-use function Underpin\underpin;
-
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -47,6 +45,11 @@ abstract class Underpin {
 	protected static $instances = [];
 
 	/**
+	 * @var Loader_Registry
+	 */
+	private $loader_registry;
+
+	/**
 	 * The namespace for loaders. Used for loader autoloading.
 	 *
 	 * @since 1.0.0
@@ -66,6 +69,55 @@ abstract class Underpin {
 	protected $dir;
 	protected $file;
 	protected $template_dir;
+
+	/**
+	 * Dynamically calls methods.
+	 *
+	 * @param string $method    The method to call
+	 * @param array  $arguments The arguments to pass to the method.
+	 *
+	 * @return mixed|WP_Error
+	 */
+	function __call( $method, $arguments ) {
+		// If this method exists, bail and just get the method.
+		if ( method_exists( $this, $method ) ) {
+			return $this->$method( ...$arguments );
+		}
+
+		// Try and get the loader.
+		$loader = $this->loader_registry->get( $method );
+
+		// If the loader was found, bail early and return it.
+		if ( ! is_wp_error( $loader ) ) {
+			return $loader;
+		}
+
+		// Try to get the extension.
+		if ( ! is_wp_error( $this->extensions() ) ) {
+			// If the loader does not exist, get the extension
+			$loader = $this->extensions()->get( $method );
+
+		}
+
+		// Otherwise, return and log an error.
+		if ( is_wp_error( $loader ) ) {
+			$loader = new WP_Error(
+				'method_not_found',
+				"The method could not be called. Either register this item as a loader, install an extension, or create a method for this call.",
+				[
+					'method'    => $method,
+					'args'      => $arguments,
+					'backtrace' => debug_backtrace(),
+				]
+			);
+
+			// Try to log the error.
+			if ( ! is_wp_error( $this->logger() ) ) {
+				return $this->logger()->log_wp_error( 'warning', $loader );
+			}
+		}
+		return $loader;
+	}
 
 	public function minimum_php_version() {
 		return $this->minimum_php_version;
@@ -100,6 +152,31 @@ abstract class Underpin {
 	}
 
 	/**
+	 * @return \Underpin_Logger\Loaders\Logger|WP_Error
+	 */
+	public function logger() {
+		if ( ! isset( $this->loader_registry['logger'] ) ) {
+			return new WP_Error(
+				'logger_not_set',
+				'The logger was called before it was ready.'
+			);
+		}
+
+		return $this->loader_registry->get( 'logger' );
+	}
+
+	/**
+	 * @return \Underpin\Loaders\Extensions|WP_Error
+	 */
+	public function extensions() {
+		return $this->loader_registry->get( 'extensions' );
+	}
+
+	public function loaders() {
+		return $this->loader_registry;
+	}
+
+	/**
 	 * Determines if debug mode is enabled.
 	 *
 	 * @since 1.0.0
@@ -120,12 +197,7 @@ abstract class Underpin {
 			return true;
 		}
 
-		$debug_enabled_option = underpin()->options()->get( 'debug_mode_enabled' );
-		if ( isset( $_POST[ $debug_enabled_option->key ] ) && 'on' === $_POST[ $debug_enabled_option->key ] ) {
-			return false;
-		}
-
-		return (bool) $debug_enabled_option->get();
+		return apply_filters( 'underpin/debug_mode_enabled', false, get_called_class() );
 	}
 
 	public function template_dir() {
@@ -156,17 +228,6 @@ abstract class Underpin {
 		}
 
 		return $this->class_registry[ $class ];
-	}
-
-	protected function _get_loader( $loader ) {
-		$class = underpin()->_get_class( 'Underpin\Loaders\\' . $loader );
-
-		// If this is not a core loader, attempt to get it from this plugin.
-		if ( is_wp_error( $class ) ) {
-			$class = $this->_get_class( $this->root_namespace . '\\Loaders\\' . $loader );
-		}
-
-		return $class;
 	}
 
 	public static function export() {
@@ -298,292 +359,6 @@ abstract class Underpin {
 	}
 
 	/**
-	 * Fetches the Logger instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Logger
-	 */
-	public function logger() {
-		return $this->_get_loader( 'Logger' );
-	}
-
-	/**
-	 * Fetches the Options instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Options
-	 */
-	public function options() {
-		return $this->_get_loader( 'Options' );
-	}
-
-	/**
-	 * Fetches the Batch_Tasks instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Batch_Tasks
-	 */
-	public function batch_tasks() {
-		return $this->_get_loader( 'Batch_Tasks' );
-	}
-
-	/**
-	 * Fetches the Batch_Tasks instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Decision_Lists
-	 */
-	public function decision_lists() {
-		return $this->_get_loader( 'Decision_Lists' );
-	}
-
-	/**
-	 * Retrieves the scripts loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Scripts
-	 */
-	public function scripts() {
-		return $this->_get_loader( 'Scripts' );
-	}
-
-	/**
-	 * Retrieves the sidebars loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Sidebars
-	 */
-	public function sidebars() {
-		return $this->_get_loader( 'Sidebars' );
-	}
-
-	/**
-	 * Retrieves the user meta loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\User_Meta
-	 */
-	public function user_meta() {
-		return $this->_get_loader( 'User_Meta' );
-	}
-
-	/**
-	 * Retrieves the post meta loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Post_Meta
-	 */
-	public function post_meta() {
-		return $this->_get_loader( 'Post_Meta' );
-	}
-
-	/**
-	 * Retrieves the menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Menus
-	 */
-	public function menus() {
-		return $this->_get_loader( 'Menus' );
-	}
-
-	/**
-	 * Retrieves the cron jobs loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Cron_Jobs
-	 */
-	public function cron_jobs() {
-		return $this->_get_loader( 'Cron_Jobs' );
-	}
-
-	/**
-	 * Retrieves the debug bar items loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Debug_Bar_Sections
-	 */
-	public function debug_bar_sections() {
-		return $this->_get_loader( 'Debug_Bar_Sections' );
-	}
-
-	/**
-	 * Retrieves the cron jobs loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Erasers
-	 */
-	public function erasers() {
-		return $this->_get_loader( 'Erasers' );
-	}
-
-	/**
-	 * Retrieves the cron jobs loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Exporters
-	 */
-	public function exporters() {
-		return $this->_get_loader( 'Exporters' );
-	}
-
-	/**
-	 * Retrieves the blocks loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Blocks
-	 */
-	public function blocks() {
-		return $this->_get_loader( 'Blocks' );
-	}
-
-	/**
-	 * Retrieves the admin bar menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Bar_Menus
-	 */
-	public function admin_bar_menus() {
-		return $this->_get_loader( 'Admin_Bar_Menus' );
-	}
-
-	/**
-	 * Retrieves the admin menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Menus
-	 */
-	public function admin_menus() {
-		return $this->_get_loader( 'Admin_Menus' );
-	}
-
-	/**
-	 * Retrieves the admin menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Roles
-	 */
-	public function roles() {
-		return $this->_get_loader( 'Roles' );
-	}
-
-	/**
-	 * Retrieves the rest endpoints loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Rest_Endpoints
-	 */
-	public function rest_endpoints() {
-		return $this->_get_loader( 'Rest_Endpoints' );
-	}
-
-	/**
-	 * Retrieves the custom post types loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Custom_Post_Types
-	 */
-	public function custom_post_types() {
-		return $this->_get_loader( 'Custom_Post_Types' );
-	}
-
-	/**
-	 * Retrieves the taxonomies loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Taxonomies
-	 */
-	public function taxonomies() {
-		return $this->_get_loader( 'Taxonomies' );
-	}
-
-	/**
-	 * Retrieves the shortcodes loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Shortcodes
-	 */
-	public function shortcodes() {
-		return $this->_get_loader( 'Shortcodes' );
-	}
-
-	/**
-	 * Fetches the Batch_Tasks instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Notices
-	 */
-	public function admin_notices() {
-		return $this->_get_loader( 'Admin_Notices' );
-	}
-
-	/**
-	 * Retrieves the widgets loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Widgets
-	 */
-	public function widgets() {
-		return $this->_get_loader( 'Widgets' );
-	}
-
-	/**
-	 * Retrieves the admin_sub_menus loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Admin_Sub_Menus
-	 */
-	public function admin_sub_menus() {
-		return $this->_get_loader( 'Admin_Sub_Menus' );
-	}
-
-	/**
-	 * Retrieves the Styles loader.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return Loaders\Styles
-	 */
-	public function styles() {
-		return $this->_get_loader( 'Styles' );
-	}
-
-	/**
-	 * Retrieves the Extensions Loader.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return \Underpin\Loaders\Extensions|WP_Error
-	 */
-	public function extensions() {
-		return $this->_get_loader('Extensions');
-	}
-
-	/**
 	 * Checks if the PHP version meets the minimum requirements.
 	 *
 	 * @since 1.0.0
@@ -652,13 +427,15 @@ abstract class Underpin {
 
 		// Set up the autoloader for everything else.
 		$this->_setup_autoloader();
+		$this->loader_registry = new Loader_Registry( get_called_class() );
+		$this->loaders()->add( 'extensions', [ 'instance' => '\\Underpin\Abstracts\Extension' ] );
 
 		/**
 		 * Fires just before the bootstrap starts up.
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/before_setup', get_called_class() );
+		do_action( 'underpin/before_setup', $this );
 
 
 		// Set up classes that register things.
@@ -669,7 +446,7 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/after_setup', get_called_class() );
+		do_action( 'underpin/after_setup', $this );
 	}
 
 	protected function _setup_params( $file ) {
@@ -707,11 +484,65 @@ abstract class Underpin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $text   Text to translate.
+	 * @param string $text Text to translate.
+	 *
 	 * @return string Translated text.
 	 */
 	public function __( $text ) {
 		return __( $text, $this->text_domain );
+	}
+
+	/**
+	 * Helper function used to construct factory classes from a standard array syntax.
+	 *
+	 * @since 1.2
+	 *
+	 * @param mixed $value The value used to generate the class.
+	 *                     Can be an array with "class" and "args", an associative array, a string, or a class instance.
+	 *                     If it is an array with "class" and "args", make_class will construct the factory specified in
+	 *                     "class" using the provided "args"
+	 *                     If it is an associative array, make_class will construct the default factory, passing the array
+	 *                     of arguments to the constructor.
+	 *                     If it is a string, make_class will try to instantiate the class with no args.
+	 *                     If it is already a class, make_class will simply return the class directly.
+	 * @param string $default_factory The default factory to use if a class is not provided in $value.
+	 *
+	 * @return object The instantiated class.
+	 */
+	public static function make_class( $value = [], $default_factory = '' ) {
+		// If the value is a string, assume it's a class reference.
+		if ( is_string( $value ) ) {
+			$class = new $value;
+
+		// If the value is an array, the class still needs defined.
+		} elseif ( is_array( $value ) ) {
+
+			// If the class is specified, construct the class from the specified value.
+			if ( isset( $value['class'] ) ) {
+				$class = $value['class'];
+				$args  = isset( $value['args'] ) ? $value['args'] : [];
+
+			// Otherwise, fallback to the default, and use the value as an array of arguments for the default.
+			} else {
+
+				$class = $default_factory;
+				$args  = $value;
+			}
+
+			$is_assoc = count( array_filter( array_keys( $args ), 'is_string' ) ) > 0;
+			// Convert single-level associative array to first argument using the array.
+			if ( $is_assoc ) {
+				$args = [ $args ];
+			}
+
+			$class = new $class( ...$args );
+
+		// Otherwise, assume the class is already instantiated, and return it directly.
+		} else {
+			$class = $value;
+		}
+
+		return $class;
 	}
 
 	/**
@@ -720,8 +551,8 @@ abstract class Underpin {
 	 * @since        1.0.0
 	 *
 	 * @param string $file The complete path to the root file in this plugin. Usually the __FILE__ const.
+	 *
 	 * @return self
-	 * @noinspection PhpUndefinedMethodInspection
 	 */
 	public function get( $file ) {
 		$class = get_called_class();

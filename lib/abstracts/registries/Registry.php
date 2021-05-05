@@ -77,6 +77,10 @@ abstract class Registry extends ArrayIterator {
 	 */
 	abstract protected function validate_item( $key, $value );
 
+	protected function _add( $key, $value ) {
+		return $this[ $key ] = $value;
+	}
+
 	/**
 	 * Adds an item to the registry
 	 *
@@ -84,37 +88,42 @@ abstract class Registry extends ArrayIterator {
 	 *
 	 * @param string $key   The key to validate.
 	 * @param mixed  $value The value to validate.
+	 *
 	 * @return true|WP_Error true if the item is valid, WP_Error otherwise.
 	 */
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
 
 		if ( true === $valid ) {
-			$this[ $key ] = $value;
+			$this->_add( $key, $value );
 
 			/**
 			 * Fires action after an item is added to the registry.
 			 *
 			 * @since 1.0.0
+			 *
 			 * @param string $registry_id Unique registry ID in which this item was added.
 			 * @param string $key         The key that was added to the registry.
 			 * @param mixed  $value       The value of the item that was added.
 			 */
 			do_action( 'underpin/registry/after_added_item', $this->registry_id, $key, $value );
-
-			underpin()->logger()->log(
-				'notice',
-				'valid_event_added',
-				'A valid item for the ' . $this->registry_id . ' registry called ' . $key . ' was registered.',
-				[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
-			);
+			if ( ! is_wp_error( underpin()->logger() ) ) {
+				underpin()->logger()->log(
+					'notice',
+					'valid_event_added',
+					'A valid item for the ' . $this->registry_id . ' registry called ' . $key . ' was registered.',
+					[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
+				);
+			}
 		} else {
-			underpin()->logger()->log(
-				'warning',
-				'invalid_event',
-				'An item for the ' . $this->registry_id . ' registry called ' . $key . ' could not be registered.',
-				array( 'key' => $key, 'value' => $value, 'ref' => $this->registry_id )
-			);
+			if ( ! is_wp_error( underpin()->logger() ) ) {
+				underpin()->logger()->log(
+					'warning',
+					'invalid_event',
+					'An item for the ' . $this->registry_id . ' registry called ' . $key . ' could not be registered.',
+					array( 'key' => $key, 'value' => $value, 'ref' => $this->registry_id )
+				);
+			}
 		}
 
 		return $valid;
@@ -132,7 +141,7 @@ abstract class Registry extends ArrayIterator {
 		} else {
 			$error = new WP_Error( 'key_not_set', 'Specified key is not set.', [ 'key' => $key ] );
 
-			if ( underpin()->is_debug_mode_enabled() ) {
+			if ( 'logger' !== $key && ! is_wp_error( underpin()->logger() ) && underpin()->is_debug_mode_enabled() ) {
 				underpin()->logger()->log_wp_error( 'warning', $error );
 			}
 
