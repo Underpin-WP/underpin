@@ -10,7 +10,12 @@
         }
     ],
   "autoload": {
-    "files": ["Underpin.php"]
+    "files": [
+      "Underpin.php"
+    ],
+    "psr-4": {
+      "Underpin\\": "lib"
+    }
   },
     "require": {
         "composer/installers": "^1.10",

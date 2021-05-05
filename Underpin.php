@@ -18,12 +18,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! function_exists( 'Underpin\underpin' ) ) {
 
-	require_once( plugin_dir_path( __FILE__ ) . 'lib/abstracts/Underpin.php' );
-	require_once( plugin_dir_path( __FILE__ ) . 'lib/traits/Instance_Setter.php' );
-	require_once( plugin_dir_path( __FILE__ ) . 'lib/traits/Feature_Extension.php' );
-	require_once( plugin_dir_path( __FILE__ ) . 'lib/traits/Templates.php' );
-	require_once( plugin_dir_path( __FILE__ ) . 'lib/factories/Underpin_Instance.php' );
-
 	/**
 	 * Fetches the instance of the plugin.
 	 * This function makes it possible to access everything else in this plugin.
