@@ -72,7 +72,7 @@ class Loader_Registry extends Registry {
 		}
 
 		// Log errors, if possible.
-		if ( ! is_wp_error( underpin()->logger() ) ) {
+		if ( ! is_wp_error( underpin()->logger() ) && $errors->has_errors() ) {
 			underpin()->logger()->log_wp_error( 'error', $errors );
 		}
 
