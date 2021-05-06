@@ -619,7 +619,7 @@ abstract class Underpin {
 		$this->dir = plugin_dir_path( $file );
 
 		// The URL for this plugin. Used in asset loading.
-		if ( false !== strpos( "/wp-content" . DIRECTORY_SEPARATOR . "plugins/", $this->dir ) ) {
+		if ( false === strpos( "/wp-content" . DIRECTORY_SEPARATOR . "themes/", $this->dir ) ) {
 			$this->url = plugin_dir_url( $file );
 		} else {
 			$template              = '/' . get_template() . '/';
