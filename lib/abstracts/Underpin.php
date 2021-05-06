@@ -629,10 +629,10 @@ abstract class Underpin {
 		}
 
 		// The CSS URL for this plugin. Used in asset loading.
-		$this->css_url = $this->url . 'assets/css/build';
+		$this->css_url = $this->url . 'build';
 
 		// The JS URL for this plugin. Used in asset loading.
-		$this->js_url = $this->url . 'assets/js/build';
+		$this->js_url = $this->url . 'build';
 
 		// The template directory. Used by the template loader to determine where templates are stored.
 		$this->template_dir = $this->dir . 'templates/';
