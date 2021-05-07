@@ -46,15 +46,6 @@ abstract class Loader_Registry extends Registry {
 	protected $default_factory = '';
 
 	/**
-	 * List of classes that have been instantiated, keyed by their IDs.
-	 *
-	 * @since 1.1.2
-	 *
-	 * @var array
-	 */
-	protected $class_list = [];
-
-	/**
 	 * Loader_Registry constructor.
 	 *
 	 */
@@ -81,8 +72,7 @@ abstract class Loader_Registry extends Registry {
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
 		if ( true === $valid ) {
-			$this[$key] = Underpin::make_class( $value, $this->default_factory );
-			$this->class_list[ $key ] = get_class( $this[ $key ] );
+			$this[ $key ]             = Underpin::make_class( $value, $this->default_factory );
 		} else{
 			$this[ $key ] = $valid;
 		}
@@ -157,29 +147,6 @@ abstract class Loader_Registry extends Registry {
 			'The specified item could not be instantiated. Invalid instance type',
 			[ 'ref' => $key, 'value' => $value, 'expects_type' => $this->abstraction_class ]
 		);
-	}
-
-	/**
-	 * Retrieves the key from the provided instance.
-	 *
-	 * @since 1.2.3
-	 *
-	 * @param $instance
-	 * @return \WP_Error
-	 */
-	public function get_key( $instance ) {
-		$class = get_class( $instance );
-
-		$items = array_flip( $this->class_list );
-
-		if ( isset( $items[ $class ] ) ) {
-			return $items[ $class ];
-		}
-
-		return new \WP_Error( 'key_not_found', 'The key for the provided class could not be found', [
-			'class' => $class,
-		] );
-
 	}
 
 	/**
