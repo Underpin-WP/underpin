@@ -390,7 +390,7 @@ abstract class Underpin {
 
 		foreach ( Underpin::$instances as $key => $instance ) {
 			if ( $instance instanceof Underpin ) {
-				$results = $instance->export_registered_items( $results );
+				$results = Underpin\underpin()->get( $file, $class )->export_registered_items( $results );
 			}
 		}
 
@@ -589,7 +589,7 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/before_setup', $this );
+		do_action( 'underpin/before_setup', $this->file(), get_called_class() );
 
 
 		// Set up classes that register things.
@@ -600,7 +600,7 @@ abstract class Underpin {
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/after_setup', $this );
+		do_action( 'underpin/after_setup', $this->file(), get_called_class() );
 	}
 
 	/**
@@ -619,7 +619,7 @@ abstract class Underpin {
 		$this->dir = plugin_dir_path( $file );
 
 		// The URL for this plugin. Used in asset loading.
-		if ( false !== strpos( "/wp-content" . DIRECTORY_SEPARATOR . "plugins/", $this->dir ) ) {
+		if ( false === strpos( "/wp-content" . DIRECTORY_SEPARATOR . "themes/", $this->dir ) ) {
 			$this->url = plugin_dir_url( $file );
 		} else {
 			$template              = '/' . get_template() . '/';
@@ -629,10 +629,10 @@ abstract class Underpin {
 		}
 
 		// The CSS URL for this plugin. Used in asset loading.
-		$this->css_url = $this->url . 'assets/css/build';
+		$this->css_url = $this->url . 'build';
 
 		// The JS URL for this plugin. Used in asset loading.
-		$this->js_url = $this->url . 'assets/js/build';
+		$this->js_url = $this->url . 'build';
 
 		// The template directory. Used by the template loader to determine where templates are stored.
 		$this->template_dir = $this->dir . 'templates/';
@@ -714,9 +714,10 @@ abstract class Underpin {
 	 *
 	 * @return string The registry hash.
 	 */
-	public function get_registry_key( $file = '' ) {
-		$file = empty( $file ) ? $this->file() : $file;
-		return md5( get_called_class() . $file );
+	public function get_registry_key( $file = '', $class = '' ) {
+		$file  = empty( $file ) ? $this->file() : $file;
+		$class = empty( $class ) ? get_called_class() : $class;
+		return md5( $class . $file );
 	}
 
 	/**
@@ -728,8 +729,8 @@ abstract class Underpin {
 	 *
 	 * @return self
 	 */
-	public function get( $file ) {
-		$key = $this->get_registry_key( $file );
+	public function get( $file, $class = '' ) {
+		$key = $this->get_registry_key( $file, $class );
 		if ( ! isset( self::$instances[ $key ] ) ) {
 			$this->_setup_params( $file );
 
