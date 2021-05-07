@@ -20,6 +20,7 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 
 	require_once( plugin_dir_path( __FILE__ ) . 'autoload.php' );
 
+
 	/**
 	 * Fetches the instance of the plugin.
 	 * This function makes it possible to access everything else in this plugin.
@@ -33,6 +34,4 @@ if ( ! function_exists( 'Underpin\underpin' ) ) {
 	function underpin() {
 		return Underpin::make_class()->get( __FILE__ );
 	}
-
-	underpin();
 }

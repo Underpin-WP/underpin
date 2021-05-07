@@ -72,7 +72,7 @@ abstract class Loader_Registry extends Registry {
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
 		if ( true === $valid ) {
-			$this[ $key ]             = Underpin::make_class( $value, $this->default_factory );
+			$this[ $key ] = Underpin::make_class( $value, $this->default_factory );
 		} else{
 			$this[ $key ] = $valid;
 		}
