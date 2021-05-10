@@ -94,7 +94,6 @@ trait Templates {
 	protected function get_template_arg_defaults() {
 		return [
 			'override_visibility' => 'private',
-			'visible_in_api'      => false,
 		];
 	}
 
@@ -258,10 +257,8 @@ trait Templates {
 			return $this->get_template_path( $template_name );
 		}
 
-		$override_dir       = 'underpin-templates/';
 		$template_group     = trailingslashit( $this->get_template_group() );
-		$override_path      = $override_dir . $template_group;
-		$override_path      = apply_filters( "underpin/templates/template_directory", $override_path, $template_name, $template_group, $template_visibility );
+		$override_path      = $this->get_override_dir() . $template_group;
 		$override_file_path = trailingslashit( $override_path ) . $template_name . '.php';
 
 		// Check to see if we have a template override from another plugin
@@ -301,12 +298,24 @@ trait Templates {
 	}
 
 	/**
+	 * Specify the override directory for other themes and plugins.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string
+	 */
+	protected function get_override_dir() {
+		return 'underpin-templates/';
+	}
+
+	/**
 	 * Gets a single argument from a template configuration. Falls back to the default value
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param string $template_name The template name to get the argument from.
 	 * @param string $arg           The argument to fetch.
+	 *
 	 * @return WP_Error|mixed A WP Error object if something went wrong, the argument for the current value otherwise.
 	 */
 	private function get_template_arg( $template_name, $arg ) {
