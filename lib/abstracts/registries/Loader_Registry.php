@@ -12,6 +12,7 @@ namespace Underpin\Abstracts\Registries;
 
 use Underpin\Abstracts\Feature_Extension;
 use Underpin\Abstracts\Underpin;
+use Underpin\Traits\With_Parent;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,6 +26,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package Underpin\Abstracts
  */
 abstract class Loader_Registry extends Registry {
+
+	use With_Parent;
 
 	/**
 	 * The abstraction class name.
@@ -49,7 +52,10 @@ abstract class Loader_Registry extends Registry {
 	 * Loader_Registry constructor.
 	 *
 	 */
-	public function __construct() {
+	public function __construct( $parent_id = false ) {
+		if ( false !== $parent_id ) {
+			$this->parent_id = $parent_id;
+		}
 		parent::__construct( $this->get_registry_id() );
 	}
 
@@ -73,7 +79,7 @@ abstract class Loader_Registry extends Registry {
 		$valid = $this->validate_item( $key, $value );
 		if ( true === $valid ) {
 			$this[ $key ] = Underpin::make_class( $value, $this->default_factory );
-		} else{
+		} else {
 			$this[ $key ] = $valid;
 		}
 
@@ -81,7 +87,7 @@ abstract class Loader_Registry extends Registry {
 		if ( self::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
 			$this->get( $key )->do_actions();
 
-			if ( !$this instanceof \Underpin_Logger\Loaders\Logger && ! is_wp_error( underpin()->logger() ) ) {
+			if ( ! $this instanceof \Underpin_Logger\Loaders\Logger && ! is_wp_error( underpin()->logger() ) ) {
 				underpin()->logger()->log(
 					'notice',
 					'loader_actions_ran',
@@ -89,6 +95,10 @@ abstract class Loader_Registry extends Registry {
 					[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
 				);
 			}
+		}
+
+		if ( ! is_wp_error( $valid ) ) {
+			do_action( 'underpin/loader_registered', $key, $value, get_called_class(), $this->parent_id );
 		}
 
 		return $valid;

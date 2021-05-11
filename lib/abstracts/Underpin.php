@@ -150,6 +150,15 @@ abstract class Underpin {
 	protected $template_dir;
 
 	/**
+	 * Plugin name.
+	 *
+	 * Used to identify this plugin in debug logs.
+	 *
+	 * @var string
+	 */
+	public $name = 'Underpin';
+
+	/**
 	 * Function to setup this plugin.
 	 *
 	 * @since 1.0.0
@@ -356,6 +365,11 @@ abstract class Underpin {
 			return true;
 		}
 
+		// If WP DEBUG is enabled, turn on debug mode.
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			return true;
+		}
+
 		return apply_filters( 'underpin/debug_mode_enabled', false, get_called_class() );
 	}
 
@@ -390,7 +404,7 @@ abstract class Underpin {
 
 		foreach ( Underpin::$instances as $key => $instance ) {
 			if ( $instance instanceof Underpin ) {
-				$results = Underpin\underpin()->get( $file, $class )->export_registered_items( $results );
+				$results = Underpin::get_by_id( $key )->export_registered_items( $results );
 			}
 		}
 
@@ -718,6 +732,27 @@ abstract class Underpin {
 		$file  = empty( $file ) ? $this->file() : $file;
 		$class = empty( $class ) ? get_called_class() : $class;
 		return md5( $class . $file );
+	}
+
+	/**
+	 * Fetch an Underpin Instance by the registry key.
+	 *
+	 * @since 1.2
+	 *
+	 * @param string $key The instance key.
+	 *
+	 * @return Underpin|WP_Error The underpin instance if found, otherwise WP_Error.
+	 */
+	public static function get_by_id( $key ) {
+		if ( isset( self::$instances[ $key ] ) ) {
+			return self::$instances[ $key ];
+		}
+
+		return new WP_Error(
+			'instance_not_found',
+			'The instance key provided is not associated with an Underpin instance',
+			[ 'key' => $key ]
+		);
 	}
 
 	/**

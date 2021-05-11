@@ -111,8 +111,8 @@ abstract class Registry extends ArrayIterator {
 				underpin()->logger()->log(
 					'notice',
 					'valid_event_added',
-					'A valid item for the ' . $this->registry_id . ' registry called ' . $key . ' was registered.',
-					[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
+					'A valid item registry item was registered.',
+					[  'ref' => $this->registry_id, 'key' => $key, 'value' => $value, 'class' => get_called_class() ]
 				);
 			}
 		} else {

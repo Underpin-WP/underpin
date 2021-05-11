@@ -3,6 +3,7 @@
 namespace Underpin\Factories;
 
 use Underpin\Abstracts\Registries\Registry;
+use Underpin\Traits\With_Parent;
 use WP_Error;
 use function Underpin\underpin;
 
@@ -12,6 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 class Loader_Registry extends Registry {
+
+	use With_Parent;
+
+	public function __construct( $registry_id ) {
+		$this->parent_id = $registry_id;
+		parent::__construct( $registry_id );
+	}
 
 	protected function set_default_items() {
 		// Loaders are added externally.
@@ -31,7 +39,8 @@ class Loader_Registry extends Registry {
 
 		// Maybe instantiate loader item.
 		if ( is_array( $valid ) && isset( $valid['registry'] ) && is_string( $valid['registry'] ) ) {
-			$this[ $key ]['registry'] = new $valid['registry'];
+			/* @var $valid \Underpin\Abstracts\Registries\Loader_Registry */
+			$this[ $key ]['registry'] = new $valid['registry']( $this->registry_id );
 		}
 
 		return $this[ $key ]['registry'];
@@ -41,7 +50,11 @@ class Loader_Registry extends Registry {
 		// Maybe auto-set the registry.
 		if ( ! isset( $value['registry'] ) ) {
 			$default           = isset( $value['default'] ) ? $value['default'] : '';
-			$value['registry'] = new Loader_Registry_Item( $value['instance'], $default );
+			$value['registry'] = new Loader_Registry_Item( [
+				'abstraction_class' => $value['instance'],
+				'default_factory'   => $default,
+				'parent_id'         => $this->registry_id,
+			] );
 		}
 
 		return parent::_add( $key, $value );
