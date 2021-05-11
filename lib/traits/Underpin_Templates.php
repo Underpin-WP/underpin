@@ -30,4 +30,8 @@ trait Underpin_Templates {
 		return underpin()->template_dir();
 	}
 
+	protected function get_override_dir() {
+		return 'underpin/';
+	}
+
 }

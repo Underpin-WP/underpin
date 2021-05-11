@@ -104,6 +104,7 @@ trait Templates {
 	 *
 	 * @param $template_name string The template name to get.
 	 * @param $params        array of param values that can be used in the template via get_param().
+	 *
 	 * @return string The template contents.
 	 */
 	public function get_template( $template_name, array $params = [] ) {
@@ -166,6 +167,7 @@ trait Templates {
 	 *
 	 * @param mixed $param   The param to load.
 	 * @param mixed $default (optional) The default value of the param, if it does not exist.
+	 *
 	 * @return mixed The parameter value, if it exists. Otherwise, this will use the default value.
 	 */
 	public function get_param( $param, $default = false ) {
@@ -213,6 +215,7 @@ trait Templates {
 	 * @since 1.0.0
 	 *
 	 * @param string $template_name The template to use.
+	 *
 	 * @return string The template visibility.
 	 */
 	private function get_template_visibility( $template_name ) {
@@ -233,6 +236,7 @@ trait Templates {
 	 * @since 1.0.0
 	 *
 	 * @param $template_name string the template name to include.
+	 *
 	 * @return string The complete template path.
 	 */
 	protected function get_template_path( $template_name ) {
@@ -248,6 +252,7 @@ trait Templates {
 	 * @since 1.0.0
 	 *
 	 * @param $template_name string The template name to locate.
+	 *
 	 * @return string The path to the located template.
 	 */
 	protected function locate_template( $template_name ) {
@@ -258,7 +263,7 @@ trait Templates {
 		}
 
 		$template_group     = trailingslashit( $this->get_template_group() );
-		$override_path      = $this->get_override_dir() . $template_group;
+		$override_path      = trailingslashit( $this->get_override_dir() ) . $template_group;
 		$override_file_path = trailingslashit( $override_path ) . $template_name . '.php';
 
 		// Check to see if we have a template override from another plugin
@@ -348,6 +353,7 @@ trait Templates {
 	 * @since 1.0.0
 	 *
 	 * @param $template_name string The template name to check.
+	 *
 	 * @return bool True if the template is valid, false otherwise.
 	 */
 	public function is_valid_template( $template_name ) {
@@ -362,6 +368,7 @@ trait Templates {
 	 * @since 1.0.0
 	 *
 	 * @param $template_name string The template name to check.
+	 *
 	 * @return bool True if the template file exists, false otherwise.
 	 */
 	public function template_file_exists( $template_name ) {
@@ -375,6 +382,7 @@ trait Templates {
 	 *
 	 * @param string $template_name The template name.
 	 * @param array  $params        The params to use in the template.
+	 *
 	 * @return false|string The template contents if the file exists, false otherwise.
 	 */
 	private function include_template( $template_name, $params ) {
@@ -435,6 +443,7 @@ trait Templates {
 
 		return $result;
 	}
+
 }
 
 /**
@@ -444,6 +453,7 @@ trait Templates {
  *
  * @param $file  string The file to include
  * @param $scope array The scope items keyed by their variable name.
+ *
  * @return bool True if include was successful, false otherwise.
  */
 function underpin_include_file_with_scope( $file, $scope ) {
