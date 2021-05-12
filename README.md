@@ -269,7 +269,7 @@ differently_, and this means a lot of time is spent looking up "how do I do that
 Loaders make it so that everything uses an identical pattern to add items to WordPress. With this system, all of these
 things use nearly _exact_ same set of steps to register.
 
-Currently, there are 23 different loaders that can be installed alongside Underpin, and used to extend its core
+Currently, there are several different loaders that can be installed alongside Underpin, and used to extend its core
 functionality.
 
 1. [Admin Bar Menu Loader](https://github.com/Underpin-WP/admin-bar-menu-loader) Create custom menus on the WP Admin
