@@ -351,7 +351,7 @@ abstract class Underpin {
 	 *
 	 * @return bool True if debug mode is enabled, otherwise false.
 	 */
-	public function is_debug_mode_enabled() {
+	public static function is_debug_mode_enabled() {
 		$is_invalid_request = defined( 'WP_TESTS_DOMAIN' ) || defined( 'WP_CLI' ) || wp_doing_ajax() || wp_doing_cron() || defined( 'REST_REQUEST' );
 
 		// Bail early if this is not a valid request for debug mode.

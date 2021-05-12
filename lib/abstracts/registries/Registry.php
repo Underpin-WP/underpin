@@ -109,10 +109,15 @@ abstract class Registry extends ArrayIterator {
 			do_action( 'underpin/registry/after_added_item', $this->registry_id, $key, $value );
 			if ( ! is_wp_error( underpin()->logger() ) ) {
 				underpin()->logger()->log(
-					'notice',
+					'debug',
 					'valid_event_added',
 					'A valid item registry item was registered.',
-					[  'ref' => $this->registry_id, 'key' => $key, 'value' => $value, 'class' => get_called_class() ]
+					[
+						'ref' => $this->registry_id,
+						'key' => $key,
+						'value' => $value,
+						'class' => get_called_class()
+					]
 				);
 			}
 		} else {
@@ -139,7 +144,17 @@ abstract class Registry extends ArrayIterator {
 		if ( isset( $this[ $key ] ) ) {
 			return $this[$key];
 		} else {
-			$error = new WP_Error( 'key_not_set', 'Specified key is not set.', [ 'key' => $key ] );
+			$error = new WP_Error(
+				'key_not_set',
+				'Specified key is not set.',
+				[
+					'key'           => $key,
+					'registry_id'   => $this->registry_id,
+					'name'          => $this->name,
+					'description'   => $this->description,
+					'registry_type' => get_called_class(),
+				]
+			);
 
 			if ( 'logger' !== $key && ! is_wp_error( underpin()->logger() ) && underpin()->is_debug_mode_enabled() ) {
 				underpin()->logger()->log_wp_error( 'warning', $error );

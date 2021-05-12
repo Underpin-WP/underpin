@@ -128,11 +128,16 @@ trait Templates {
 				do_action( 'underpin/templates/invalid_template_file_doesnt_exist', $template_name, $params, $template_path, $template );
 			}
 		} else {
-			$class    = __CLASS__;
 			$template = underpin()->logger()->log_as_error(
 				'error',
 				'underpin_invalid_template',
-				__( "Template $template_name was not loaded because it is not in the list of use-able templates for $class", 'underpin' )
+				"Template was not loaded because it is not in the list of use-able templates.",
+				[
+					'class'       => get_called_class(),
+					'name'        => $this->name,
+					'description' => $this->description,
+					'template'    => $template_name,
+				]
 			);
 
 			/**

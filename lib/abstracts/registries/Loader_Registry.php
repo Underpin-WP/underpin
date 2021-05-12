@@ -89,7 +89,7 @@ abstract class Loader_Registry extends Registry {
 
 			if ( ! $this instanceof \Underpin_Logger\Loaders\Logger && ! is_wp_error( underpin()->logger() ) ) {
 				underpin()->logger()->log(
-					'notice',
+					'debug',
 					'loader_actions_ran',
 					'The actions for the ' . $this->registry_id . ' item called ' . $key . ' ran.',
 					[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
