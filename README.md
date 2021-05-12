@@ -282,6 +282,7 @@ functionality.
 1. [Cron Job Loader](https://github.com/Underpin-WP/cron-job-loader/) Create, manage, and execute cron jobs.
 1. [Custom Post Type Loader](https://github.com/Underpin-WP/custom-post-type-loader) Loader That assists with adding
    custom Post Types to a WordPress website.
+1. [CLI Loader](https://github.com/Underpin-WP/wp-cli-loader) Create WP CLI commands.
 1. [Decision List Loader](https://github.com/Underpin-WP/decision-list-loader) Create decision list registries that
    makes custom logic easy to extend.
 1. [Eraser Loader](https://github.com/Underpin-WP/eraser-loader) Loader That assists with adding GDPR-compliant erasers
