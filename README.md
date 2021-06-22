@@ -454,22 +454,105 @@ And then register each one like so:
 
 add_action( 'init', function() {
 	$post_types    = get_post_types( [], 'objects' );
-	$ignored_types = flare_wp_get_ignored_post_types();
 
 	foreach ( $post_types as $post_type ) {
-		if ( ! in_array( $post_type->name, $ignored_types ) ) {
-			$this->shortcodes()->add( $post_type->name . '_shortcode', [
-				'class' => 'Flare_WP\Shortcodes\Post_Type_Shortcode',
-				'args'  => [ $post_type ],
-			] );
-		}
-	}
+         $this->shortcodes()->add( $post_type->name . '_shortcode', [
+             'class' => 'Flare_WP\Shortcodes\Post_Type_Shortcode',
+             'args'  => [ $post_type ],
+         ] );
+     }
 } );
 ```
 
 The key part here is how differently we handled the `add` method. Instead of simply providing a instance name, we
 instead provide an array containing the `class`, and an array of ordered `args` to pass directly into the contstructor.
 As a result, we register this class to be constructed if it is ever needed.
+
+## Middleware
+
+Some loaders support middleware. This pattern makes it possible to do a set of things when a loader item is registered.
+A good example of middleware in-action can be seen in the [script loader](https://github.com/Underpin-WP/script-loader).
+
+```php
+// Register script
+underpin()->scripts()->add( 'test', [
+        'handle'      => 'test',
+        'src'         => 'path/to/script/src',
+        'name'        => 'test',
+        'description' => 'The description',
+        'middlewares' => [
+          'Underpin_Scripts\Factories\Enqueue_Admin_Script'
+        ]
+] );
+
+// Enqueue script
+$script = underpin()->scripts()->get('test')->enqueue();
+```
+
+The above `middlewares` array would automatically cause the `test` script to be enqueued on the admin page. Multiple
+middlewares can be added in the array, and each one would run right after the item is added to the registry.
+
+The `middlewares` array uses `Underpin::make_class` to create the class instances. This means that you can pass either:
+
+1. a string that references an instance of `Script_Middleware` (see example above).
+1. An array of arguments to construct an instance of `Script_Middleware` on-the-fly (see example below).
+
+```php
+underpin()->scripts()->add( 'test', [
+	'handle'      => 'test',
+	'src'         => 'path/to/script/src',
+	'name'        => 'test',
+	'description' => 'The description',
+	'middlewares' => [
+		'Underpin_Rest_Middleware\Factories\Rest_Middleware', // Will localize script params.
+		'Underpin_Scripts\Factories\Enqueue_Script',          // Will enqueue the script on the front end all the time.
+		[                                                     // Will instantiate an instance of Script_Middleware_Instance using the provided arguments
+			'name'                => 'Custom setup params',
+			'description'         => 'Sets up custom parameters specific to this script',
+			'priority'            => 10, // Optional. Default 10.
+			'do_actions_callback' => function ( \Underpin_Scripts\Abstracts\Script $loader_item ) {
+				// Do actions
+			},
+		],
+	],
+] );
+```
+
+### Using Middleware In Your Loader
+
+The easiest way to use middleware in your loader is with the `Middleware` trait. Using the shortcode example above again:
+
+```php
+class Post_Type_Shortcode extends \Underpin\Abstracts\Shortcode {
+    use \Underpin\Traits\Middleware;
+    
+	public function __construct( $post_type ) {
+		$this->shortcode = $post_type . '_is_the_best';
+
+		$this->post_type = $post_type;
+	}
+
+	public function shortcode_actions() {
+		echo $this->post_type . ' is the best post type';
+	}
+}
+```
+
+You could then register much like before, only now you can provide middleware actions.
+
+```php
+add_action( 'init', function() {
+	$post_types    = get_post_types( [], 'objects' );
+
+	foreach ( $post_types as $post_type ) {
+         $this->shortcodes()->add( $post_type->name . '_shortcode', [
+             'class'       => 'Flare_WP\Shortcodes\Post_Type_Shortcode',
+             'args'        => [ $post_type ],
+             'middlewares' => [/* Add middleware references here. */]
+         ] );
+     }
+} );
+```
 
 ## Template System Trait
 

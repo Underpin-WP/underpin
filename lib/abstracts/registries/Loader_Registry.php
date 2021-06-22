@@ -74,6 +74,7 @@ abstract class Loader_Registry extends Registry {
 
 	/**
 	 * @inheritDoc
+	 * @since 1.3.0 Middleware support added.
 	 */
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
@@ -83,8 +84,13 @@ abstract class Loader_Registry extends Registry {
 			$this[ $key ] = $valid;
 		}
 
+		// If this implements middleware actions, do those things too.
+		if ( Underpin::has_trait( 'Underpin\Traits\Middleware', $this->get( $key ) ) ) {
+			$this->get( $key )->do_middleware_actions();
+		}
+
 		// If this implements registry actions, go ahead and start those up, too.
-		if ( self::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
+		if ( Underpin::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
 			$this->get( $key )->do_actions();
 
 			if ( ! $this instanceof \Underpin_Logger\Loaders\Logger && ! is_wp_error( underpin()->logger() ) ) {
@@ -98,6 +104,16 @@ abstract class Loader_Registry extends Registry {
 		}
 
 		if ( ! is_wp_error( $valid ) ) {
+			/**
+			 * Does an action after the loader item is registered.
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param string       $key       The registered key
+			 * @param string|array $value     The value passed to the registry
+			 * @param string       $class     The current registry class name
+			 * @param string       $parent_id The parent ID.
+			 */
 			do_action( 'underpin/loader_registered', $key, $value, get_called_class(), $this->parent_id );
 		}
 
@@ -107,35 +123,21 @@ abstract class Loader_Registry extends Registry {
 	/**
 	 * Checks to see if the class, or any of its parents, uses the specified trait.
 	 *
-	 * @since 1.0.0
+	 * @since      1.0.0
+	 * @since      1.3.0 Deprecated. Use Underpin::has_trait instead.
+	 * @deprecated Use Underpin::has_trait instead.
 	 *
 	 * @param string              $trait The trait to check for
 	 * @param object|string|false $class The class to check.
+	 *
 	 * @return bool true if the class uses the specified trait, otherwise false.
 	 */
-	public static function has_trait( $trait, $class ) {
+	public static function has_trait( string $trait, $class ): bool {
+		underpin()->logger()->log( 'warning', 'Loader_Registry::has_trait is deprecated. Use Underpin::has_trait. This method will be removed in a future version', [
+			'backtrace' => debug_backtrace(),
+		] );
 
-		if ( false === $class ) {
-			return false;
-		}
-
-		$traits = class_uses( $class );
-
-		if ( in_array( $trait, $traits ) ) {
-			return true;
-		}
-
-		while ( get_parent_class( $class ) ) {
-			$class = get_parent_class( $class );
-
-			$has_trait = self::has_trait( $trait, $class );
-
-			if ( true === $has_trait ) {
-				return true;
-			}
-		}
-
-		return false;
+		return Underpin::has_trait( $trait, $class );
 	}
 
 	/**
@@ -144,7 +146,7 @@ abstract class Loader_Registry extends Registry {
 	public function validate_item( $key, $value ) {
 
 		if ( is_array( $value ) ) {
-			$value = isset( $value['class'] ) ? $value['class'] : $this->default_factory;
+			$value = $value['class'] ?? $this->default_factory;
 		}
 
 		if ( $value === $this->abstraction_class || is_subclass_of( $value, $this->abstraction_class ) || $value instanceof $this->abstraction_class ) {
@@ -160,15 +162,93 @@ abstract class Loader_Registry extends Registry {
 	}
 
 	/**
-	 * Queries a loader registry.
+	 * Determines if a registry item passes the arguments.
 	 *
-	 * @since 1.0.0
+	 * @since 1.3.0
 	 *
-	 * @param array $args
-	 * @return array
+	 * @param string $item_key Registry item key
+	 * @param array  $args     List of arguments
+	 *
+	 * @return object|\WP_Error The instance, if it matches the filters. Otherwise WP_Error.
 	 */
-	public function filter( $args = [] ) {
-		$results = [];
+	protected function filter_item( string $item_key, array $args ) {
+		$item = $this->get( $item_key );
+
+		if ( is_wp_error( $item ) ) {
+			return $item;
+		}
+
+		$valid = true;
+
+		foreach ( $args as $key => $arg ) {
+			// Process the argument key
+			$processed = explode( '__', $key );
+
+			// Set the field type to the first item in the array.
+			$field = $processed[0];
+
+			// If there was some specificity after a __, use it.
+			$type = count( $processed ) > 1 ? $processed[1] : 'in';
+
+			// Bail early if this field is not in this object.
+			if ( ! property_exists( $item, $field ) ) {
+				continue;
+			}
+
+			$object_field = $item->$field;
+
+			// Convert argument to an array. This allows us to always use array functions for checking.
+			if ( ! is_array( $arg ) ) {
+				$arg = array( $arg );
+			}
+
+
+			// Convert field to array. This allows us to always use array functions to check.
+			if ( ! is_array( $object_field ) ) {
+				$object_field = array( $object_field );
+			}
+
+			// Run the intersection.
+			$fields = array_intersect( $arg, $object_field );
+
+			// Check based on type.
+			switch ( $type ) {
+				case 'not_in':
+					$valid = empty( $fields );
+					break;
+				case 'and':
+					$valid = count( $fields ) === count( $arg );
+					break;
+				default:
+					$valid = ! empty( $fields );
+					break;
+			}
+
+			if ( false === $valid ) {
+				break;
+			}
+		}
+
+		if ( true === $valid ) {
+			return $item;
+		}
+
+		return new \WP_Error( 'item_failed_filter', 'The specified item failed the filter', [
+			'item' => $item,
+			'args' => $args,
+		] );
+	}
+
+	/**
+	 * Pre-filters the list of items.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $args Arguments to pre-filter by.
+	 *
+	 * @return int[]|string[]
+	 */
+	protected function pre_filter_items( array $args = [] ) {
 
 		// Filter out items, if loader keys are specified
 		if ( isset( $args['loader_key__in'] ) ) {
@@ -178,63 +258,55 @@ abstract class Loader_Registry extends Registry {
 			$items = array_keys( (array) $this );
 		}
 
-		foreach ( $items as $item_key ) {
-			$item = $this->get( $item_key );
+		return $items;
+	}
+
+	/**
+	 * Finds the first loader item that matches the provided arguments.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $args List of filter arguments
+	 *
+	 * @return object|\WP_Error loader item if found, otherwise WP_Error.
+	 */
+	public function find( array $args = [] ) {
+		foreach ( $this->pre_filter_items( $args ) as $item_key ) {
+			$item = $this->filter_item( $item_key, $args );
 
 			if ( ! is_wp_error( $item ) ) {
-				$valid = true;
+				return $item;
+			}
+		}
 
-				foreach ( $args as $key => $arg ) {
-					// Process the argument key
-					$processed = explode( '__', $key );
+		return new \WP_Error( 'item_not_found', 'No item matching the arguments could be found', [
+			'args' => $args,
+		] );
+	}
 
-					// Set the field type to the first item in the array.
-					$field = $processed[0];
+	/**
+	 * Queries a loader registry.
+	 *
+	 * @since 1.0.0
+	 * @since 1.3.0 Filtered items no-longer preserve keys by default. Include "preserve_keys" argument in array if you
+	 *              want to preserve keys.
+	 *
+	 * @param array $args
+	 *
+	 * @return object[] Array of registry items.
+	 */
+	public function filter( array $args = [] ): array {
+		$results = [];
 
-					// If there was some specificity after a __, use it.
-					$type = count( $processed ) > 1 ? $processed[1] : 'in';
+		// Filter out items, if loader keys are specified
+		foreach ( $this->pre_filter_items( $args ) as $item_key ) {
+			$item = $this->filter_item( $item_key, $args );
 
-					// Bail early if this field is not in this object.
-					if ( ! property_exists( $item, $field ) ) {
-						continue;
-					}
-
-					$object_field = $item->$field;
-
-					// Convert argument to an array. This allows us to always use array functions for checking.
-					if ( ! is_array( $arg ) ) {
-						$arg = array( $arg );
-					}
-
-
-					// Convert field to array. This allows us to always use array functions to check.
-					if ( ! is_array( $object_field ) ) {
-						$object_field = array( $object_field );
-					}
-
-					// Run the intersection.
-					$fields = array_intersect( $arg, $object_field );
-
-					// Check based on type.
-					switch ( $type ) {
-						case 'not_in':
-							$valid = empty( $fields );
-							break;
-						case 'and':
-							$valid = count( $fields ) === count( $arg );
-							break;
-						default:
-							$valid = ! empty( $fields );
-							break;
-					}
-
-					if ( false === $valid ) {
-						break;
-					}
-				}
-
-				if ( true === $valid ) {
+			if ( ! is_wp_error( $item ) ) {
+				if ( isset( $args['preserve_keys'] ) && true === $args['preserve_keys'] ) {
 					$results[ $item_key ] = $item;
+				} else {
+					$results[] = $item;
 				}
 			}
 		}
