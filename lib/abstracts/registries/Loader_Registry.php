@@ -74,6 +74,7 @@ abstract class Loader_Registry extends Registry {
 
 	/**
 	 * @inheritDoc
+	 * @since 1.3.0 Middleware support added.
 	 */
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
@@ -83,8 +84,13 @@ abstract class Loader_Registry extends Registry {
 			$this[ $key ] = $valid;
 		}
 
+		// If this implements middleware actions, do those things too.
+		if ( Underpin::has_trait( 'Underpin\Traits\Middleware', $this->get( $key ) ) ) {
+			$this->get( $key )->do_middleware_actions();
+		}
+
 		// If this implements registry actions, go ahead and start those up, too.
-		if ( self::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
+		if ( Underpin::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
 			$this->get( $key )->do_actions();
 
 			if ( ! $this instanceof \Underpin_Logger\Loaders\Logger && ! is_wp_error( underpin()->logger() ) ) {
@@ -98,6 +104,16 @@ abstract class Loader_Registry extends Registry {
 		}
 
 		if ( ! is_wp_error( $valid ) ) {
+			/**
+			 * Does an action after the loader item is registered.
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param string       $key       The registered key
+			 * @param string|array $value     The value passed to the registry
+			 * @param string       $class     The current registry class name
+			 * @param string       $parent_id The parent ID.
+			 */
 			do_action( 'underpin/loader_registered', $key, $value, get_called_class(), $this->parent_id );
 		}
 
@@ -107,35 +123,21 @@ abstract class Loader_Registry extends Registry {
 	/**
 	 * Checks to see if the class, or any of its parents, uses the specified trait.
 	 *
-	 * @since 1.0.0
+	 * @since      1.0.0
+	 * @since      1.3.0 Deprecated. Use Underpin::has_trait instead.
+	 * @deprecated Use Underpin::has_trait instead.
 	 *
 	 * @param string              $trait The trait to check for
 	 * @param object|string|false $class The class to check.
+	 *
 	 * @return bool true if the class uses the specified trait, otherwise false.
 	 */
-	public static function has_trait( $trait, $class ) {
+	public static function has_trait( string $trait, $class ): bool {
+		underpin()->logger()->log( 'warning', 'Loader_Registry::has_trait is deprecated. Use Underpin::has_trait. This method will be removed in a future version', [
+			'backtrace' => debug_backtrace(),
+		] );
 
-		if ( false === $class ) {
-			return false;
-		}
-
-		$traits = class_uses( $class );
-
-		if ( in_array( $trait, $traits ) ) {
-			return true;
-		}
-
-		while ( get_parent_class( $class ) ) {
-			$class = get_parent_class( $class );
-
-			$has_trait = self::has_trait( $trait, $class );
-
-			if ( true === $has_trait ) {
-				return true;
-			}
-		}
-
-		return false;
+		return Underpin::has_trait( $trait, $class );
 	}
 
 	/**

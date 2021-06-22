@@ -586,6 +586,39 @@ abstract class Underpin {
 	}
 
 	/**
+	 * Checks to see if the class, or any of its parents, uses the specified trait.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string              $trait The trait to check for
+	 * @param object|string|false $class The class to check.
+	 * @return bool true if the class uses the specified trait, otherwise false.
+	 */
+	public static function has_trait( $trait, $class ) {
+
+		if ( false === $class ) {
+			return false;
+		}
+
+		$traits = class_uses( $class );
+
+		if ( in_array( $trait, $traits ) ) {
+			return true;
+		}
+
+		while ( get_parent_class( $class ) ) {
+			$class = get_parent_class( $class );
+
+			$has_trait = self::has_trait( $trait, $class );
+
+			if ( true === $has_trait ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	/**
 	 * Actions that run when this plugin meets the specified minimum requirements.
 	 *
 	 * @since 1.0.0
