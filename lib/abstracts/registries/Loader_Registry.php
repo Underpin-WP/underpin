@@ -74,6 +74,7 @@ abstract class Loader_Registry extends Registry {
 
 	/**
 	 * @inheritDoc
+	 * @since 1.3.0 Middleware support added.
 	 */
 	public function add( $key, $value ) {
 		$valid = $this->validate_item( $key, $value );
@@ -81,6 +82,11 @@ abstract class Loader_Registry extends Registry {
 			$this[ $key ] = Underpin::make_class( $value, $this->default_factory );
 		} else {
 			$this[ $key ] = $valid;
+		}
+
+		// If this implements middleware actions, do those things too.
+		if ( Underpin::has_trait( 'Underpin\Traits\Middleware', $this->get( $key ) ) ) {
+			$this->get( $key )->do_middleware_actions();
 		}
 
 		// If this implements registry actions, go ahead and start those up, too.
