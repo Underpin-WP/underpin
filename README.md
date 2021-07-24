@@ -277,10 +277,11 @@ functionality.
 1. [Admin Notice Loader](https://github.com/Underpin-WP/admin-notice-loader/) Loader That assists with adding admin
    notices to a WordPress website.
 1. [Admin Pages](https://github.com/Underpin-WP/admin-page-loader) Quickly spin up admin settings pages.
-1. [Batch Task Loader](https://github.com/Underpin-WP/batch-task-loader) Create, register, and implement batch tasks.
-1. [Block Loader](https://github.com/Underpin-WP/underpin-block-loader) Create, register, and manage WordPress blocks.
-1. [Cron Job Loader](https://github.com/Underpin-WP/cron-job-loader/) Create, manage, and execute cron jobs.
-1. [Custom Post Type Loader](https://github.com/Underpin-WP/custom-post-type-loader) Loader That assists with adding
+1. [Background Process Loader](https://github.com/Underpin-WP/background-process-loader) Run slow processes in a separate, asynchornous thread.
+3. [Batch Task Loader](https://github.com/Underpin-WP/batch-task-loader) Create, register, and implement batch tasks.
+4. [Block Loader](https://github.com/Underpin-WP/underpin-block-loader) Create, register, and manage WordPress blocks.
+5. [Cron Job Loader](https://github.com/Underpin-WP/cron-job-loader/) Create, manage, and execute cron jobs.
+6. [Custom Post Type Loader](https://github.com/Underpin-WP/custom-post-type-loader) Loader That assists with adding
    custom Post Types to a WordPress website.
 1. [CLI Loader](https://github.com/Underpin-WP/wp-cli-loader) Create WP CLI commands.
 1. [Decision List Loader](https://github.com/Underpin-WP/decision-list-loader) Create decision list registries that
