@@ -51,6 +51,15 @@ abstract class Registry extends ArrayIterator {
 	public $name = '';
 
 	/**
+	 * Set to true to force this registry to skip logging.
+	 *
+	 * @since 1.3.1
+	 *
+	 * @var bool
+	 */
+	protected $skip_logging = false;
+
+	/**
 	 * Registry constructor.
 	 *
 	 * @param string $registry_id The registry ID.
@@ -97,31 +106,21 @@ abstract class Registry extends ArrayIterator {
 		if ( true === $valid ) {
 			$this->_add( $key, $value );
 
-			/**
-			 * Fires action after an item is added to the registry.
-			 *
-			 * @since 1.0.0
-			 *
-			 * @param string $registry_id Unique registry ID in which this item was added.
-			 * @param string $key         The key that was added to the registry.
-			 * @param mixed  $value       The value of the item that was added.
-			 */
-			do_action( 'underpin/registry/after_added_item', $this->registry_id, $key, $value );
-			if ( ! is_wp_error( underpin()->logger() ) ) {
+			if ( false === $this->skip_logging && ! is_wp_error( underpin()->logger() ) ) {
 				underpin()->logger()->log(
 					'debug',
-					'valid_event_added',
-					'A valid item registry item was registered.',
+					'valid_item_added',
+					'A valid registry item was registered.',
 					[
-						'ref' => $this->registry_id,
-						'key' => $key,
+						'ref'   => $this->registry_id,
+						'key'   => $key,
 						'value' => $value,
-						'class' => get_called_class()
+						'class' => get_called_class(),
 					]
 				);
 			}
 		} else {
-			if ( ! is_wp_error( underpin()->logger() ) ) {
+			if ( false === $this->skip_logging && ! is_wp_error( underpin()->logger() ) ) {
 				underpin()->logger()->log(
 					'warning',
 					'invalid_event',
