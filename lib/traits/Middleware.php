@@ -122,4 +122,41 @@ trait Middleware {
 		$this->middlewares[] = $middleware;
 	}
 
+	/**
+	 * Returns true if any of the middlware is an instance of the specified item.
+	 *
+	 * @since 1.3.1
+	 *
+	 * @param $middleware
+	 *
+	 * @return bool true if this instance has middleware, otherwise false.
+	 */
+	public function has_middleware( $middleware ): bool {
+
+		// If there's no middleware, just return false.
+		if ( empty( $this->middlewares ) ) {
+			return false;
+		}
+
+		$cache_key = md5( maybe_serialize( array_map( 'get_class', $this->middlewares ) ) . $middleware );
+
+		// Check the cache first.
+		$cached = wp_cache_get( $cache_key );
+
+		if ( false !== $cached ) {
+			return (bool) $cached;
+		}
+
+		// Otherwise, search to see if the middleware is set.
+		foreach ( $this->middlewares as $middleware_item ) {
+			if ( $middleware === $middleware_item || is_subclass_of( $middleware_item, $middleware ) || $middleware_item instanceof $middleware ) {
+				wp_cache_add( $cache_key, 1 );
+				return true;
+			}
+		}
+
+		wp_cache_add( $cache_key, 0 );
+		return false;
+	}
+
 }
