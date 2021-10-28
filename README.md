@@ -15,7 +15,7 @@ Underpin can be installed in any place you can write code for WordPress, includi
 
 ### Via Composer
 
-`composer install underpin/underpin`
+`composer require underpin/underpin`
 
 **Note** This will add Underpin as a `mu-plugin`, but due to how WordPress handles must-use plugins, this does _not
 actually add the plugin to your site_. You must also manually require the file in a mu-plugin PHP file:
