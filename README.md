@@ -13,6 +13,8 @@ Underpin can be installed in any place you can write code for WordPress, includi
 1. As a part of a WordPress theme.
 1. As a part of a WordPress must-use plugin.
 
+If you aren't distributing the plugin or theme you're building, it's probably best to install Underpin as a must-use plugin. This will allow you to re-use Underpin across plugins, and themes, and will give you a single cohesive place from where the code can be retrieved. To make this process easier, Underpin has a [mu-plugin boilerplate](github.com/underpin-WP/mu-plugin-boilerplate/) that will help you get Underpin installed quickly.
+
 ### Via Composer
 
 `composer require underpin/underpin`
