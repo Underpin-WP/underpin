@@ -8,20 +8,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loader_Registry_Item extends \Underpin\Abstracts\Registries\Loader_Registry {
+
+class Object_Registry extends \Underpin\Abstracts\Registries\Object_Registry {
+
 	use Instance_Setter;
 
-	private $default_items = [];
+	protected $default_items = [];
 
 	public function __construct( $args ) {
-		$this->set_values($args);
+		$this->set_values( $args );
 		parent::__construct();
 	}
 
 	protected function set_default_items() {
-		foreach ( $this->default_items as $key => $value ) {
-			$this->add( $key, $value );
+		foreach ( $this->default_items as $key => $default_item ) {
+			$this->add( $key, $default_item );
 		}
 	}
-
 }

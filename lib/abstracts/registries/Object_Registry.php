@@ -10,9 +10,8 @@
 
 namespace Underpin\Abstracts\Registries;
 
-use Underpin\Abstracts\Feature_Extension;
 use Underpin\Abstracts\Underpin;
-use Underpin\Traits\With_Parent;
+use Underpin\Traits\With_Subject;
 use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,10 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since   1.0.0
  * @package Underpin\Abstracts
  */
-abstract class Loader_Registry extends Registry {
-
-	use With_Parent;
-
+abstract class Object_Registry extends Registry {
 	/**
 	 * The abstraction class name.
 	 * This is used to validate that the items in this service locator are extended
@@ -52,24 +48,8 @@ abstract class Loader_Registry extends Registry {
 	 * Loader_Registry constructor.
 	 *
 	 */
-	public function __construct( $parent_id = false ) {
-		if ( false !== $parent_id ) {
-			$this->parent_id = $parent_id;
-		}
-		parent::__construct( $this->get_registry_id() );
-	}
-
-	/**
-	 * Gets the service locator ID.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return string The registry ID for this service locator.
-	 */
-	protected function get_registry_id() {
-		$class = explode( '\\', $this->abstraction_class );
-
-		return strtolower( array_pop( $class ) );
+	public function __construct() {
+		parent::__construct();
 	}
 
 	/**
@@ -85,7 +65,7 @@ abstract class Loader_Registry extends Registry {
 		}
 
 		// If this implements middleware actions, do those things too.
-		if ( Underpin::has_trait( 'Underpin\Traits\Middleware', $this->get( $key ) ) ) {
+		if ( Underpin::has_trait( 'Underpin\Traits\With_Middleware', $this->get( $key ) ) ) {
 			$this->get( $key )->do_middleware_actions();
 		}
 
@@ -97,47 +77,13 @@ abstract class Loader_Registry extends Registry {
 				underpin()->logger()->log(
 					'debug',
 					'loader_actions_ran',
-					'The actions for the ' . $this->registry_id . ' item called ' . $key . ' ran.',
-					[ 'ref' => $this->registry_id, 'key' => $key, 'value' => $value ]
+					'The actions for registry called ' . $key . ' ran.',
+					[ 'key' => $key, 'value' => $value ]
 				);
 			}
 		}
 
-		if ( ! is_wp_error( $valid ) ) {
-			/**
-			 * Does an action after the loader item is registered.
-			 *
-			 * @since 1.0.0
-			 *
-			 * @param string       $key       The registered key
-			 * @param string|array $value     The value passed to the registry
-			 * @param string       $class     The current registry class name
-			 * @param string       $parent_id The parent ID.
-			 */
-			do_action( 'underpin/loader_registered', $key, $value, get_called_class(), $this->parent_id );
-		}
-
 		return $valid;
-	}
-
-	/**
-	 * Checks to see if the class, or any of its parents, uses the specified trait.
-	 *
-	 * @since      1.0.0
-	 * @since      1.3.0 Deprecated. Use Underpin::has_trait instead.
-	 * @deprecated Use Underpin::has_trait instead.
-	 *
-	 * @param string              $trait The trait to check for
-	 * @param object|string|false $class The class to check.
-	 *
-	 * @return bool true if the class uses the specified trait, otherwise false.
-	 */
-	public static function has_trait( string $trait, $class ): bool {
-		underpin()->logger()->log( 'warning', 'Loader_Registry::has_trait is deprecated. Use Underpin::has_trait. This method will be removed in a future version', [
-			'backtrace' => debug_backtrace(),
-		] );
-
-		return Underpin::has_trait( $trait, $class );
 	}
 
 	/**
