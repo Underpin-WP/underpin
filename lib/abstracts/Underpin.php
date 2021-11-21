@@ -10,7 +10,8 @@
 namespace Underpin\Abstracts;
 
 use Exception;
-use Underpin\Factories\Loader_Registry;
+use Underpin\Factories\Object_Registry;
+use Underpin\Traits\With_Static_Subject;
 use WP_Error;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,8 +27,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class Underpin {
 
+	use With_Static_Subject;
+
 	/**
-	 * Houses all of the singleton classes used in this plugin.
+	 * Houses all singleton classes used in this plugin.
 	 * Not intended to be manipulated directly.
 	 *
 	 * @since 1.0.0
@@ -44,7 +47,7 @@ abstract class Underpin {
 	protected static $instances = [];
 
 	/**
-	 * @var Loader_Registry
+	 * @var Object_Registry
 	 */
 	private $loader_registry;
 
@@ -315,7 +318,7 @@ abstract class Underpin {
 	 *
 	 * @since 1.2.0
 	 *
-	 * @return Loader_Registry
+	 * @return Object_Registry
 	 */
 	public function loaders() {
 		return $this->loader_registry;
@@ -331,7 +334,7 @@ abstract class Underpin {
 	 * It is possible for the logger to be called before it is loaded. This adds a check to catch these errors and prevent
 	 * fatal errors.
 	 *
-	 * @return \Underpin_Logger\Loaders\Logger|WP_Error
+	 * @return \Underpin_Logger\Loaders\Logger|object
 	 */
 	public function logger() {
 		if ( ! isset( $this->loader_registry['logger'] ) ) {
@@ -340,8 +343,7 @@ abstract class Underpin {
 				'The logger was called before it was ready.'
 			);
 		}
-
-		return $this->loader_registry->get( 'logger' );
+		return $this->loaders()->get( 'logger' );
 	}
 
 	/**
@@ -370,7 +372,7 @@ abstract class Underpin {
 			return true;
 		}
 
-		return apply_filters( 'underpin/debug_mode_enabled', false, get_called_class() );
+		return false;
 	}
 
 
@@ -420,7 +422,7 @@ abstract class Underpin {
 	 */
 	public function export_registered_items( $results = [] ) {
 		foreach ( $this->class_registry as $key => $class ) {
-			if ( $class instanceof Loader_Registry ) {
+			if ( $class instanceof Object_Registry ) {
 				if ( ! empty( $class ) ) {
 					ob_start();
 					foreach ( $class as $registered_key => $registered_class ) {
@@ -618,6 +620,7 @@ abstract class Underpin {
 
 		return false;
 	}
+
 	/**
 	 * Actions that run when this plugin meets the specified minimum requirements.
 	 *
@@ -629,25 +632,22 @@ abstract class Underpin {
 
 		// Set up the autoloader for everything else.
 		$this->_setup_autoloader();
-		$this->loader_registry = new Loader_Registry( $this->get_registry_key() );
+		$this->loader_registry = 	new Object_Registry( [
+			'abstraction_class' => '\Underpin\Abstracts\Registries\Object_Registry',
+			'default_factory'   => '\Underpin\Factories\Object_Registry',
+			'registry_id'       => $this->get_registry_key(),
+		] );
 
 		/**
 		 * Fires just before the bootstrap starts up.
 		 *
 		 * @since 1.0.0
 		 */
-		do_action( 'underpin/before_setup', $this->file(), get_called_class() );
-
+		$this->notify( 'setup', [ 'file' => $this->file(), 'class' => get_called_class() ] );
 
 		// Set up classes that register things.
 		$this->_setup();
 
-		/**
-		 * Fires just after the bootstrap is completely set-up.
-		 *
-		 * @since 1.0.0
-		 */
-		do_action( 'underpin/after_setup', $this->file(), get_called_class() );
 	}
 
 	/**
@@ -817,4 +817,5 @@ abstract class Underpin {
 
 		return self::$instances[ $key ];
 	}
+
 }
