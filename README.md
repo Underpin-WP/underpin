@@ -5,6 +5,12 @@ provides support for useful utilities that plugins need as they mature, such as 
 processor for upgrade routines, and a decision tree class that makes extending _and_ debugging multi-layered decisions
 way easier than traditional WordPress hooks.
 
+Upgrading:
+
+1. Change `Middleware` to `Observer` pattern
+2. Replace decision lists with `Observer` pattern
+3. Replace `add_action` and `add_filter` calls with `apply`
+
 ## Installation
 
 Underpin can be installed in any place you can write code for WordPress, including:
@@ -521,13 +527,19 @@ underpin()->scripts()->add( 'test', [
 ] );
 ```
 
+Middleware can be stopped early by returning a `WP_Error` object in any callback. This allows you to add conditionals to
+other middleware without extending it. For example, let's say you want to enqueue on the admin script, but only in the
+block editor. This could be accomplished like so:
+
+
 ### Using Middleware In Your Loader
 
-The easiest way to use middleware in your loader is with the `Middleware` trait. Using the shortcode example above again:
+The easiest way to use middleware in your loader is with the `Middleware` trait. Using the shortcode example above
+again:
 
 ```php
 class Post_Type_Shortcode extends \Underpin\Abstracts\Shortcode {
-    use \Underpin\Traits\Middleware;
+    use \Underpin\Traits\With_Middleware;
     
 	public function __construct( $post_type ) {
 		$this->shortcode = $post_type . '_is_the_best';
