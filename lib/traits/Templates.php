@@ -9,6 +9,7 @@
 
 namespace Underpin\Traits;
 
+use Underpin\Factories\Accumulator;
 use WP_Error;
 use function Underpin\underpin;
 
@@ -23,6 +24,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package underpin\traits
  */
 trait Templates {
+
+	use With_Subject;
 
 	/**
 	 * Params
@@ -125,7 +128,7 @@ trait Templates {
 				/**
 				 * Fires just after the template loader determines that the template file does not exist.
 				 */
-				do_action( 'underpin/templates/invalid_template_file_doesnt_exist', $template_name, $params, $template_path, $template );
+				$this->notify( 'template:file_not_found', [ 'template_name' => $template_name, 'params' => $params ] );
 			}
 		} else {
 			$template = underpin()->logger()->log_as_error(
@@ -143,7 +146,7 @@ trait Templates {
 			/**
 			 * Fires just after the template loader determines that the template is not in the current class template schema.
 			 */
-			do_action( 'underpin/templates/invalid_template_not_in_schema', $template_name, $params, $template );
+			$this->notify( 'template:not_in_schema', [ 'template_name' => $template_name, 'params' => $params ] );
 		}
 
 		return is_wp_error( $template ) ? '' : $template;
@@ -338,14 +341,14 @@ trait Templates {
 				$result = underpin()->logger()->log_as_error(
 					'error',
 					'underpin_get_arg_invalid_template',
-					__( "Template $template_name argument $arg was not fetched because $template_name is not a valid template.", 'underpin' )
+					"Template $template_name argument $arg was not fetched because $template_name is not a valid template."
 				);
 			}
 		} else {
 			$result = underpin()->logger()->log_as_error(
 				'error',
 				'underpin_get_arg_invalid_argument',
-				__( "Template $template_name argument $arg was not fetched because $arg is not a valid template argument.", 'underpin' )
+				"Template $template_name argument $arg was not fetched because $arg is not a valid template argument."
 			);
 		}
 
@@ -394,16 +397,23 @@ trait Templates {
 
 		$this->depth++;
 		if ( 'private' !== $this->get_template_arg( $template_name, 'override_visibility' ) ) {
-			$this->params[ $this->depth ] = apply_filters( "underpin/templates/template_params", $params, $template_name, $this->get_template_path( $template_name ), $this->depth );
+			$this->params[ $this->depth ] = $this->apply_filters( "template:params", new Accumulator( [
+				'default'        => $params,
+				'template_name'  => $template_name,
+				'path'           => $this->get_template_path( $template_name ),
+				'valid_callback' => 'is_array',
+			] ) );
 		} else {
 			$this->params[ $this->depth ] = $params;
 		}
+
+		$template_filter_args = [ 'template_name' => $template_name, 'path' => $this->get_template_path( $template_name ) ];
 
 		if ( 'private' !== $this->get_template_visibility( $template_name ) ) {
 			/**
 			 * Fires just before the template output buffer begins.
 			 */
-			do_action( 'underpin/templates/before_template_buffer', $template_name, $this->depth, $this->params[ $this->depth ], $this->get_template_path( $template_name ) );
+			$this->notify( 'template:before_buffer', $template_filter_args );
 		}
 
 		ob_start();
@@ -414,7 +424,7 @@ trait Templates {
 			 *
 			 * Note that this only fires when the provided template is not private.
 			 */
-			do_action( 'underpin/templates/before_template', $template_name, $this->depth, $this->params[ $this->depth ], $this->get_template_path( $template_name ) );
+			$this->notify( 'template:before_template', $template_filter_args );
 		}
 
 		underpin_include_file_with_scope( $this->locate_template( $template_name ), [
@@ -428,7 +438,7 @@ trait Templates {
 			 *
 			 * Note that this only fires when the provided template is not private.
 			 */
-			do_action( 'underpin/templates/after_template', $template_name, $this->depth, $this->params[ $this->depth ], $this->get_template_path( $template_name ) );
+			$this->notify( 'template:after_template', $template_filter_args );
 		}
 
 		$result = ob_get_clean();
@@ -440,7 +450,7 @@ trait Templates {
 			 *
 			 * Note that this only fires when the provided template is not private.
 			 */
-			do_action( 'underpin/templates/after_template_buffer', $template_name, $this->depth, $this->params[ $this->depth ], $this->get_template_path( $template_name ) );
+			$this->notify( 'template:after_buffer', $template_filter_args );
 		}
 
 		unset( $this->params[ $this->depth ] );
