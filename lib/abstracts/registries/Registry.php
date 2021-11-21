@@ -27,14 +27,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 abstract class Registry extends ArrayIterator {
 
 	/**
-	 * Unique identifier for this registry.
-	 *
-	 * @since 1.0.0
-	 * @var string A unique identifier for this registry.
-	 */
-	protected $registry_id;
-
-	/**
 	 * A human-readable description of this event type.
 	 * This is used in debug logs to make it easier to understand why this exists.
 	 *
@@ -61,11 +53,8 @@ abstract class Registry extends ArrayIterator {
 
 	/**
 	 * Registry constructor.
-	 *
-	 * @param string $registry_id The registry ID.
 	 */
-	public function __construct( $registry_id ) {
-		$this->registry_id = (string) $registry_id;
+	public function __construct() {
 		parent::__construct();
 		$this->set_default_items();
 	}
@@ -112,7 +101,6 @@ abstract class Registry extends ArrayIterator {
 					'valid_item_added',
 					'A valid registry item was registered.',
 					[
-						'ref'   => $this->registry_id,
 						'key'   => $key,
 						'value' => $value,
 						'class' => get_called_class(),
@@ -124,8 +112,8 @@ abstract class Registry extends ArrayIterator {
 				underpin()->logger()->log(
 					'warning',
 					'invalid_event',
-					'An item for the ' . $this->registry_id . ' registry called ' . $key . ' could not be registered.',
-					array( 'key' => $key, 'value' => $value, 'ref' => $this->registry_id )
+					'An item called ' . $key . ' could not be registered.',
+					array( 'key' => $key, 'value' => $value )
 				);
 			}
 		}
@@ -148,7 +136,6 @@ abstract class Registry extends ArrayIterator {
 				'Specified key is not set.',
 				[
 					'key'           => $key,
-					'registry_id'   => $this->registry_id,
 					'name'          => $this->name,
 					'description'   => $this->description,
 					'registry_type' => get_called_class(),
@@ -156,7 +143,7 @@ abstract class Registry extends ArrayIterator {
 			);
 
 			if ( 'logger' !== $key && ! is_wp_error( underpin()->logger() ) && underpin()->is_debug_mode_enabled() ) {
-				underpin()->logger()->log_wp_error( 'warning', $error );
+				underpin()->logger()->log_wp_error( 'notice', $error );
 			}
 
 			return $error;

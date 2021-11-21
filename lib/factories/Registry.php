@@ -18,10 +18,9 @@ class Registry extends \Underpin\Abstracts\Registries\Registry {
 
 	protected $validate_callback;
 
-	public function __construct( $args ) {
-		$registry_id = $args['registry_id'];
+	public function __construct( $args = [] ) {
 		$this->set_values( $args );
-		parent::__construct( $registry_id );
+		parent::__construct();
 	}
 
 	protected function set_default_items() {
