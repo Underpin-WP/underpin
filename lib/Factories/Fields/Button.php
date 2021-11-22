@@ -7,7 +7,7 @@
  */
 
 
-namespace Underpin\Factories\Settings_Fields;
+namespace Underpin\Factories\Fields;
 
 use Underpin\Abstracts\Settings_Field;
 

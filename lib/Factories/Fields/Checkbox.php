@@ -1,13 +1,12 @@
 <?php
 /**
- * Settings Radio Field
+ * Settings Checkbox Field.
  *
  * @since 1.0.0
  * @package Underpin\Factories\Settings_Fields
  */
 
-
-namespace Underpin\Factories\Settings_Fields;
+namespace Underpin\Factories\Fields;
 
 use Underpin\Abstracts\Settings_Field;
 
@@ -16,24 +15,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class Radio
+ * Class Checkbox
  *
  * @since 1.0.0
  * @package Underpin\Factories\Settings_Fields
  */
-class Radio extends Settings_Field {
+class Checkbox extends Settings_Field {
 
 	/**
 	 * @inheritDoc
 	 */
 	function get_field_type() {
-		return 'radio';
+		return 'checkbox';
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	function sanitize( $value ) {
-		return (string) $value;
+		return (boolean) $value;
 	}
+
 }

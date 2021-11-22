@@ -6,7 +6,7 @@ namespace Underpin\Factories\Observers;
 use Exception;
 use Underpin\Abstracts\Observer;
 use Underpin\Abstracts\Storage;
-use Underpin\Factories\Log_Item;
+use Underpin_Logger\Factories\Log_Item;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

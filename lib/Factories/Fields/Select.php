@@ -1,13 +1,13 @@
 <?php
 /**
- * Settings Text Field
+ * Settings Select Field
  *
  * @since 1.0.0
  * @package Underpin\Factories\Settings_Fields
  */
 
 
-namespace Underpin\Factories\Settings_Fields;
+namespace Underpin\Factories\Fields;
 
 use Underpin\Abstracts\Settings_Field;
 
@@ -16,18 +16,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class Text
+ * Class Select
  *
  * @since 1.0.0
  * @package Underpin\Factories\Settings_Fields
  */
-class Text extends Settings_Field {
+class Select extends Settings_Field {
 
 	/**
 	 * @inheritDoc
 	 */
 	function get_field_type() {
-		return 'text';
+		return 'select';
 	}
 
 	/**

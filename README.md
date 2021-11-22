@@ -21,6 +21,7 @@ Upgrading:
 		'class' => 'Underpin_Styles\Loaders\Styles',
 	] );
 ```
+5. Replace all calls to `plugin_name()->logger()` with `logger()`
 
 ## Installation
 
@@ -726,7 +727,7 @@ require.
 ### Basic Example
 
 ```php
-$text_field = new \Underpin\Factories\Settings_Fields\Text( 'field value', [
+$text_field = new \Underpin\Factories\Fields\Text( 'field value', [
     'name'        => 'name', // See WP_Widget get_field_name
     'description' => underpin()->__( 'Human-readable description' ),
     'label'       => underpin()->__( 'Field Name' ),
@@ -751,7 +752,7 @@ good example of this.
 fallback to the `name` field as illustrated above.
 
 ```php
-$text_field = new \Underpin\Factories\Settings_Fields\Text( $name, [
+$text_field = new \Underpin\Factories\Fields\Text( $name, [
     'name'        => $widget->get_field_name( 'name' ), // See WP_Widget get_field_name
     'id'          => $widget->get_field_id( 'name' ),   // See WP_Widget get_field_id
     'setting_key' => 'name',                            // Must match field name and field ID

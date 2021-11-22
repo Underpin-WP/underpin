@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! isset( $template ) || ! $template instanceof Underpin\Factories\Settings_Fields\Checkbox ) {
+if ( ! isset( $template ) || ! $template instanceof Underpin\Factories\Fields\Checkbox ) {
 	return;
 }
 

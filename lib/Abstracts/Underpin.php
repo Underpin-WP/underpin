@@ -12,7 +12,9 @@ namespace Underpin\Abstracts;
 use Exception;
 use Underpin\Factories\Object_Registry;
 use Underpin\Traits\With_Static_Subject;
+use Underpin_Logger\Loaders\Logger;
 use WP_Error;
+use function Underpin\logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -206,10 +208,7 @@ abstract class Underpin {
 				]
 			);
 
-			// Try to log the error.
-			if ( ! is_wp_error( $this->logger() ) ) {
-				return $this->logger()->log_wp_error( 'warning', $loader );
-			}
+			return Logger::instance()->log_wp_error( 'warning', $loader );
 		}
 		return $loader;
 	}
@@ -322,28 +321,6 @@ abstract class Underpin {
 	 */
 	public function loaders() {
 		return $this->loader_registry;
-	}
-
-	/**
-	 * Fetch logger instance.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @since 1.2.0 This can now return a WP_Error if-loaded too early.
-	 *
-	 * It is possible for the logger to be called before it is loaded. This adds a check to catch these errors and prevent
-	 * fatal errors.
-	 *
-	 * @return \Underpin_Logger\Loaders\Logger|object
-	 */
-	public function logger() {
-		if ( ! isset( $this->loader_registry['logger'] ) ) {
-			return new WP_Error(
-				'logger_not_set',
-				'The logger was called before it was ready.'
-			);
-		}
-		return $this->loaders()->get( 'logger' );
 	}
 
 	/**
@@ -489,31 +466,22 @@ abstract class Underpin {
 			spl_autoload_register( function ( $class ) {
 				$class = explode( '\\', $class );
 
-				$root = trailingslashit( $this->dir ) . 'lib/';
+				$root = plugin_dir_path(__FILE__ ) . 'lib/';
 
 				$root_namespace = array_shift( $class );
 
 				// Bail early if the namespace roots do not match.
-				if ( $this->root_namespace !== $root_namespace ) {
+				if ( 'Underpin' !== $root_namespace ) {
 					return false;
 				}
 
 				$file_name = array_pop( $class );
-				$directory = str_replace( '_', '-', strtolower( implode( DIRECTORY_SEPARATOR, $class ) ) );
+				$directory = str_replace( '_', '-', implode( DIRECTORY_SEPARATOR, $class ) );
 				$file      = $root . $directory . '/' . $file_name . '.php';
 
-				// If the file exists in this form, use it.
+				// If the file exists, use it.
 				if ( file_exists( $file ) ) {
 					require_once $file;
-
-					return true;
-				}
-
-				$lowercase_file = strtolower( $file );
-
-				// If it does not, try to retrieve a lowercase version. Some operating systems are sensitive to this.
-				if ( file_exists( $lowercase_file ) ) {
-					require_once $lowercase_file;
 
 					return true;
 				}
@@ -521,7 +489,7 @@ abstract class Underpin {
 				return false;
 			} );
 		} catch ( Exception $e ) {
-			$this->logger()->log_exception( 'autoload_failed', $e );
+			Logger::instance()->log_exception( 'autoload_failed', $e );
 
 			return $e->getMessage();
 		}
