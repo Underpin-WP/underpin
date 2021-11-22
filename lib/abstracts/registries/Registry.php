@@ -12,7 +12,6 @@ namespace Underpin\Abstracts\Registries;
 
 use ArrayIterator;
 use WP_Error;
-use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -94,28 +93,6 @@ abstract class Registry extends ArrayIterator {
 
 		if ( true === $valid ) {
 			$this->_add( $key, $value );
-
-			if ( false === $this->skip_logging && ! is_wp_error( underpin()->logger() ) ) {
-				underpin()->logger()->log(
-					'debug',
-					'valid_item_added',
-					'A valid registry item was registered.',
-					[
-						'key'   => $key,
-						'value' => $value,
-						'class' => get_called_class(),
-					]
-				);
-			}
-		} else {
-			if ( false === $this->skip_logging && ! is_wp_error( underpin()->logger() ) ) {
-				underpin()->logger()->log(
-					'warning',
-					'invalid_event',
-					'An item called ' . $key . ' could not be registered.',
-					array( 'key' => $key, 'value' => $value )
-				);
-			}
 		}
 
 		return $valid;
@@ -141,10 +118,6 @@ abstract class Registry extends ArrayIterator {
 					'registry_type' => get_called_class(),
 				]
 			);
-
-			if ( 'logger' !== $key && ! is_wp_error( underpin()->logger() ) && underpin()->is_debug_mode_enabled() ) {
-				underpin()->logger()->log_wp_error( 'notice', $error );
-			}
 
 			return $error;
 		}
