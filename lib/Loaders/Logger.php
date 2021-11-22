@@ -70,9 +70,11 @@ final class Logger extends Object_Registry implements Singleton {
 	}
 
 	public function __construct() {
+		self::mute();
 		parent::__construct();
 		$this->notify( 'init' );
 		$this->set_default_items();
+		self::unmute();
 	}
 
 	/**
