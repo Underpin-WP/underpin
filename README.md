@@ -5,6 +5,24 @@ provides support for useful utilities that plugins need as they mature, such as 
 processor for upgrade routines, and a decision tree class that makes extending _and_ debugging multi-layered decisions
 way easier than traditional WordPress hooks.
 
+Upgrading:
+
+1. Change `Middleware` to `Observer` pattern
+2. Replace decision lists with `Observer` pattern
+3. Replace `add_action` and `add_filter` calls with `apply`
+4. Replace any custom loaders to use `class` instead of `registry`
+```php
+    // old
+	plugin_name()->loaders()->add( 'styles', [
+		'registry' => 'Underpin_Styles\Loaders\Styles',
+	] );
+	// new
+	plugin_name()->loaders()->add( 'styles', [
+		'class' => 'Underpin_Styles\Loaders\Styles',
+	] );
+```
+5. Replace all calls to `plugin_name()->logger()` with `logger()`
+
 ## Installation
 
 Underpin can be installed in any place you can write code for WordPress, including:
@@ -521,13 +539,19 @@ underpin()->scripts()->add( 'test', [
 ] );
 ```
 
+Middleware can be stopped early by returning a `WP_Error` object in any callback. This allows you to add conditionals to
+other middleware without extending it. For example, let's say you want to enqueue on the admin script, but only in the
+block editor. This could be accomplished like so:
+
+
 ### Using Middleware In Your Loader
 
-The easiest way to use middleware in your loader is with the `Middleware` trait. Using the shortcode example above again:
+The easiest way to use middleware in your loader is with the `Middleware` trait. Using the shortcode example above
+again:
 
 ```php
 class Post_Type_Shortcode extends \Underpin\Abstracts\Shortcode {
-    use \Underpin\Traits\Middleware;
+    use \Underpin\Traits\With_Middleware;
     
 	public function __construct( $post_type ) {
 		$this->shortcode = $post_type . '_is_the_best';
@@ -703,7 +727,7 @@ require.
 ### Basic Example
 
 ```php
-$text_field = new \Underpin\Factories\Settings_Fields\Text( 'field value', [
+$text_field = new \Underpin\Factories\Fields\Text( 'field value', [
     'name'        => 'name', // See WP_Widget get_field_name
     'description' => underpin()->__( 'Human-readable description' ),
     'label'       => underpin()->__( 'Field Name' ),
@@ -728,7 +752,7 @@ good example of this.
 fallback to the `name` field as illustrated above.
 
 ```php
-$text_field = new \Underpin\Factories\Settings_Fields\Text( $name, [
+$text_field = new \Underpin\Factories\Fields\Text( $name, [
     'name'        => $widget->get_field_name( 'name' ), // See WP_Widget get_field_name
     'id'          => $widget->get_field_id( 'name' ),   // See WP_Widget get_field_id
     'setting_key' => 'name',                            // Must match field name and field ID

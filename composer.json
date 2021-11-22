@@ -10,10 +10,9 @@
         }
     ],
   "autoload": {
-    "files": ["Underpin.php"]
+    "psr-4": {"Underpin\\":  "lib/"}
   },
     "require": {
-        "composer/installers": "^1.10",
-        "underpin/logger-loader": "^2.0"
+        "composer/installers": "^1.10"
     }
 }
