@@ -10,6 +10,17 @@ Upgrading:
 1. Change `Middleware` to `Observer` pattern
 2. Replace decision lists with `Observer` pattern
 3. Replace `add_action` and `add_filter` calls with `apply`
+4. Replace any custom loaders to use `class` instead of `registry`
+```php
+    // old
+	plugin_name()->loaders()->add( 'styles', [
+		'registry' => 'Underpin_Styles\Loaders\Styles',
+	] );
+	// new
+	plugin_name()->loaders()->add( 'styles', [
+		'class' => 'Underpin_Styles\Loaders\Styles',
+	] );
+```
 
 ## Installation
 
