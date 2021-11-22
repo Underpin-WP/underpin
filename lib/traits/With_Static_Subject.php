@@ -35,20 +35,6 @@ trait With_Static_Subject {
 		self::init_observer_registry( $key );
 
 		self::$observer_registry[ $key ][] = $observer;
-
-		if ( ! is_wp_error( underpin()->logger() ) ) {
-			underpin()->logger()->log(
-				'info',
-				'event_attached',
-				'Event attached',
-				[
-					'subject'     => get_called_class(),
-					'key'         => $key,
-					'name'        => $observer->name,
-					'description' => $observer->description,
-				]
-			);
-		}
 	}
 
 	public static function detach( $key, $observer_id ) {
@@ -56,19 +42,6 @@ trait With_Static_Subject {
 
 		foreach ( self::$observer_registry->get( $key ) as $iterator => $observer ) {
 			if ( $observer->id === $observer_id ) {
-				if ( ! is_wp_error( underpin()->logger() ) ) {
-					underpin()->logger()->log(
-						'info',
-						'event_detached',
-						'Event detached',
-						[
-							'subject'     => get_called_class(),
-							'key'         => $key,
-							'name'        => $observer->name,
-							'description' => $observer->description,
-						]
-					);
-				}
 				unset( self::$observer_registry[ $key ][ $iterator ] );
 			}
 		}

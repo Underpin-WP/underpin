@@ -11,8 +11,6 @@
 namespace Underpin\Abstracts\Registries;
 
 use Underpin\Abstracts\Underpin;
-use Underpin\Traits\With_Subject;
-use function Underpin\underpin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -72,15 +70,6 @@ abstract class Object_Registry extends Registry {
 		// If this implements registry actions, go ahead and start those up, too.
 		if ( Underpin::has_trait( 'Underpin\Traits\Feature_Extension', $this->get( $key ) ) ) {
 			$this->get( $key )->do_actions();
-
-			if ( ! $this instanceof \Underpin_Logger\Loaders\Logger && ! is_wp_error( underpin()->logger() ) ) {
-				underpin()->logger()->log(
-					'debug',
-					'loader_actions_ran',
-					'The actions for registry called ' . $key . ' ran.',
-					[ 'key' => $key, 'value' => $value ]
-				);
-			}
 		}
 
 		return $valid;
@@ -99,8 +88,7 @@ abstract class Object_Registry extends Registry {
 			return true;
 		}
 
-		return underpin()->logger()->log_as_error(
-			'error',
+		return new \WP_Error(
 			'invalid_service_type',
 			'The specified item could not be instantiated. Invalid instance type',
 			[ 'ref' => $key, 'value' => $value, 'expects_type' => $this->abstraction_class ]
