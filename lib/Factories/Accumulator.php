@@ -4,6 +4,7 @@ namespace Underpin\Factories;
 
 
 use Underpin\Abstracts\Storage;
+use Underpin\Loaders\Logger;
 use Underpin\Traits\Instance_Setter;
 use function Underpin\underpin;
 
@@ -40,7 +41,7 @@ class Accumulator extends Storage {
 			$this->state = $state;
 			return true;
 		} else {
-			underpin()->logger()->log_wp_error( 'error', $valid );
+			Logger::log_wp_error( 'error', $valid );
 			return $valid;
 		}
 	}

@@ -10,9 +10,14 @@
 namespace Underpin\Loaders;
 
 use Exception;
-use Underpin\Abstracts\Registries\Loader_Registry;
+use Underpin\Abstracts\Registries\Object_Registry;
+use Underpin\Abstracts\Underpin;
+use Underpin\Interfaces\Singleton;
 use Underpin\Abstracts\Event_Type;
 use Underpin\Factories\Log_Item;
+use Underpin\Factories\Observers\Trigger_Exception;
+use Underpin\Factories\Observers\Trigger_Notice;
+use Underpin\Traits\With_Subject;
 use WP_Error;
 use function Underpin\underpin;
 
@@ -27,7 +32,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since   1.0.0
  * @package Underpin\Loaders
  */
-class Logger extends Loader_Registry {
+final class Logger extends Object_Registry implements Singleton {
+
+	use With_Subject;
 
 	/**
 	 * @inheritDoc
@@ -44,6 +51,11 @@ class Logger extends Loader_Registry {
 	protected static $is_muted = false;
 
 	/**
+	 * @var self
+	 */
+	private static $instance;
+
+	/**
 	 * @inheritDoc
 	 */
 	public function add( $key, $value ) {
@@ -57,6 +69,23 @@ class Logger extends Loader_Registry {
 		return $valid;
 	}
 
+	public function __construct() {
+		parent::__construct();
+		$this->notify( 'init' );
+		$this->set_default_items();
+	}
+
+	/**
+	 * @return self
+	 */
+	public static function instance(): Singleton {
+		if ( ! self::$instance instanceof self ) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
+	}
+
 	/**
 	 * Retrieves all events that have happened for this request.
 	 *
@@ -66,9 +95,9 @@ class Logger extends Loader_Registry {
 	 *
 	 * @return array|WP_Error list of all events, or a WP_Error if something went wrong.
 	 */
-	public function get_request_events( $type = false ) {
+	public static function get_request_events( $type = false ) {
 		if ( false !== $type ) {
-			$events = $this->get( $type );
+			$events = self::instance()->get( $type );
 
 			// Return the error.
 			if ( is_wp_error( $events ) ) {
@@ -79,8 +108,8 @@ class Logger extends Loader_Registry {
 
 		} else {
 			$result = [];
-			foreach ( $this as $type => $events ) {
-				$result[ $type ] = (array) $this->get( $type );
+			foreach ( self::instance() as $type => $events ) {
+				$result[ $type ] = (array) self::instance()->get( $type );
 			}
 
 			return $result;
@@ -99,7 +128,7 @@ class Logger extends Loader_Registry {
 	 *
 	 * @return Log_Item|WP_Error Log item, with error message. WP_Error if something went wrong.
 	 */
-	public function log( $type, $code, $message, $data = array() ) {
+	public static function log( $type, $code, $message, $data = array() ) {
 		if ( self::is_muted() ) {
 			return new WP_Error(
 				'logger_is_muted',
@@ -113,13 +142,16 @@ class Logger extends Loader_Registry {
 			);
 		}
 
-		$event_type = $this->get( $type );
+		$event_type = self::instance()->get( $type );
 
 		if ( is_wp_error( $event_type ) ) {
 			return $event_type;
 		}
 
-		return $event_type->log( $code, $message, $data );
+		$item = $event_type->log( $code, $message, $data );
+		self::instance()->notify( 'event:logged', ['event' => $item, 'event_type' => $event_type]);
+
+		return $item;
 	}
 
 	/**
@@ -186,8 +218,8 @@ class Logger extends Loader_Registry {
 	 *
 	 * @return WP_Error Log item, with error message. WP_Error if something went wrong.
 	 */
-	public function log_as_error( $type, $code, $message, $data = array() ) {
-		$item = $this->log( $type, $code, $message, $data );
+	public static function log_as_error( $type, $code, $message, $data = array() ) {
+		$item = self::instance()->log( $type, $code, $message, $data );
 
 		if ( ! is_wp_error( $item ) ) {
 			$item = $item->error();
@@ -207,8 +239,8 @@ class Logger extends Loader_Registry {
 	 *
 	 * @return Log_Item|WP_Error The logged item, if successful, otherwise WP_Error.
 	 */
-	public function log_wp_error( $type, WP_Error $wp_error, $data = [] ) {
-		$item = $this->get( $type );
+	public static function log_wp_error( $type, WP_Error $wp_error, $data = [] ) {
+		$item = self::instance()->get( $type );
 
 		if ( is_wp_error( $item ) ) {
 			return $item;
@@ -230,8 +262,8 @@ class Logger extends Loader_Registry {
 	 *
 	 * @return Log_Item|WP_Error Log Item, with error message if successful, otherwise WP_Error.
 	 */
-	public function log_exception( $type, Exception $exception, $data = array() ) {
-		$item = $this->get( $type );
+	public static function log_exception( $type, Exception $exception, $data = array() ) {
+		$item = self::instance()->get( $type );
 
 		if ( is_wp_error( $type ) ) {
 			return $item;
@@ -269,36 +301,11 @@ class Logger extends Loader_Registry {
 	}
 
 	/**
-	 * Purge old logged events.
-	 *
-	 * @since 1.0.0
-	 *
-	 */
-	public function cleanup() {
-		foreach ( $this as $key => $class ) {
-			$writer = $this->get( $key )->writer();
-
-			if ( ! is_wp_error( $writer ) ) {
-				$purged = $writer->cleanup();
-
-				if ( is_wp_error( $purged ) ) {
-					$this->log_wp_error( 'error', $purged );
-				}
-			}
-		}
-	}
-
-	/**
 	 * @inheritDoc
 	 */
 	protected function set_default_items() {
 		$defaults = [
-			'group'           => 'core',
-			'purge_frequency' => 7,
-			'middlewares'     => [
-				'Underpin\Factories\Basic_Logger_Middleware',
-				'Underpin\Factories\Include_Backtrace_Middleware',
-			],
+			'group' => 'core',
 		];
 
 		$this->add( 'emergency', array_merge( $defaults, [
@@ -329,14 +336,13 @@ class Logger extends Loader_Registry {
 			'psr_level'   => 'error',
 		] ) );
 
-		if ( underpin()->is_debug_mode_enabled() ) {
+		if ( Underpin::is_debug_mode_enabled() ) {
 
 			$this->add( 'warning', array_merge( [
 				'type'        => 'warning',
 				'description' => 'Intended to log events when something seems wrong.',
 				'name'        => 'Warning',
 				'psr_level'   => 'warning',
-				'middlewares' => [],
 			] ) );
 
 			$this->add( 'notice', array_merge( [
@@ -344,7 +350,6 @@ class Logger extends Loader_Registry {
 				'description' => 'Posts informative notices when something is neither good nor bad.',
 				'name'        => 'Notice',
 				'psr_level'   => 'notice',
-				'middlewares' => [],
 			] ) );
 
 			$this->add( 'info', array_merge( [
@@ -352,7 +357,6 @@ class Logger extends Loader_Registry {
 				'description' => 'Posts informative messages that something is most-likely going as-expected.',
 				'name'        => 'Info',
 				'psr_level'   => 'info',
-				'middlewares' => [],
 			] ) );
 
 			$this->add( 'debug', array_merge( [
@@ -360,8 +364,27 @@ class Logger extends Loader_Registry {
 				'description' => 'A place to put information that is only useful in debugging context.',
 				'name'        => 'Debug',
 				'psr_level'   => 'debug',
-				'middlewares' => [],
 			] ) );
+		}
+
+		// attach some defaults to PHP error logger
+		foreach ( $this as $key => $logger ) {
+			$logger = $this->get( $key );
+
+			// Force shutdown on critical errors
+			if ( in_array( $logger->psr_level, [ 'critical', 'alert', 'emergency' ] ) ) {
+				$logger->attach( 'log:item_logged', new Trigger_Exception('critical_error') );
+			}
+
+			// Trigger notices on logged items.
+			if ( in_array( $logger->psr_level, [ 'warning' ] ) ) {
+				$logger->attach( 'log:item_logged', new Trigger_Notice( 'notice', E_USER_NOTICE ) );
+			}
+
+			// Trigger notices on logged items.
+			if ( in_array( $logger->psr_level, [ 'error' ] ) ) {
+				$logger->attach( 'log:item_logged', new Trigger_Notice( 'warning', E_USER_WARNING ) );
+			}
 		}
 	}
 
@@ -406,34 +429,6 @@ class Logger extends Loader_Registry {
 			foreach ( $log_item->get_error_codes() as $code ) {
 				$error->add( $code, $log_item->get_error_message( $code ), $log_item->get_error_data( $code ) );
 			}
-		}
-	}
-
-	/**
-	 * Retrieves a list of all capabilities of all logged items.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return array
-	 */
-	public function capabilities() {
-		$capabilities = [];
-
-		foreach ( (array) $this as $key => $item ) {
-			$item = $this->get( $key );
-			if ( ! is_wp_error( $item ) ) {
-				$capabilities = array_merge( $capabilities, $item->capabilities );
-			}
-		}
-
-		return array_unique( $capabilities );
-	}
-
-	public function __get( $key ) {
-		if ( isset( $this->$key ) ) {
-			return $this->$key;
-		} else {
-			return new \WP_Error( 'logger_loader_param_not_set', 'The logger loader key ' . $key . ' could not be found.' );
 		}
 	}
 

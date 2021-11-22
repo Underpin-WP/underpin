@@ -10,6 +10,7 @@
 namespace Underpin\Traits;
 
 use Underpin\Factories\Accumulator;
+use Underpin\Loaders\Logger;
 use WP_Error;
 use function Underpin\underpin;
 
@@ -119,7 +120,7 @@ trait Templates {
 				$template = $this->include_template( $template_name, $params );
 			} else {
 				$template_path = $this->get_template_path( $template_name );
-				$template      = underpin()->logger()->log_as_error(
+				$template      = Logger::log_as_error(
 					'error',
 					'template_file_does_not_exist',
 					__( "Template $template_name was not loaded because the file located at $template_path does not exist.", 'underpin' )
@@ -131,7 +132,7 @@ trait Templates {
 				$this->notify( 'template:file_not_found', [ 'template_name' => $template_name, 'params' => $params ] );
 			}
 		} else {
-			$template = underpin()->logger()->log_as_error(
+			$template = Logger::log_as_error(
 				'error',
 				'underpin_invalid_template',
 				"Template was not loaded because it is not in the list of use-able templates.",
@@ -338,14 +339,14 @@ trait Templates {
 
 				$result = isset( $templates[ $template_name ][ $arg ] ) ? $templates[ $template_name ][ $arg ] : $this->get_template_arg_defaults()[ $arg ];
 			} else {
-				$result = underpin()->logger()->log_as_error(
+				$result = Logger::log_as_error(
 					'error',
 					'underpin_get_arg_invalid_template',
 					"Template $template_name argument $arg was not fetched because $template_name is not a valid template."
 				);
 			}
 		} else {
-			$result = underpin()->logger()->log_as_error(
+			$result = Logger::log_as_error(
 				'error',
 				'underpin_get_arg_invalid_argument',
 				"Template $template_name argument $arg was not fetched because $arg is not a valid template argument."

@@ -2,6 +2,7 @@
 
 namespace Underpin\Factories;
 
+use Underpin\Abstracts\Underpin;
 use Underpin\Interfaces\Item_With_Dependencies;
 use Underpin\Loaders\Logger;
 use function Underpin\underpin;
@@ -52,8 +53,7 @@ class Dependency_Processor {
 			$unmet_dependencies = array_diff( $this->get_dependencies( $item ), $dependency_ids );
 
 			if ( ! empty( $unmet_dependencies ) ) {
-				if ( underpin()->logger() instanceof Logger ) {
-					underpin()->logger()->log(
+					Logger::log(
 						'debug',
 						'observer_detached',
 						'An event was detached because it has unmet dependencies',
@@ -62,7 +62,6 @@ class Dependency_Processor {
 							'unmet_dependencies' => $unmet_dependencies,
 						]
 					);
-				}
 				array_shift( $queue );
 				continue;
 			}

@@ -8,6 +8,7 @@ use Underpin\Factories\Accumulator;
 use Underpin\Factories\Dependency_Processor;
 use Underpin\Factories\Object_Registry;
 use Underpin\Factories\Simple_Storage;
+use Underpin\Loaders\Logger;
 use function Underpin\underpin;
 
 trait With_Subject {
@@ -35,8 +36,7 @@ trait With_Subject {
 
 		$this->observer_registry[ $key ][] = $observer;
 
-		if ( ! is_wp_error( underpin()->logger() ) ) {
-			underpin()->logger()->log(
+			Logger::log(
 				'info',
 				'event_attached',
 				'Event attached',
@@ -47,7 +47,6 @@ trait With_Subject {
 					'description' => $observer->description,
 				]
 			);
-		}
 	}
 
 	public function detach( $key, $observer_id ) {
@@ -55,8 +54,7 @@ trait With_Subject {
 
 		foreach ( $this->observer_registry->get( $key ) as $iterator => $observer ) {
 			if ( $observer->id === $observer_id ) {
-				if ( ! is_wp_error( underpin()->logger() ) ) {
-					underpin()->logger()->log(
+					Logger::log(
 						'info',
 						'event_detached',
 						'Event detached',
@@ -67,7 +65,6 @@ trait With_Subject {
 							'description' => $observer->description,
 						]
 					);
-				}
 				unset( $this->observer_registry[ $key ][ $iterator ] );
 			}
 		}
