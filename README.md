@@ -5,24 +5,6 @@ provides support for useful utilities that plugins need as they mature, such as 
 processor for upgrade routines, and a decision tree class that makes extending _and_ debugging multi-layered decisions
 way easier than traditional WordPress hooks.
 
-Upgrading:
-
-1. Change `Middleware` to `Observer` pattern
-2. Replace decision lists with `Observer` pattern
-3. Replace `add_action` and `add_filter` calls with `apply`
-4. Replace any custom loaders to use `class` instead of `registry`
-```php
-    // old
-	plugin_name()->loaders()->add( 'styles', [
-		'registry' => 'Underpin_Styles\Loaders\Styles',
-	] );
-	// new
-	plugin_name()->loaders()->add( 'styles', [
-		'class' => 'Underpin_Styles\Loaders\Styles',
-	] );
-```
-5. Replace all calls to `plugin_name()->logger()` with `logger()`
-
 ## Installation
 
 Underpin can be installed in any place you can write code for WordPress, including:
@@ -30,8 +12,6 @@ Underpin can be installed in any place you can write code for WordPress, includi
 1. As a part of a WordPress plugin.
 1. As a part of a WordPress theme.
 1. As a part of a WordPress must-use plugin.
-
-If you aren't distributing the plugin or theme you're building, it's probably best to install Underpin as a must-use plugin. This will allow you to re-use Underpin across plugins, and themes, and will give you a single cohesive place from where the code can be retrieved. To make this process easier, Underpin has a [mu-plugin boilerplate](https://www.github.com/underpin-WP/mu-plugin-boilerplate/) that will help you get Underpin installed quickly.
 
 ### Via Composer
 
@@ -77,6 +57,180 @@ pretty well. You can learn more about that [here](https://github.com/DesignFrame
 
 1. WordPress `5.1` or better.
 1. PHP `7.0` or better.
+
+## Upgrading From 1.*
+
+### Change `Middleware` to `Observer` pattern
+
+Middleware has been changed to use the Observer pattern API.
+
+```php
+// Underpin 1.*
+plugin_name()->scripts()->add( 'test', [
+	'handle'      => 'test',
+	'src'         => 'path/to/script/src',
+	'name'        => 'test',
+	'description' => 'The description',
+	'middlewares' => [
+		'Underpin_Rest_Middleware\Factories\Rest_Middleware', // Will localize script params.
+		'Underpin_Scripts\Factories\Enqueue_Script',          // Will enqueue the script on the front end all the time.
+		[                                                     // Will instantiate an instance of Script_Middleware_Instance using the provided arguments
+			'do_actions_callback' => function ( \Underpin_Scripts\Abstracts\Script $loader_item ) {
+				// Do actions
+			},
+		],
+	],
+] );
+
+// Underpin 2.*
+plugin_name()->scripts()->add( 'test', [
+	'handle'      => 'test',
+	'src'         => 'path/to/script/src',
+	'name'        => 'test',
+	'description' => 'The description',
+	'middlewares' => [
+		'Underpin_Rest_Middleware\Factories\Rest_Middleware', // Will localize script params.
+		'Underpin_Scripts\Factories\Enqueue_Script',          // Will enqueue the script on the front end all the time.
+         new Observer( 'custom_middleware', [                 // A custom middleware action
+             'update'   => function ( $class, $accumulator ) {
+                 // Do an action when this script is set-up.
+             },
+         ] ),
+	],
+] );
+```
+
+### Decision List Changes
+
+The Decision List loader is no-longer compatible with Underpin. Instead, and has been replaced by the observer pattern.
+
+```php
+// Underpin 1.*
+plugin_name()->decision_lists()->add( 'example_decision_list', [
+	// Decision one
+	[
+		'valid_callback'         => '__return_true',
+		'valid_actions_callback' => '__return_empty_string',
+		'name'                   => 'Test Decision',
+		'description'            => 'A single decision',
+		'priority'               => 500,
+	],
+
+	// Decision two
+	[
+		'valid_callback'         => '__return_true',
+		'valid_actions_callback' => '__return_empty_array',
+		'name'                   => 'Test Decision Two',
+		'description'            => 'A single decision',
+		'priority'               => 1000,
+	],
+] );
+
+// Underpin 2.*
+plugin_name()->loader_name()->attach( 'decision_id', [
+	// Decision one
+    new Observer( 'decision', [                 // A custom middleware action
+        'update'   => function ( $class, $accumulator ) {
+            // Condition in-which this should run
+            if($condition){
+              // Update the accumulator state. This sets the value when the decision is returned
+              $accumulator->set_state()
+            }
+        },
+        'priority' => 10, // Optionally set a priority to determine when this runs. Observers are sorted by deps, and then priority after.
+        'deps'     => ['observer_key', 'another_observer_key'] // list of decisions that should be checked BEFORE this one.
+    ] ),
+
+	// Decision two
+    new Observer( 'decision_two', [                 // A custom middleware action
+        'update'   => function ( $class, $accumulator ) {
+            // Condition in-which this should run
+            if($condition){
+              // Update the accumulator state. This sets the value when the decision is returned
+              $accumulator->set_state()
+            }
+        },
+        'priority' => 10, // Optionally set a priority to determine when this runs. Observers are sorted by deps, and then priority after.
+        'deps'     => ['observer_key', 'another_observer_key'] // list of decisions that should be checked BEFORE this one.
+    ] ),
+] );
+```
+
+### All Underpin-specific Hooks now use `apply`
+
+Any of the internal Underpin hooks, like `underpin\init`, have been replaced with a `notify` call. Due to this, you must
+migrate existing calls to `add_action('underpin_call')` to use `apply('new_hook')`
+
+If this is impractical, or impossible, you can connect a hook to the legacy action like so:
+
+```php
+// Apply legacy action to new observer pattern
+plugin_name()->attach('new_hook_id', new Observer( 'init_action_call', [
+        'update'   => function ( $class, $accumulator ) {
+          do_action('old_hook_id', $args, $passed, $to, $original );
+        },
+        'priority' => 1
+    ] ),)
+```
+
+### Replace any custom loaders to use `class` instead of `registry`
+
+Any loader call that used the `registry` argument now must use `class`
+
+```php
+// Underpin 1.*
+plugin_name()->loaders()->add('name',['registry' => 'Loader_Class']);
+
+// Underpin 2.*
+plugin_name()->loaders()->add('name',['class' => 'Loader_Class']);
+```
+
+### Replace all calls to `plugin_name()->logger()` with `Logger::`
+
+The logger was originally built into each instance as a loader, but this caused a lot of race-condition issues that made
+it impractical to keep it that way. Because of this, the logger loader has been moved into its own static instance, and
+all logger commands can be accessed statically.
+
+```php
+// Underpin 1.*
+plugin_name()->logger()->log();
+
+// Underpin 2.*
+Logger::log();
+```
+
+This does mean that the logged events for _all_ plugins exist within the different event types. If you want to separate
+your logged events, you'll need to register your own logger event type and use that. This is just another Loader
+Registry so you can treat it exactly like you do any other registry item. See [#Loaders](Loaders) for more info.
+
+```php
+Logger::instance()->add('custom_event_type','Event_Type');
+```
+
+### `underpin()` function removed
+
+The `underpin()` function has been removed entirely. If you're extending all plugins, you can use `attach`
+
+```php
+Underpin::attach('init',new Observer([
+  'update' => function(Underpin $instance, Accumulator $args){
+    // Do an action. $instance is the current plugin's Underpin instance.
+  }
+]));
+```
+
+### Namespace Changes
+
+All `Underpin_*` namespaces have changed to use `Underpin\*` to be more PSR4 compliant, and nudge Underpin toward using
+PSR-based compilers to make distributing plugins easier.
+
+```php
+// Underpin 1.*
+use Underpin_Scripts\Loaders\Scripts;
+
+// Underpin 2.*
+use Underpin\Scripts\Loaders\Scripts;
+```
 
 ## The Bootstrap
 
@@ -297,20 +451,18 @@ functionality.
 1. [Admin Notice Loader](https://github.com/Underpin-WP/admin-notice-loader/) Loader That assists with adding admin
    notices to a WordPress website.
 1. [Admin Pages](https://github.com/Underpin-WP/admin-page-loader) Quickly spin up admin settings pages.
-1. [Background Process Loader](https://github.com/Underpin-WP/background-process-loader) Run slow processes in a separate, asynchornous thread.
+1. [Background Process Loader](https://github.com/Underpin-WP/background-process-loader) Run slow processes in a
+   separate, asynchornous thread.
 3. [Batch Task Loader](https://github.com/Underpin-WP/batch-task-loader) Create, register, and implement batch tasks.
 4. [Block Loader](https://github.com/Underpin-WP/underpin-block-loader) Create, register, and manage WordPress blocks.
 5. [Cron Job Loader](https://github.com/Underpin-WP/cron-job-loader/) Create, manage, and execute cron jobs.
 6. [Custom Post Type Loader](https://github.com/Underpin-WP/custom-post-type-loader) Loader That assists with adding
    custom Post Types to a WordPress website.
 1. [CLI Loader](https://github.com/Underpin-WP/wp-cli-loader) Create WP CLI commands.
-1. [Decision List Loader](https://github.com/Underpin-WP/decision-list-loader) Create decision list registries that
-   makes custom logic easy to extend.
 1. [Eraser Loader](https://github.com/Underpin-WP/eraser-loader) Loader That assists with adding GDPR-compliant erasers
    to a WordPress website.
 1. [Exporter Loader](https://github.com/Underpin-WP/underpin-exporter-loader) Loader That assists with adding
    GDPR-compliant exporters to a WordPress website.
-1. [Logger Loader](https://github.com/Underpin-WP/logger-loader) Log events, and errors, and write them to a debug log
 1. [Menu Loader](https://github.com/Underpin-WP/menu-loader) Register, and manage custom theme nav menus
 1. [Meta Loader](https://github.com/Underpin-WP/meta-loader) Manage custom meta to store in various meta tables
 1. [Option Loader](https://github.com/Underpin-WP/option-loader) Register , and manage values to store in wp_options
@@ -388,7 +540,7 @@ class Hello_World extends \Underpin_Shortcodes\Abstracts\Shortcode {
 Now that our class has been created, we need to register this shortcode. This is done like this:
 
 ```php
-underpin()->shortcodes()->add( 'hello_world','Underpin\Shortcodes\Hello_World' );
+plugin_name()->shortcodes()->add( 'hello_world','Underpin\Shortcodes\Hello_World' );
 ```
 
 #### Register Inline
@@ -397,7 +549,7 @@ Alternatively, you can register the class inline. This will automatically use a 
 no customizations.
 
 ```php
-underpin()->shortcodes()->add( 'hello_world', [
+plugin_name()->shortcodes()->add( 'hello_world', [
 	'shortcode'                  => 'hello_world',                   // Required. Shortcode name.
 	'shortcode_actions_callback' => function ( $parsed_atts ) {      // Required. Shortcode action.
 		return 'Hello world!'; // 'value'
@@ -430,7 +582,7 @@ class Hello_World_Instance extends \Underpin_Shortcodes\Factories\Shortcode_Inst
 Finally, instruct Underpin to use a different class.
 
 ```php
-underpin()->shortcodes()->add( 'hello_world', [
+plugin_name()->shortcodes()->add( 'hello_world', [
     'class' => 'Underpin\Factories\Hello_World_Instance',
     'args'  => [
 	  'shortcode'                  => 'hello_world',                   // Required. Shortcode name.
@@ -444,7 +596,7 @@ underpin()->shortcodes()->add( 'hello_world', [
 Either way, this shortcode can be accessed using `do_shortcode('hello_world');`, or you can access the class, and its
 methods directly with `underpin()->shortcodes()->get( 'hello_world' )`;
 
-### Example with constructor
+### Example With Constructor
 
 Sometimes, it makes more sense dynamically register things using a constructor. This pattern works in the same manner as
 above, the only difference is how you pass your information to the `add()` method.
@@ -489,14 +641,70 @@ The key part here is how differently we handled the `add` method. Instead of sim
 instead provide an array containing the `class`, and an array of ordered `args` to pass directly into the contstructor.
 As a result, we register this class to be constructed if it is ever needed.
 
-## Middleware
+## The Observer Pattern
 
-Some loaders support middleware. This pattern makes it possible to do a set of things when a loader item is registered.
-A good example of middleware in-action can be seen in the [script loader](https://github.com/Underpin-WP/script-loader).
+Instead of using `add_action`, `do_action`, `add_filter` and `apply_filters`, Underpin has a
+robust [observer pattern](https://refactoring.guru/design-patterns/observer/php/example) built-in. This standardizes the
+extending process for plugins, provides more-robust priority settings, and encapsulates the action that runs in a class
+that can be extended.
+
+All items in this pattern use the `Observer` class.
+
+```php
+new Observer( 'action_id', [
+  'name'   => 'Action Name', //Used for debugging purposes
+  'description' => 'Custom action that runs', //Used for debugging purposes
+  'update' => function($instance, Accumulator $accumulator){
+    // Do actions here. 
+  },
+  'priority' => 10, // Sorts items by dependency. Items are sorted by deps first, and then priority.
+  'deps' => ['list_of_deps'] // List of dependencies for this item. Items are sorted by dependency, and if all dependencies are not set, this item is skipped.
+] );
+```
+
+### Filters
+
+Filters are always provided with 2 params, the current class instance, and an `Accumulator` object. When all hooked
+filters finish running, the state of the Accumulator is returned. This can be changed with `Accumulator::set_state`
+inside the `update` action of the `Observer` instance. Like this:
+
+```php
+plugin_name()->loader_name()->filter('hook_name', new Observer('unique_action_id', [
+  'update' => function($instance, Accumulator $accumulator){
+    $accumulator->set_state('new value');
+  }
+  'deps' => ['list_of_deps'] // List of filters that must run before this. If the dependency doesn't exist, this filter does not run.
+]));
+```
+
+### Notifications
+
+Notifications work much like filters, however they run in the _opposite_ direction as a filter. So higher priorities run
+later.
+
+```php
+plugin_name()->loader_name()->decide('decision_name', new Observer( 'decision', [      
+        'update'   => function ( $class, $accumulator ) {
+            // Condition in-which this should run
+            if($condition){
+              // Update the accumulator state. This sets the value when the decision is returned
+              $accumulator->set_state()
+            }
+        },
+        'priority' => 10, // Optionally set a priority to determine when this runs. Higher priorities get called last. Observers are sorted by deps, and then priority after.
+        'deps'     => ['observer_key', 'another_observer_key'] // list of decisions that should be checked BEFORE this one. If any dependencies dont' exist, this decision does not run.
+    ] ),)
+```
+
+### Middleware
+
+Unlike Filters and notifications, this pattern always runs _when a loader item is registered_, and only runs once. This
+pattern makes it possible to do a set of things when a loader item is registered. A good example of middleware in-action
+can be seen in the [script loader](https://github.com/Underpin-WP/script-loader).
 
 ```php
 // Register script
-underpin()->scripts()->add( 'test', [
+plugin_name()->scripts()->add( 'test', [
         'handle'      => 'test',
         'src'         => 'path/to/script/src',
         'name'        => 'test',
@@ -527,22 +735,14 @@ underpin()->scripts()->add( 'test', [
 	'middlewares' => [
 		'Underpin_Rest_Middleware\Factories\Rest_Middleware', // Will localize script params.
 		'Underpin_Scripts\Factories\Enqueue_Script',          // Will enqueue the script on the front end all the time.
-		[                                                     // Will instantiate an instance of Script_Middleware_Instance using the provided arguments
-			'name'                => 'Custom setup params',
-			'description'         => 'Sets up custom parameters specific to this script',
-			'priority'            => 10, // Optional. Default 10.
-			'do_actions_callback' => function ( \Underpin_Scripts\Abstracts\Script $loader_item ) {
-				// Do actions
-			},
-		],
+         new Observer( 'custom_middleware', [                 // A custom middleware action
+             'update'   => function ( $class, $accumulator ) {
+                 // Do an action when this script is set-up.
+             },
+         ] ),
 	],
 ] );
 ```
-
-Middleware can be stopped early by returning a `WP_Error` object in any callback. This allows you to add conditionals to
-other middleware without extending it. For example, let's say you want to enqueue on the admin script, but only in the
-block editor. This could be accomplished like so:
-
 
 ### Using Middleware In Your Loader
 
@@ -712,68 +912,3 @@ if ( ! isset( $template ) || ! $template instanceof The_Loop ) {
 
 Where `post.php` and `no-posts.php` are separate PHP files in the same directory, and registered to `The_Loop`
 under `get_templates`.
-
-## Fields API
-
-The fields API is a collection of pre-built factories that render, sanitize, and display fields. These fields make it
-possible to display form fields. This API is used extensively in some loaders, like
-the [Widgets loader](https://github.com/Underpin-WP/widget-loader) and
-the [Admin Page loader](https://github.com/Underpin-WP/admin-page-loader).
-
-This API does _not_ actually interact with the database in any fashion. Instead, it handles sanitizing, rendering, and
-retrieving the field's values. You then _use_ the fields to actually interact with the database in whatever manner you
-require.
-
-### Basic Example
-
-```php
-$text_field = new \Underpin\Factories\Fields\Text( 'field value', [
-    'name'        => 'name', // See WP_Widget get_field_name
-    'description' => underpin()->__( 'Human-readable description' ),
-    'label'       => underpin()->__( 'Field Name' ),
-] );
-
-// Render the field
-echo $text_field->place();
-
-// Update the field value
-$text_field->update_value( 'new field value' );
-
-// Store the value in the database. This would save the option key of "name" as "new field value"
-update_option( $text_field->get_setting_key(), $text_field->get_field_value() );
-```
-
-### Overriding the Option Key
-
-Sometimes it is necessary to have a different name, ID, and option key to store in the database. The widgets API is a
-good example of this.
-
-`Settings_Field::get_setting_key` will automatically use `setting_key` if it is explicitly specified. If not, it will
-fallback to the `name` field as illustrated above.
-
-```php
-$text_field = new \Underpin\Factories\Fields\Text( $name, [
-    'name'        => $widget->get_field_name( 'name' ), // See WP_Widget get_field_name
-    'id'          => $widget->get_field_id( 'name' ),   // See WP_Widget get_field_id
-    'setting_key' => 'name',                            // Must match field name and field ID
-    'description' => underpin()->__( 'Human Readable Description' ),
-    'label'       => underpin()->__( 'Field Name' ),
-] );
-
-
-// Render the field
-echo $text_field->place();
-
-// Update the field value
-$text_field->update_value( 'new field value' );
-
-// Store the value in the database. This would save the option key of "name" as "new field value"
-update_option( $text_field->get_setting_key(), $text_field->get_field_value() );
-```
-
-### Custom Fields
-
-It is possible to create custom settings fields by extending `Underpin\Abstracts\Settings_Field`. This allows you to
-make customized fields that change the behavior in just about any way imagine-able.
-
-If you're interested in creating a custom field, check out any of the existing factories to see how they're built.

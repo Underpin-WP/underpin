@@ -74,7 +74,7 @@ trait With_Static_Subject {
 		}
 	}
 
-	protected function filter( $key, Accumulator $accumulator ) {
+	protected function apply_filters( $key, Accumulator $accumulator ) {
 		$args = $this->setup_args( $key, $accumulator );
 
 		if ( ! $args instanceof Accumulator ) {
