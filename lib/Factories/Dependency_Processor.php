@@ -5,7 +5,7 @@ namespace Underpin\Factories;
 use Underpin\Abstracts\Underpin;
 use Underpin\Interfaces\Item_With_Dependencies;
 use Underpin\Loaders\Logger;
-use function Underpin\underpin;
+
 
 class Dependency_Processor {
 

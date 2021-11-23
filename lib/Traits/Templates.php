@@ -12,7 +12,7 @@ namespace Underpin\Traits;
 use Underpin\Factories\Accumulator;
 use Underpin\Loaders\Logger;
 use WP_Error;
-use function Underpin\underpin;
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

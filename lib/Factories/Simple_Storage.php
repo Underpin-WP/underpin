@@ -4,7 +4,7 @@ namespace Underpin\Factories;
 
 
 use Underpin\Traits\Instance_Setter;
-use function Underpin\underpin;
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

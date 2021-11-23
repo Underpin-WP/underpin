@@ -6,7 +6,7 @@ namespace Underpin\Factories;
 use Underpin\Abstracts\Storage;
 use Underpin\Loaders\Logger;
 use Underpin\Traits\Instance_Setter;
-use function Underpin\underpin;
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
