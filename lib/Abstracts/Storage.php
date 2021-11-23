@@ -4,7 +4,7 @@ namespace Underpin\Abstracts;
 
 
 use WP_Error;
-use function Underpin\underpin;
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

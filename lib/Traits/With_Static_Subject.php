@@ -3,13 +3,11 @@
 namespace Underpin\Traits;
 
 use Underpin\Abstracts\Storage;
-use Underpin\Abstracts\Underpin;
 use Underpin\Factories\Accumulator;
 use Underpin\Factories\Dependency_Processor;
 use Underpin\Factories\Object_Registry;
 use Underpin\Factories\Observer;
 use Underpin\Factories\Simple_Storage;
-use function Underpin\underpin;
 
 trait With_Static_Subject {
 
@@ -31,7 +29,7 @@ trait With_Static_Subject {
 		}
 	}
 
-	public static function attach( $key, Observer $observer ) {
+	public static function attach( $key, \Underpin\Abstracts\Observer $observer ) {
 		self::init_observer_registry( $key );
 
 		self::$observer_registry[ $key ][] = $observer;

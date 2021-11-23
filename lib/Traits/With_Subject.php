@@ -9,7 +9,7 @@ use Underpin\Factories\Dependency_Processor;
 use Underpin\Factories\Object_Registry;
 use Underpin\Factories\Simple_Storage;
 use Underpin\Loaders\Logger;
-use function Underpin\underpin;
+
 
 trait With_Subject {
 

@@ -14,7 +14,6 @@ use Underpin\Factories\Object_Registry;
 use Underpin\Traits\With_Static_Subject;
 use Underpin\Loaders\Logger;
 use WP_Error;
-use function Underpin\logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

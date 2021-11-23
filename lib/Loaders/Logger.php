@@ -19,7 +19,7 @@ use Underpin\Factories\Observers\Trigger_Exception;
 use Underpin\Factories\Observers\Trigger_Notice;
 use Underpin\Traits\With_Subject;
 use WP_Error;
-use function Underpin\underpin;
+
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
