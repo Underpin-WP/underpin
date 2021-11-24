@@ -465,14 +465,9 @@ abstract class Underpin {
 			spl_autoload_register( function ( $class ) {
 				$class = explode( '\\', $class );
 
-				$root = plugin_dir_path(__FILE__ ) . 'lib/';
+				$root = plugin_dir_path($this->file() ) . 'lib/';
 
 				$root_namespace = array_shift( $class );
-
-				// Bail early if the namespace roots do not match.
-				if ( 'Underpin' !== $root_namespace ) {
-					return false;
-				}
 
 				$file_name = array_pop( $class );
 				$directory = str_replace( '_', '-', implode( DIRECTORY_SEPARATOR, $class ) );
