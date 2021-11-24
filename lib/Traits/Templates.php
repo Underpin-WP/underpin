@@ -399,7 +399,7 @@ trait Templates {
 		$this->depth++;
 		if ( 'private' !== $this->get_template_arg( $template_name, 'override_visibility' ) ) {
 			$this->params[ $this->depth ] = $this->apply_filters( "template:params", new Accumulator( [
-				'default'        => $params,
+				'default_factory'        => $params,
 				'template_name'  => $template_name,
 				'path'           => $this->get_template_path( $template_name ),
 				'valid_callback' => 'is_array',
