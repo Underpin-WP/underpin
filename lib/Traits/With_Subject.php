@@ -115,19 +115,4 @@ trait With_Subject {
 		return $args->get_state();
 	}
 
-	protected function decide( $key, Accumulator $accumulator ) {
-		$args = $this->setup_args( $key, $accumulator );
-
-		if ( ! $args instanceof Accumulator ) {
-			return $accumulator->get_state();
-		}
-
-		/* @var Observer $observer */
-		foreach ( array_reverse( Dependency_Processor::prepare( $this->observer_registry->get( $key ) )) as $observer ) {
-			$observer->update( $this, $args );
-		}
-
-		return $args->get_state();
-	}
-
 }
