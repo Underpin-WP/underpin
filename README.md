@@ -677,25 +677,6 @@ plugin_name()->loader_name()->filter('hook_name', new Observer('unique_action_id
 ]));
 ```
 
-### Notifications
-
-Notifications work much like filters, however they run in the _opposite_ direction as a filter. So higher priorities run
-later.
-
-```php
-plugin_name()->loader_name()->decide('decision_name', new Observer( 'decision', [      
-        'update'   => function ( $class, $accumulator ) {
-            // Condition in-which this should run
-            if($condition){
-              // Update the accumulator state. This sets the value when the decision is returned
-              $accumulator->set_state()
-            }
-        },
-        'priority' => 10, // Optionally set a priority to determine when this runs. Higher priorities get called last. Observers are sorted by deps, and then priority after.
-        'deps'     => ['observer_key', 'another_observer_key'] // list of decisions that should be checked BEFORE this one. If any dependencies dont' exist, this decision does not run.
-    ] ),)
-```
-
 ### Middleware
 
 Unlike Filters and notifications, this pattern always runs _when a loader item is registered_, and only runs once. This
