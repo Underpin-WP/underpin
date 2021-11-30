@@ -124,7 +124,6 @@ trait With_Subject {
 
 		/* @var Observer $observer */
 		foreach ( array_reverse( Dependency_Processor::prepare( $this->observer_registry->get( $key ) )) as $observer ) {
-			var_dump($observer->get_id());
 			$observer->update( $this, $args );
 		}
 
