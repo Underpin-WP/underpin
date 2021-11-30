@@ -610,6 +610,13 @@ abstract class Underpin {
 		// Set up classes that register things.
 		$this->_setup();
 
+		/**
+		 * Fires once the bootstrap is ready.
+		 *
+		 * @since 1.0.0
+		 */
+		$this->notify( 'ready', [ 'file' => $this->file(), 'class' => get_called_class() ] );
+
 	}
 
 	/**
