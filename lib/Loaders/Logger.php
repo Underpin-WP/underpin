@@ -368,26 +368,6 @@ final class Logger extends Object_Registry implements Singleton {
 				'psr_level'   => 'debug',
 			] ) );
 		}
-
-		// attach some defaults to PHP error logger
-		foreach ( $this as $key => $logger ) {
-			$logger = $this->get( $key );
-
-			// Force shutdown on critical errors
-			if ( in_array( $logger->psr_level, [ 'critical', 'alert', 'emergency' ] ) ) {
-				$logger->attach( 'log:item_logged', new Trigger_Exception('critical_error') );
-			}
-
-			// Trigger notices on logged items.
-			if ( in_array( $logger->psr_level, [ 'warning' ] ) ) {
-				$logger->attach( 'log:item_logged', new Trigger_Notice( 'notice', E_USER_NOTICE ) );
-			}
-
-			// Trigger notices on logged items.
-			if ( in_array( $logger->psr_level, [ 'error' ] ) ) {
-				$logger->attach( 'log:item_logged', new Trigger_Notice( 'warning', E_USER_WARNING ) );
-			}
-		}
 	}
 
 	/**
