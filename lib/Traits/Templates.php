@@ -402,7 +402,9 @@ trait Templates {
 				'default'        => $params,
 				'template_name'  => $template_name,
 				'path'           => $this->get_template_path( $template_name ),
-				'valid_callback' => 'is_array',
+				'valid_callback' => function ( $state ) {
+					return is_array( $state );
+				},
 			] ) );
 		} else {
 			$this->params[ $this->depth ] = $params;

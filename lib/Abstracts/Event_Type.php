@@ -161,10 +161,9 @@ abstract class Event_Type extends ArrayIterator {
 			 * @param Event_Type $instance The current event instance
 			 *
 			 */
-			$data = new Registry( $data );
 			$this->notify( 'log:init', [ 'code' => $code, 'message' => $message, 'data' => $data ] ) ;
 
-			$item = new $this->log_item_class( $this, $code, $message, (array) $data );
+			$item = new $this->log_item_class( $this, $code, $message, $data );
 
 			if ( ! $item instanceof Log_Item ) {
 				return new WP_Error(
