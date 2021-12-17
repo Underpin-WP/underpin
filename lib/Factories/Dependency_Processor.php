@@ -41,27 +41,19 @@ class Dependency_Processor {
 			/* @var Item_With_Dependencies $item */
 			$item = $queue[0];
 
-			// If this item has no dependencies, add it right away.
-			if ( empty( $item->get_dependencies() ) ) {
-				$items[]       = $item;
-				$queued_deps[] = $item->get_id();
-				array_shift( $queue );
-				continue;
-			}
-
 			// If this item depends on something that doesn't exist, skip it.
 			$unmet_dependencies = array_diff( $this->get_dependencies( $item ), $dependency_ids );
 
 			if ( ! empty( $unmet_dependencies ) ) {
-					Logger::log(
-						'debug',
-						'observer_detached',
-						'An event was detached because it has unmet dependencies',
-						[
-							'item_id'            => $item->id,
-							'unmet_dependencies' => $unmet_dependencies,
-						]
-					);
+				Logger::log(
+					'debug',
+					'observer_detached',
+					'An event was detached because it has unmet dependencies',
+					[
+						'item_id'            => $item->id,
+						'unmet_dependencies' => $unmet_dependencies,
+					]
+				);
 				array_shift( $queue );
 				continue;
 			}
@@ -79,12 +71,16 @@ class Dependency_Processor {
 			// If all dependencies have been added, add this after the last dependency
 			if ( empty( $dependencies_not_added_yet ) ) {
 				$last_dependency_key = $this->get_last_dependency( $item, $items );
-				$items               = array_merge(
-					array_slice( $items, 0, $last_dependency_key + 1 ),
-					[ $item ],
-					array_slice( $items, $last_dependency_key + 1, count( $items ) - $last_dependency_key + 1 )
-				);
-				$queued_deps[]       = $item->get_id();
+				if(0 === $last_dependency_key){
+					array_unshift($items, $item);
+				} else {
+					$items         = array_merge(
+						array_slice( $items, 0, $last_dependency_key + 1 ),
+						[ $item ],
+						array_slice( $items, $last_dependency_key + 1, count( $items ) - $last_dependency_key + 1 )
+					);
+				}
+				$queued_deps[] = $item->get_id();
 				array_shift( $queue );
 			}
 		}
