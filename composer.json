@@ -13,6 +13,6 @@
     "psr-4": {"Underpin\\":  "lib/"}
   },
     "require": {
-        "composer/installers": "^1.10"
+        "composer/installers": "^2.1"
     }
 }
