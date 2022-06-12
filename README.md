@@ -276,8 +276,8 @@ instance of `Underpin\Factories\Underpin_Instance` is created.
  *
  * @return \Underpin\Factories\Underpin_Instance The bootstrap for this plugin.
  */
-function plugin_name_replace_me() {
-	return Underpin\Abstracts\Underpin::make_class( [
+use Underpin\Helpers\Object_Helper;function plugin_name_replace_me() {
+	return Object_Helper::make_class( [
 		'root_namespace'      => 'Plugin_Name_Replace_Me',
 		'text_domain'         => 'plugin_name_replace_me',
 		'version'             => '1.0.0',
@@ -300,7 +300,7 @@ The example above could be converted into a class that looks like this:
 
 ```php
 
-class Plugin_Name_Replace_Me extends Underpin\Abstracts\Underpin{
+class Plugin_Name_Replace_Me extends \Underpin\Loaders\Underpin{
 
   
 	/**
@@ -414,8 +414,8 @@ Now, simply call this class using `Underpin::make_class`.
  *
  * @return \Underpin\Factories\Underpin_Instance The bootstrap for this plugin.
  */
-function plugin_name_replace_me() {
-	return Underpin\Abstracts\Underpin::make_class( [
+use Underpin\Helpers\Object_Helper;function plugin_name_replace_me() {
+	return Object_Helper::make_class( [
 	    'class' => 'Plugin_Name_Replace_Me',
 	    'args'  => [
 	        'custom_param'        => 'Custom paramater value',

@@ -3,36 +3,15 @@
 namespace Underpin\Factories;
 
 
-use Underpin\Traits\Instance_Setter;
-use WP_Error;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+use Closure;
 
 class Registry extends \Underpin\Abstracts\Registries\Registry {
 
-	use Instance_Setter;
-
-	protected $default_items = [];
-
-	protected $validate_callback;
-
-	public function __construct( $args = [] ) {
-		$this->set_values( $args );
-		parent::__construct();
+	public function __construct( protected Closure $validate_callback ) {
 	}
 
-	protected function set_default_items() {
-		foreach ( $this->default_items as $key => $value ) {
-			$this->add( $key, $value );
-		}
-
-		unset( $this->default_items );
-	}
-
-	protected function validate_item( $key, $value ) {
-		return $this->set_callable( $this->validate_callback, $key, $value );
+	protected function validate_item( $key, $value ): bool {
+		return call_user_func( $this->validate_callback, $key, $value ) === true;
 	}
 
 }

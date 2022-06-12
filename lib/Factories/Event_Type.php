@@ -1,0 +1,218 @@
+<?php
+/**
+ * Event Type Abstraction
+ * Handles events related to logging events of a specified type.
+ *
+ * @since   1.0.0
+ * @package Underpin\Abstracts
+ */
+
+namespace Underpin\Factories;
+
+
+use Exception;
+use Underpin\Exceptions\Invalid_Callback;
+use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Interfaces\Can_Convert_To_Array;
+use Underpin\Loaders\Logger;
+use Underpin\Traits\With_Subject;
+use Underpin\Interfaces;
+
+/**
+ * Class Event_Type
+ *
+ * @since   1.0.0
+ * @package Underpin\Abstracts
+ */
+class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Array {
+
+	use With_Subject;
+
+	protected array $events = [];
+
+
+	public function __construct(
+
+		/**
+		 * Event type
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var string
+		 */
+		protected string $type = '',
+
+		/**
+		 * The minimum volume to be able to see events of this type.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var int
+		 */
+		protected int    $volume = 2,
+
+		/**
+		 * A string used to group different event types together.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var string
+		 */
+		protected string $group = '',
+
+		/**
+		 * A human-readable description of this event type.
+		 * This is used in debug logs to make it easier to understand why this exists.
+		 *
+		 * @var string
+		 */
+		public string    $description = '',
+
+		/**
+		 * A human-readable name for this event type.
+		 * This is used in debug logs to make it easier to understand what this is.
+		 *
+		 * @var string
+		 */
+		protected string $name = '',
+
+		/**
+		 * PSR3 Syslog Level. Can be emergency, alert, critical, error, warning, notice, info, or debug.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @var string
+		 */
+		protected string $psr_level = '',
+
+		/**
+		 * When true, this event type will always be enabled. Otherwise, it is only enabled when debug mode is active.
+		 *
+		 * @var string|bool
+		 */
+		protected bool   $always_enabled = true
+	) {
+	}
+
+	/**
+	 * Placeholder to put actions
+	 */
+	public function do_actions() {
+		register_shutdown_function( [ $this, 'log_events' ] );
+	}
+
+	/**
+	 * Log events to the logger.
+	 *
+	 * @since 1.0.0
+	 * @since 2.0.0 - Added support for multiple logger writers
+	 */
+	public function log_events() {
+		$this->write_events( $this );
+	}
+
+	/**
+	 * Write the events in this event type to each specified writer.
+	 *
+	 * @since 2.0.0
+	 */
+	protected function write_events( Event_Type $event_type ) {
+		$this->notify( 'log:write', [ 'event_type' => $event_type ] );
+	}
+
+	public function is_enabled(): bool {
+		return true === $this->always_enabled || Logger::is_debug_mode_enabled();
+	}
+
+	/**
+	 * Enqueues an event to be logged in the system.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param Interfaces\Log_Item $item The item to log
+	 *
+	 * @return Log_Item|null The logged item.
+	 * @throws Invalid_Callback
+	 * @throws Invalid_Registry_Item
+	 */
+	public function log( Interfaces\Log_Item $item ): ?Interfaces\Log_Item {
+		if ( Logger::is_muted() || true === $this->is_enabled() ) {
+			return null;
+		}
+		return Logger::do_muted_action( function () use ( $item ) {
+
+			try {
+				/**
+				 * Makes it possible to add additional data to logged events.
+				 *
+				 * @since 2.0.0
+				 *
+				 * @param array      $data     list of data to add
+				 * @param string     $code     event code
+				 * @param string     $message  event message
+				 * @param Event_Type $instance The current event instance
+				 *
+				 */
+				$this->notify( 'log:init', $item );
+
+				$this->events[] = $item->set_type( $this );
+
+				$this->notify( 'log:item_logged', [ 'item' => $item ] );
+			} catch ( Invalid_Registry_Item $e ) {
+			} catch ( Unknown_Registry_Item $e ) {
+			}
+
+			return $item;
+		} );
+	}
+
+	/**
+	 * Logs an error from an exception object.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param Exception $exception Exception instance to log.
+	 * @param array     $data      array Data associated with this error message
+	 *
+	 * @return Log_Item|null The logged item.
+	 * @throws Invalid_Callback
+	 * @throws Invalid_Registry_Item
+	 */
+	public function log_exception( Exception $exception, array $data = array() ): ?Log_Item {
+		return $this->log( new Log_Item( code: $exception->getCode(), message: $exception->getMessage(), data: $data ) );
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_type(): string {
+		return $this->type;
+	}
+
+	/**
+	 * @return int
+	 */
+	function get_volume(): int {
+		return $this->volume;
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_group(): string {
+		return $this->group;
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_psr_level(): string {
+		return $this->psr_level;
+	}
+
+	public function to_array(): array {
+		return $this->events;
+	}
+
+}

@@ -2,15 +2,31 @@
 
 namespace Underpin\Interfaces;
 
-interface Item_With_Dependencies{
+interface Item_With_Dependencies extends Identifiable {
 
-	function get_dependencies();
+	/**
+	 * @return array
+	 */
+	function get_dependencies() : array;
 
-	function get_id();
+	/**
+	 * @return int
+	 */
+	function get_priority(): int;
 
-	function get_priority();
+	/**
+	 * Adds a dependency to the list of dependencies.
+	 * @param string $dependency_id
+	 *
+	 * @return static
+	 */
+	function add_dependency( string $dependency_id ): static;
 
-	function add_dependency( string $dependency_id );
-
-	function remove_dependency( string $dependency_id );
+	/**
+	 * Removes a dependency from the list of dependencies.
+	 * @param string $dependency_id
+	 *
+	 * @return mixed
+	 */
+	function remove_dependency( string $dependency_id ): static;
 }

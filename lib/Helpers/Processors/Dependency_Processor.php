@@ -1,8 +1,10 @@
 <?php
 
-namespace Underpin\Factories;
+namespace Underpin\Helpers\Processors;
 
-use Underpin\Abstracts\Underpin;
+use Underpin\Factories\Log_Item;
+use Underpin\Factories\Object_Registry;
+use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Item_With_Dependencies;
 use Underpin\Loaders\Logger;
 
@@ -12,17 +14,17 @@ class Dependency_Processor {
 	/**
 	 * @var Object_Registry List of items
 	 */
-	private $items;
+	private Object_Registry|\Underpin\Abstracts\Registries\Object_Registry $items;
 
 	public function __construct( \Underpin\Abstracts\Registries\Object_Registry $items ) {
 		$this->items = $items;
 	}
 
-	private function get_dependencies( Item_With_Dependencies $item ) {
+	private function get_dependencies( Item_With_Dependencies $item ): array {
 		$deps = $item->get_dependencies();
 		foreach ( $item->get_dependencies() as $dep ) {
-			$dep_item = $this->items->find( [ 'id' => $dep ] );
-			if ( ! is_wp_error( $dep_item ) ) {
+			$dep_item = $this->items->query()->equals( 'id', $dep )->find();
+			if ( $dep_item ) {
 				/** @var Item_With_Dependencies $dep_item */
 				$deps = array_merge( $deps, $this->get_dependencies( $dep_item ) );
 			}
@@ -31,9 +33,9 @@ class Dependency_Processor {
 		return $deps;
 	}
 
-	public function filter_dependencies() {
-		$dependency_ids = wp_list_pluck( (array) $this->items, 'id' );
-		$queue          = (array) $this->items;
+	public function filter_dependencies(): array {
+		$dependency_ids = Array_Helper::pluck( $this->items->to_array(), 'id' );
+		$queue          = $this->items->to_array();
 		$items          = [];
 		$queued_deps    = [];
 
@@ -47,12 +49,15 @@ class Dependency_Processor {
 			if ( ! empty( $unmet_dependencies ) ) {
 				Logger::log(
 					'debug',
-					'observer_detached',
-					'An event was detached because it has unmet dependencies',
-					[
-						'item_id'            => $item->id,
-						'unmet_dependencies' => $unmet_dependencies,
-					]
+					new Log_Item(
+						code   : 'observer_detached',
+						message: 'An event was detached because it has unmet dependencies',
+						context: 'id',
+						ref    : $item->get_id(),
+						data   : [
+							'unmet_dependencies' => $unmet_dependencies,
+						]
+					)
 				);
 				array_shift( $queue );
 				continue;
@@ -69,26 +74,24 @@ class Dependency_Processor {
 			}
 
 			// If all dependencies have been added, add this after the last dependency
-			if ( empty( $dependencies_not_added_yet ) ) {
-				$last_dependency_key = $this->get_last_dependency( $item, $items );
-				if(0 === $last_dependency_key){
-					array_unshift($items, $item);
-				} else {
-					$items         = array_merge(
-						array_slice( $items, 0, $last_dependency_key + 1 ),
-						[ $item ],
-						array_slice( $items, $last_dependency_key + 1, count( $items ) - $last_dependency_key + 1 )
-					);
-				}
-				$queued_deps[] = $item->get_id();
-				array_shift( $queue );
+			$last_dependency_key = $this->get_last_dependency( $item, $items );
+			if ( 0 === $last_dependency_key ) {
+				array_unshift( $items, $item );
+			} else {
+				$items = array_merge(
+					array_slice( $items, 0, $last_dependency_key + 1 ),
+					[ $item ],
+					array_slice( $items, $last_dependency_key + 1, count( $items ) - $last_dependency_key + 1 )
+				);
 			}
+			$queued_deps[] = $item->get_id();
+			array_shift( $queue );
 		}
 
 		return $items;
 	}
 
-	protected function get_last_dependency( Item_With_Dependencies $item, $items ) {
+	protected function get_last_dependency( Item_With_Dependencies $item, $items ): int|string {
 		$last_dependency = 0;
 		foreach ( $items as $key => $value ) {
 			/* @var Item_With_Dependencies $value */
@@ -99,7 +102,7 @@ class Dependency_Processor {
 			}
 
 			// If both items have the same dependencies, use priority.
-			if ( ! empty( array_intersect( $value->get_dependencies(), $item->get_dependencies() ) ) ) {
+			if ( ! empty( Array_Helper::intersect( $value->get_dependencies(), $item->get_dependencies() ) ) ) {
 				if ( $item->get_priority() > $value->get_priority() ) {
 					$last_dependency = $key;
 				}
@@ -109,7 +112,7 @@ class Dependency_Processor {
 		return $last_dependency;
 	}
 
-	public static function prepare( $items ) {
+	public static function prepare( $items ): array {
 		$instance = new self( $items );
 		return $instance->filter_dependencies();
 	}

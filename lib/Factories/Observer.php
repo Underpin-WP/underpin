@@ -4,26 +4,49 @@
 namespace Underpin\Factories;
 
 
-use Underpin\Abstracts\Storage;
-use Underpin\Traits\Instance_Setter;
+use Closure;
+use Underpin\Interfaces\Data_Provider;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+class Observer implements \Underpin\Interfaces\Observer {
 
-class Observer extends \Underpin\Abstracts\Observer {
+	protected array $deps = [];
 
-	use Instance_Setter;
-
-	protected $update;
-
-	public function __construct( $id, $args ) {
-		$this->set_values( $args );
-		parent::__construct( $id );
+	public function __construct(
+		protected string  $id,
+		protected Closure $update_callback,
+		protected int     $priority = 10
+	) {
 	}
 
-	public function update( $instance, Storage $args ) {
-		$this->set_callable( $this->update, $instance, $args );
+	public function get_priority(): int {
+		return $this->priority;
+	}
+
+	public function get_dependencies(): array {
+		return $this->deps;
+	}
+
+	public function add_dependency( string $dependency_id ): static {
+		$this->deps[] = $dependency_id;
+		return $this;
+	}
+
+	public function remove_dependency( string $dependency_id ): static {
+		foreach ( $this->deps as $key => $dep ) {
+			if ( $dep === $dependency_id ) {
+				unset( $this->deps[ $key ] );
+			}
+		}
+
+		return $this;
+	}
+
+	public function update( $instance, ?Data_Provider $args ): void {
+		call_user_func( $this->update_callback, $instance, $args );
+	}
+
+	public function get_id(): string {
+		return $this->id;
 	}
 
 }

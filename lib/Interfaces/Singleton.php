@@ -3,6 +3,6 @@ namespace Underpin\Interfaces;
 
 interface Singleton {
 
-	public static function instance() : self;
+	public static function instance() : static;
 
 }

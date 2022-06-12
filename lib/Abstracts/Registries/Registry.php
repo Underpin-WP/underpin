@@ -10,12 +10,10 @@
 
 namespace Underpin\Abstracts\Registries;
 
-use ArrayIterator;
-use WP_Error;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Helpers\Processors\List_Filter;
+use Underpin\Interfaces\Can_Convert_To_Array;
 
 /**
  * Class Registry.
@@ -23,45 +21,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since   1.0.0
  * @package Underpin\Abstracts
  */
-abstract class Registry extends ArrayIterator {
+abstract class Registry implements Can_Convert_To_Array {
 
-	/**
-	 * A human-readable description of this event type.
-	 * This is used in debug logs to make it easier to understand why this exists.
-	 *
-	 * @var string
-	 */
-	public $description = '';
-
-	/**
-	 * A human-readable name for this event type.
-	 * This is used in debug logs to make it easier to understand what this is.
-	 *
-	 * @var string
-	 */
-	public $name = '';
-
-	/**
-	 * Set to true to force this registry to skip logging.
-	 *
-	 * @since 1.3.1
-	 *
-	 * @var bool
-	 */
-	protected $skip_logging = false;
-
-	/**
-	 * Registry constructor.
-	 */
-	public function __construct() {
-		parent::__construct();
-		$this->set_default_items();
-	}
-
-	/**
-	 * Sets the default items for the registry.
-	 */
-	abstract protected function set_default_items();
+	protected array $storage = [];
 
 	/**
 	 * Validates an item. This runs just before adding items to the registry.
@@ -70,57 +32,88 @@ abstract class Registry extends ArrayIterator {
 	 *
 	 * @param string $key   The key to validate.
 	 * @param mixed  $value The value to validate.
-	 * @return true|WP_Error true if the item is valid, WP_Error otherwise.
+	 *
+	 * @return boolean true if the item is valid.
+	 * @throws Invalid_Registry_Item
 	 */
-	abstract protected function validate_item( $key, $value );
+	abstract protected function validate_item( string $key, mixed $value ): bool;
 
-	protected function _add( $key, $value ) {
-		return $this[ $key ] = $value;
+	/**
+	 * Adds the item to the registry.
+	 *
+	 * @param string $key   The key to validate.
+	 * @param mixed  $value The value to validate.
+	 *
+	 * @return void
+	 */
+	protected function _add( string $key, mixed $value ): void {
+		$this->storage[ $key ] = $value;
 	}
 
 	/**
-	 * Adds an item to the registry
+	 * Returns true if an item is registered to this registry.
+	 *
+	 * @param string $key The key to check.
+	 *
+	 * @return bool True if registered, otherwise false.
+	 */
+	public function is_registered( string $key ): bool {
+		return isset( $this->storage[ $key ] );
+	}
+
+	/**
+	 * Validates, and adds an item to the registry.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param string $key   The key to validate.
 	 * @param mixed  $value The value to validate.
 	 *
-	 * @return true|WP_Error true if the item is valid, WP_Error otherwise.
+	 * @return static The current instance
+	 * @throws Invalid_Registry_Item
 	 */
-	public function add( $key, $value ) {
+	public function add( string $key, mixed $value ): static {
 		$valid = $this->validate_item( $key, $value );
 
 		if ( true === $valid ) {
 			$this->_add( $key, $value );
 		}
 
-		return $valid;
+		return $this;
 	}
 
 	/**
 	 * Retrieves a registered item.
 	 *
 	 * @param string $key The identifier for the item.
+	 *
 	 * @return mixed the item value.
+	 * @throws Unknown_Registry_Item
 	 */
-	public function get( $key ) {
-		if ( isset( $this[ $key ] ) ) {
-			return $this[$key];
+	public function get( string $key ): mixed {
+		if ( $this->is_registered( $key ) ) {
+			return $this->storage[ $key ];
 		} else {
-			$error = new WP_Error(
-				'key_not_set',
-				'Specified key is not set.',
-				[
-					'key'           => $key,
-					'name'          => $this->name,
-					'description'   => $this->description,
-					'registry_type' => get_called_class(),
-				]
-			);
-
-			return $error;
+			throw new Unknown_Registry_Item( $key, get_called_class() );
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function to_array(): array {
+		return $this->storage;
+	}
+
+	/**
+	 * Instantiates a list filter query against this registry.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return List_Filter query object
+	 */
+	public function query(): List_Filter {
+		return new List_Filter( $this->to_array() );
 	}
 
 }

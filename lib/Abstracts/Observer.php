@@ -3,59 +3,57 @@
 namespace Underpin\Abstracts;
 
 
-use Underpin\Interfaces\Item_With_Dependencies;
-use WP_Error;
+use Underpin\Helpers\Array_Helper;
+use Underpin\Helpers\Processors\Array_Processor;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+abstract class Observer implements \Underpin\Interfaces\Observer {
 
-abstract class Observer implements Item_With_Dependencies {
+	protected array  $dependencies = [];
 
-	protected $id;
-
-	public    $name        = '';
-	public    $description = '';
-	protected $priority    = 10;
-
-	protected $deps = [];
-
-	public function __construct( $id ) {
-		$this->id = $id;
+	public function __construct( protected string $id, protected int $priority = 10 ) {
 	}
 
-	public function get_id() {
+	/**
+	 * @inheritDoc
+	 */
+	public function get_id(): string {
 		return $this->id;
 	}
 
-	public function get_priority() {
+	/**
+	 * @inheritDoc
+	 */
+	public function get_priority(): int {
 		return $this->priority;
 	}
 
-	public function get_dependencies() {
-		return $this->deps;
+	/**
+	 * @inheritDoc
+	 */
+	public function get_dependencies(): array {
+		return $this->dependencies;
 	}
 
-	public function add_dependency( string $dependency_id ) {
-		return $this->deps[] = $dependency_id;
+	/**
+	 * @inheritDoc
+	 */
+	public function add_dependency( string $dependency_id ): static {
+		Array_Helper::append( $this->dependencies, $dependency_id );
+
+		return $this;
 	}
 
-	public function remove_dependency( string $dependency_id ) {
-		foreach ( $this->deps as $key => $dep ) {
-			if ( $dep === $dependency_id ) {
-				unset( $this->deps[ $key ] );
-			}
-		}
-	}
+	/**
+	 * @inheritDoc
+	 */
+	public function remove_dependency( string $dependency_id ): static {
+		$this->dependencies = ( new Array_Processor( $this->dependencies ) )
+			->flip()
+			->remove( $dependency_id )
+			->flip()
+			->to_array();
 
-	abstract public function update( $instance, Storage $args );
-
-	public function __get( $key ) {
-		if ( isset( $this->$key ) ) {
-			return $this->$key;
-		} else {
-			return new WP_Error( 'observer_param_not_set', 'The observer value for ' . $key . ' could not be found.' );
-		}
+		return $this;
 	}
 
 }
