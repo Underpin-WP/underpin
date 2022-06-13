@@ -74,10 +74,9 @@ abstract class Object_Registry extends Registry {
 		return $this;
 	}
 
-	public function bind(Registration_Group $items)
-	{
-		foreach($items->get_items() as $item){
-			$this->add($items->get_key($item), $items->get_value($item));
+	public function bind( Registration_Group $items ) {
+		foreach ( $items->get_items() as $item ) {
+			$this->add( $items->get_key( $item ), $items->get_value( $item ) );
 		}
 	}
 
@@ -101,7 +100,8 @@ abstract class Object_Registry extends Registry {
 				new Log_Item(
 					code   : 'middleware_actions_ran',
 					message: 'The middleware actions for a registry item ran.',
-					ref    : $key )
+					ref    : $key
+				)
 			);
 		}
 
@@ -139,4 +139,5 @@ abstract class Object_Registry extends Registry {
 
 		throw new Invalid_Registry_Item( 'The specified item could not be instantiated. Invalid instance type' );
 	}
+
 }

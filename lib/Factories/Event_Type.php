@@ -11,13 +11,15 @@ namespace Underpin\Factories;
 
 
 use Exception;
+use Underpin\Enums\Logger_Item_Events;
 use Underpin\Exceptions\Invalid_Callback;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Interfaces\Can_Convert_To_Array;
+use Underpin\Interfaces\Data_Provider;
 use Underpin\Loaders\Logger;
-use Underpin\Traits\With_Subject;
 use Underpin\Interfaces;
+use Underpin\Traits\With_Broadcaster;
 
 /**
  * Class Event_Type
@@ -25,9 +27,9 @@ use Underpin\Interfaces;
  * @since   1.0.0
  * @package Underpin\Abstracts
  */
-class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Array {
+class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfaces\Data_Provider, Interfaces\Feature_Extension {
 
-	use With_Subject;
+	use With_Broadcaster;
 
 	protected array $events = [];
 
@@ -41,7 +43,7 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 		 *
 		 * @var string
 		 */
-		protected string $type = '',
+		public readonly string $type = '',
 
 		/**
 		 * The minimum volume to be able to see events of this type.
@@ -50,7 +52,7 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 		 *
 		 * @var int
 		 */
-		protected int    $volume = 2,
+		public readonly int    $volume = 2,
 
 		/**
 		 * A string used to group different event types together.
@@ -59,7 +61,7 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 		 *
 		 * @var string
 		 */
-		protected string $group = '',
+		public readonly string $group = '',
 
 		/**
 		 * A human-readable description of this event type.
@@ -67,7 +69,7 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 		 *
 		 * @var string
 		 */
-		public string    $description = '',
+		public readonly string $description = '',
 
 		/**
 		 * A human-readable name for this event type.
@@ -75,7 +77,7 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 		 *
 		 * @var string
 		 */
-		protected string $name = '',
+		public readonly string $name = '',
 
 		/**
 		 * PSR3 Syslog Level. Can be emergency, alert, critical, error, warning, notice, info, or debug.
@@ -84,21 +86,14 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 		 *
 		 * @var string
 		 */
-		protected string $psr_level = '',
-
-		/**
-		 * When true, this event type will always be enabled. Otherwise, it is only enabled when debug mode is active.
-		 *
-		 * @var string|bool
-		 */
-		protected bool   $always_enabled = true
+		public readonly string $psr_level = '',
 	) {
 	}
 
 	/**
 	 * Placeholder to put actions
 	 */
-	public function do_actions() {
+	public function do_actions(): void {
 		register_shutdown_function( [ $this, 'log_events' ] );
 	}
 
@@ -109,20 +104,7 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 	 * @since 2.0.0 - Added support for multiple logger writers
 	 */
 	public function log_events() {
-		$this->write_events( $this );
-	}
-
-	/**
-	 * Write the events in this event type to each specified writer.
-	 *
-	 * @since 2.0.0
-	 */
-	protected function write_events( Event_Type $event_type ) {
-		$this->notify( 'log:write', [ 'event_type' => $event_type ] );
-	}
-
-	public function is_enabled(): bool {
-		return true === $this->always_enabled || Logger::is_debug_mode_enabled();
+		$this->broadcast( Logger_Item_Events::write_events, $this );
 	}
 
 	/**
@@ -133,38 +115,18 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 	 * @param Interfaces\Log_Item $item The item to log
 	 *
 	 * @return Log_Item|null The logged item.
-	 * @throws Invalid_Callback
-	 * @throws Invalid_Registry_Item
 	 */
 	public function log( Interfaces\Log_Item $item ): ?Interfaces\Log_Item {
-		if ( Logger::is_muted() || true === $this->is_enabled() ) {
-			return null;
+		Logger::mute();
+		try {
+			$this->events[] = $item->set_type( $this );
+
+			$this->broadcast( Logger_Item_Events::event_logged, $item );
+		} catch ( Invalid_Registry_Item|Unknown_Registry_Item $e ) {
 		}
-		return Logger::do_muted_action( function () use ( $item ) {
+		Logger::unmute();
 
-			try {
-				/**
-				 * Makes it possible to add additional data to logged events.
-				 *
-				 * @since 2.0.0
-				 *
-				 * @param array      $data     list of data to add
-				 * @param string     $code     event code
-				 * @param string     $message  event message
-				 * @param Event_Type $instance The current event instance
-				 *
-				 */
-				$this->notify( 'log:init', $item );
-
-				$this->events[] = $item->set_type( $this );
-
-				$this->notify( 'log:item_logged', [ 'item' => $item ] );
-			} catch ( Invalid_Registry_Item $e ) {
-			} catch ( Unknown_Registry_Item $e ) {
-			}
-
-			return $item;
-		} );
+		return $item;
 	}
 
 	/**
@@ -213,6 +175,24 @@ class Event_Type implements \Underpin\Interfaces\Event_Type, Can_Convert_To_Arra
 
 	public function to_array(): array {
 		return $this->events;
+	}
+
+	protected function broadcast( Logger_Item_Events $id, ?Data_Provider $provider = null ): static {
+		$this->get_broadcaster()->broadcast( $id->name, $provider );
+
+		return $this;
+	}
+
+	/**
+	 * @param Logger_Item_Events $key
+	 * @param Observer           $observer
+	 *
+	 * @return $this
+	 */
+	public function attach( Logger_Item_Events $key, Observer $observer ): static {
+		$this->get_broadcaster()->attach( $key->name, $observer );
+
+		return $this;
 	}
 
 }

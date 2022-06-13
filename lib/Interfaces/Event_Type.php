@@ -64,11 +64,4 @@ interface Event_Type {
 	 * @return Log_Item|null The logged item.
 	 */
 	function log_exception( Exception $exception, array $data = array() ): ?Log_Item;
-
-	/**
-	 * Returns true if this event type is enabled. Otherwise false.
-	 *
-	 * @return bool
-	 */
-	function is_enabled(): bool;
 }

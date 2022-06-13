@@ -28,7 +28,7 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 	 *
 	 * @var string Event code
 	 */
-	public string $type;
+	public readonly string $type;
 
 
 	/**
@@ -59,7 +59,7 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		 *
 		 * @var string Event code
 		 */
-		public string          $code,
+		public readonly string          $code,
 		/**
 		 * Message
 		 *
@@ -67,7 +67,7 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		 *
 		 * @var string Message.
 		 */
-		public string          $message,
+		public readonly string          $message,
 
 		/**
 		 * Context.
@@ -76,8 +76,7 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		 *
 		 * @var mixed Reference Context. Usually a slug that offers context to what the ID is.
 		 */
-		public string          $context = '',
-
+		public readonly string          $context = '',
 
 		/**
 		 * Ref.
@@ -86,8 +85,8 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		 *
 		 * @var mixed Reference. Usually an id or something related to this item.
 		 */
-		public int|string|null $ref = null,
-		public array           $data = array()
+		public readonly int|string|null $ref = null,
+		public readonly array           $data = array()
 	) {
 	}
 
