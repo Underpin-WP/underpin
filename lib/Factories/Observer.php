@@ -13,7 +13,7 @@ class Observer implements \Underpin\Interfaces\Observer {
 
 	public function __construct(
 		protected string  $id,
-		protected Closure $update_callback,
+		protected Closure $callback,
 		protected int     $priority = 10
 	) {
 	}
@@ -42,7 +42,7 @@ class Observer implements \Underpin\Interfaces\Observer {
 	}
 
 	public function update( $instance, ?Data_Provider $args ): void {
-		call_user_func( $this->update_callback, $instance, $args );
+		call_user_func( $this->callback, $instance, $args );
 	}
 
 	public function get_id(): string {

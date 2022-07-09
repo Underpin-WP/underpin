@@ -3,10 +3,13 @@
 namespace Underpin\Helpers\Processors;
 
 use ReflectionException;
+use Stringable;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 
-class Array_Processor implements Can_Convert_To_Array {
+class Array_Processor implements Can_Convert_To_Array, Stringable {
+
+	private string $separator = ',';
 
 	public function __construct( protected array $subject = [] ) {
 	}
@@ -29,6 +32,30 @@ class Array_Processor implements Can_Convert_To_Array {
 	 */
 	public function flip(): static {
 		$this->subject = Array_Helper::flip( $this->subject );
+
+		return $this;
+	}
+
+	public function keys(): static {
+		$this->subject = array_keys( $this->subject );
+
+		return $this;
+	}
+
+	public function each( callable $callback ) {
+		$this->subject = Array_Helper::each( $this->subject, $callback );
+
+		return $this;
+	}
+
+	public function after( int $position ): static {
+		$this->subject = Array_Helper::after( $this->subject, $position );
+
+		return $this;
+	}
+
+	public function before( int $position ): static {
+		$this->subject = Array_Helper::before( $this->subject, $position );
 
 		return $this;
 	}
@@ -81,6 +108,12 @@ class Array_Processor implements Can_Convert_To_Array {
 	 */
 	public function flatten( string $group_key = 'group' ): static {
 		$this->subject = Array_Helper::flatten( $this->subject, $group_key );
+
+		return $this;
+	}
+
+	public function to_indexed( string $key = 'key' ): static {
+		$this->subject = Array_Helper::to_indexed( $this->subject, $key );
 
 		return $this;
 	}
@@ -255,6 +288,19 @@ class Array_Processor implements Can_Convert_To_Array {
 	}
 
 	/**
+	 * Filters the array to only contain values contained in all provided arrays.
+	 *
+	 * @param array ...$items
+	 *
+	 * @return static
+	 */
+	public function intersect_keys( array ...$items ): static {
+		$this->subject = Array_Helper::intersect_keys( $this->subject, ...$items );
+
+		return $this;
+	}
+
+	/**
 	 * Filters the array to only contain values only contained in a single array.
 	 *
 	 * @param array ...$items
@@ -278,6 +324,16 @@ class Array_Processor implements Can_Convert_To_Array {
 		$this->subject = Array_Helper::reverse( $this->subject, $preserve_keys );
 
 		return $this;
+	}
+
+	public function set_separator( string $separator ): static {
+		$this->separator = $separator;
+
+		return $this;
+	}
+
+	public function __toString(): string {
+		return implode( $this->separator, $this->subject );
 	}
 
 }

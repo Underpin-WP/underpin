@@ -5,6 +5,7 @@ namespace Underpin\Helpers;
 use Closure;
 use ReflectionFunction;
 use SplFileObject;
+use Underpin\Exceptions\Item_Not_Found;
 use Underpin\Exceptions\Invalid_Field;
 use Underpin\Helpers\Processors\Array_Processor;
 
@@ -24,6 +25,53 @@ class Array_Helper {
 	 */
 	public static function map( array $subject, callable $callback ): array {
 		return array_map( $callback, $subject );
+	}
+
+	public static function where_not_null( array $subject ): array {
+		return self::filter( $subject, fn ( $item ) => $item !== null );
+	}
+
+	/**
+	 * Maps values, retaining keys if the array is associative.
+	 *
+	 * @param array    $subject
+	 * @param callable $callback
+	 *
+	 * @return array
+	 */
+	public static function each( array $subject, callable $callback ): array {
+		if ( Array_Helper::is_associative( $subject ) ) {
+			$result = [];
+			foreach ( $subject as $key => $value ) $result[ $key ] = $callback( $value );
+		} else {
+			$result = Array_Helper::map( $subject );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Retrieve items after the specified array position.
+	 *
+	 * @param array $subject  the array
+	 * @param int   $position The position to retrieve after
+	 *
+	 * @return array
+	 */
+	public static function after( array $subject, int $position ): array {
+		return array_slice( $subject, $position );
+	}
+
+	/**
+	 * Retrieve items before the specified array position.
+	 *
+	 * @param array $subject  the array
+	 * @param int   $position The position to retrieve before
+	 *
+	 * @return array
+	 */
+	public static function before( array $subject, int $position ): array {
+		return Array_Helper::diff( Array_Helper::after( $subject, $position ) );
 	}
 
 	/**
@@ -51,6 +99,38 @@ class Array_Helper {
 	 */
 	public static function values( array $subject ): array {
 		return array_values( $subject );
+	}
+
+	/**
+	 * Returns the keys of the array.
+	 *
+	 * @param array $subject
+	 *
+	 * @return array
+	 */
+	public static function keys( array $subject ): array {
+		return array_keys( $subject );
+	}
+
+	/**
+	 * Retrieves an item from a dot-based syntax
+	 *
+	 * @param array  $subject
+	 * @param string $dot
+	 *
+	 * @return mixed
+	 * @throws Item_Not_Found
+	 */
+	public static function dot( array $subject, string $dot ): mixed {
+		foreach ( explode( '.', $dot ) as $item ) {
+			if ( ! isset( $subject[ $item ] ) ) {
+				throw new Item_Not_Found( $item );
+			} else {
+				$subject = $subject[ $item ];
+			}
+		}
+
+		return $subject;
 	}
 
 	public static function remove( array $subject, string|int $key ): array {
@@ -122,6 +202,24 @@ class Array_Helper {
 				$new_item[ $group_key ] = $group_id;
 				$result[]               = $new_item;
 			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Updates the array to contain a key equal to the array's key value.
+	 *
+	 * @param array  $subject
+	 * @param string $key
+	 *
+	 * @return array
+	 */
+	public static function to_indexed( array $subject, string $key = 'key' ): array {
+		$result = [];
+
+		foreach ( $subject as $subject_key => $value ) {
+			$result[] = Array_Helper::merge( [ $key => $subject_key ], Array_Helper::wrap( $value ) );
 		}
 
 		return $result;
@@ -354,7 +452,18 @@ class Array_Helper {
 	 * @return array
 	 */
 	public static function intersect( array ...$items ): array {
-		return array_intersect( ...self::map( [ 'Array_Helper::wrap' ], func_get_args() ) );
+		return array_intersect( ...self::map( func_get_args(), [ Array_Helper::class, 'wrap' ] ) );
+	}
+
+	/**
+	 * Returns an array that contains the values contained in all arrays.
+	 *
+	 * @param array ...$items
+	 *
+	 * @return array
+	 */
+	public static function intersect_keys( array ...$items ): array {
+		return array_intersect_key( ...self::map( func_get_args(), [ Array_Helper::class, 'wrap' ] ) );
 	}
 
 	/**
@@ -365,7 +474,7 @@ class Array_Helper {
 	 * @return array
 	 */
 	public static function diff( array ...$items ): array {
-		return array_diff( ...self::map( [ 'Array_Helper::wrap' ], func_get_args() ) );
+		return array_diff( ...self::map( func_get_args(), [ Array_Helper::class, 'wrap' ] ) );
 	}
 
 }

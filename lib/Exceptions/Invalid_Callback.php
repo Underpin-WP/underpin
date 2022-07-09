@@ -2,8 +2,6 @@
 
 namespace Underpin\Exceptions;
 
-use Underpin\Abstracts\Exception;
-
 
 class Invalid_Callback extends Exception {
 
@@ -11,7 +9,7 @@ class Invalid_Callback extends Exception {
 		$value_type = gettype( $callback_value );
 		parent::__construct(
 			message: "The provided callback is invalid. Expected closure, got $value_type",
-			type   : $type
+			code   : $type, type: $type, previous: null, ref: null
 		);
 	}
 

@@ -2,8 +2,7 @@
 
 namespace Underpin\Loaders;
 
-use Closure;
-use Underpin\Abstracts\Exception;
+use Exception;
 use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Enums\Logger_Events;
 use Underpin\Exceptions\Invalid_Callback;
@@ -12,11 +11,10 @@ use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Data_Providers\Int_Provider;
 use Underpin\Factories\Event_Type;
 use Underpin\Factories\Log_Item;
-use Underpin\Factories\Observer;
 use Underpin\Interfaces as Interfaces;
-use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Singleton;
 use Underpin\Traits\With_Broadcaster;
+use UnitEnum;
 
 
 /**
@@ -26,7 +24,7 @@ use Underpin\Traits\With_Broadcaster;
  * @since   1.0.0
  * @package Underpin\Loaders
  */
-final class Logger extends Object_Registry implements Singleton {
+final class Logger extends Object_Registry implements Singleton, Interfaces\Broadcaster {
 
 	use With_Broadcaster;
 
@@ -154,6 +152,94 @@ final class Logger extends Object_Registry implements Singleton {
 		return $event_type->log( $log_item );
 	}
 
+	protected static function auto_log(string $type, Log_Item|Exception $item): ?Log_Item {
+		if($item instanceof Log_Item){
+			return self::log($type, $item);
+		} else{
+			return self::log_exception($type, $item);
+		}
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function debug( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('debug', $item);
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function info( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('info', $item);
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function notice( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('notice', $item);
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function warning( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('warning', $item);
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function error( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('error', $item);
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function critical( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('critical', $item);
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function alert( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('alert', $item);
+	}
+
+	/**
+	 * Logs an item of the specified type.
+	 * @param Log_Item|Exception $item A log item to log, or an exception.
+	 *
+	 * @return Log_Item|null
+	 */
+	public static function emergency( Log_Item|Exception $item ): ?Log_Item {
+		return self::auto_log('emergency', $item);
+	}
+
 	/**
 	 * Mutes the logger.
 	 *
@@ -194,13 +280,14 @@ final class Logger extends Object_Registry implements Singleton {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string    $type      Error log type
-	 * @param Exception $exception Exception instance to log.
-	 * @param array     $data      array Data associated with this error message
+	 * @param string          $type      Error log type
+	 * @param Exception       $exception Exception instance to log.
+	 * @param string|int|null $ref
+	 * @param array           $data      array Data associated with this error message
 	 *
 	 * @return ?Log_Item Log Item, with error message if successful, otherwise null.
 	 */
-	public static function log_exception( string $type, Exception $exception, array $data = array() ): ?Log_Item {
+	public static function log_exception( string $type, Exception $exception, string|int|null $ref = null, array $data = array() ): ?Log_Item {
 		try {
 			$event_type = self::instance()->get( $type );
 
@@ -208,7 +295,7 @@ final class Logger extends Object_Registry implements Singleton {
 				return null;
 			}
 
-			$error = $event_type->log_exception( $exception, $data );
+			$error = $event_type->log_exception( $exception, $ref, $data );
 		} catch ( Invalid_Callback|Invalid_Registry_Item|Unknown_Registry_Item $e ) {
 			// Fail silently if the instance is invalid.
 			return null;
@@ -313,24 +400,31 @@ final class Logger extends Object_Registry implements Singleton {
 		$this->broadcast( Logger_Events::ready );
 	}
 
-	protected function broadcast( Logger_Events $id, ?Data_Provider $provider = null ): static {
-		$this->get_broadcaster()->broadcast( $id->name, $provider );
+	/**
+	 * @param UnitEnum $key The enum case to use as the key.
+	 * @param Interfaces\Observer $observer
+	 *
+	 * @see Logger_Events
+	 *
+	 * @return $this
+	 */
+	public function attach( UnitEnum $key, Interfaces\Observer $observer ): static {
+		$this->get_broadcaster()->attach( $key, $observer );
 
 		return $this;
 	}
 
 	/**
-	 * @param Logger_Events $key
-	 * @param string        $id
-	 * @param Closure       $update_callback
-	 * @param int           $priority
+	 * @param UnitEnum $key The enum case to use as the key.
+	 * @param string $observer_id The instance to detach.
+	 *
+	 * @see Logger_Events
 	 *
 	 * @return $this
 	 */
-	public function attach( Logger_Events $key, string $id, Closure $update_callback, int $priority = 10 ): static {
-		$this->get_broadcaster()->attach( $key->name, new Observer( $id, $update_callback, $priority ) );
+	function detach( UnitEnum $key, string $observer_id ): static {
+		$this->get_broadcaster()->detach( $key, $observer_id );
 
 		return $this;
 	}
-
 }

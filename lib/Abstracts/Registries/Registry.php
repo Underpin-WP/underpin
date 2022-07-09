@@ -13,7 +13,7 @@ namespace Underpin\Abstracts\Registries;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Processors\List_Filter;
-use Underpin\Interfaces\Can_Convert_To_Array;
+use Underpin\Interfaces\Queryable;
 
 /**
  * Class Registry.
@@ -21,7 +21,7 @@ use Underpin\Interfaces\Can_Convert_To_Array;
  * @since   1.0.0
  * @package Underpin\Abstracts
  */
-abstract class Registry implements Can_Convert_To_Array {
+abstract class Registry implements Queryable {
 
 	protected array $storage = [];
 

@@ -134,15 +134,14 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Exception $exception Exception instance to log.
-	 * @param array     $data      array Data associated with this error message
+	 * @param Exception       $exception Exception instance to log.
+	 * @param string|int|null $ref
+	 * @param array           $data      array Data associated with this error message
 	 *
 	 * @return Log_Item|null The logged item.
-	 * @throws Invalid_Callback
-	 * @throws Invalid_Registry_Item
 	 */
-	public function log_exception( Exception $exception, array $data = array() ): ?Log_Item {
-		return $this->log( new Log_Item( code: $exception->getCode(), message: $exception->getMessage(), data: $data ) );
+	public function log_exception( Exception $exception, string|int|null $ref = null, array $data = array() ): ?Log_Item {
+		return $this->log( new Log_Item( code: $exception->getCode(), message: $exception->getMessage(), ref: $ref, data: $data ) );
 	}
 
 	/**

@@ -58,10 +58,11 @@ interface Event_Type {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Exception $exception Exception instance to log.
-	 * @param array     $data      array Data associated with this error message
+	 * @param Exception       $exception Exception instance to log.
+	 * @param string|int|null $ref
+	 * @param array           $data      array Data associated with this error message
 	 *
 	 * @return Log_Item|null The logged item.
 	 */
-	function log_exception( Exception $exception, array $data = array() ): ?Log_Item;
+	function log_exception( Exception $exception, string|int|null $ref, array $data = array() ): ?Log_Item;
 }

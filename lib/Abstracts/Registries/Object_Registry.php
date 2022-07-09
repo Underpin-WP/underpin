@@ -15,7 +15,6 @@ use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Object_Helper;
 use Underpin\Interfaces\Feature_Extension;
-use Underpin\Interfaces\Registration_Group;
 use Underpin\Interfaces\With_Middleware;
 use Underpin\Loaders\Logger;
 
@@ -74,12 +73,6 @@ abstract class Object_Registry extends Registry {
 		return $this;
 	}
 
-	public function bind( Registration_Group $items ) {
-		foreach ( $items->get_items() as $item ) {
-			$this->add( $items->get_key( $item ), $items->get_value( $item ) );
-		}
-	}
-
 	/**
 	 * Does the actions needed to set up a newly added registered object.
 	 *
@@ -130,14 +123,14 @@ abstract class Object_Registry extends Registry {
 		}
 
 		if ( $this->is_registered( $key ) ) {
-			throw new Invalid_Registry_Item( "The specified key is already registered." );
+			throw new Invalid_Registry_Item( "The specified key is already registered.", 0, 'error', null, null );
 		}
 
 		if ( $value === $this->abstraction_class || is_subclass_of( $value, $this->abstraction_class ) || $value instanceof $this->abstraction_class ) {
 			return true;
 		}
 
-		throw new Invalid_Registry_Item( 'The specified item could not be instantiated. Invalid instance type' );
+		throw new Invalid_Registry_Item( 'The specified item could not be instantiated. Invalid instance type', 0, 'error', null, null );
 	}
 
 }

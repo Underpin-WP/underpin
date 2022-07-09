@@ -61,14 +61,14 @@ class Object_Helper {
 	 *
 	 * @throws Invalid_Field
 	 */
-	public static function pluck( object $value, string $field ) {
+	public static function pluck( object $value, string $field ): mixed {
 		// Bail early if this field is not in this object.
 		if ( is_callable( [ $value, "get_$field" ] ) ) {
 			$object_field = call_user_func( [ $value, "get_$field" ] );
 		} elseif ( property_exists( $value, $field ) ) {
 			$object_field = $value->$field;
 		} else {
-			throw new Invalid_Field( message: 'The provided field cannot be retrieved.' );
+			throw new Invalid_Field( message: 'The provided field cannot be retrieved.', code: 0, type: 'error', previous: null, ref: null );
 		}
 
 		return $object_field;

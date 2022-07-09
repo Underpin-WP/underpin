@@ -5,12 +5,12 @@ namespace Underpin\Interfaces;
 
 namespace Underpin\Interfaces;
 
+use UnitEnum;
+
 interface Broadcaster {
 
-	function attach( string $key, Observer $observer ): void;
+	function attach( UnitEnum $key, Observer $observer ): static;
 
-	function detach( string $key, string $observer_id ): void;
-
-	function broadcast( string $key, ?Data_Provider $args = null ): void;
+	function detach( UnitEnum $key, string $observer_id ): static;
 
 }

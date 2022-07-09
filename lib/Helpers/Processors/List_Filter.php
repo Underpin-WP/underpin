@@ -52,13 +52,32 @@ class List_Filter {
 			/* @var string $type */
 			extract( $this->prepare_field( $key ) );
 
+
+			// Make an instanceof check. If this fails, don't bother going any further.
+			if ( 'instanceof' === $field ) {
+				$instances       = Array_Helper::wrap( $arg );
+				$valid_instances = [];
+				foreach ( $instances as $instance ) {
+					$valid_instances[] = $item instanceof $instance;
+				}
+
+				$valid = match ( $type ) {
+					Filter::not_in->value => empty( $valid_instances ),
+					Filter::in->value     => ! empty( $valid_instances ),
+					Filter::and->value    => count( $valid_instances ) === count( $instance ),
+					Filter::equals->value => isset( $valid_instances[0] ) && $fields[0] === $arg
+				};
+
+				break;
+			}
+
 			try {
-				$field = Object_Helper::pluck( $item, $field );
+				$value = Object_Helper::pluck( $item, $field );
 			} catch ( Invalid_Field $e ) {
 				continue;
 			}
 
-			$fields = Array_Helper::intersect( $arg, $field );
+			$fields = Array_Helper::intersect( $arg, $value );
 
 			// Check based on type.
 			$valid = match ( $type ) {
@@ -145,6 +164,10 @@ class List_Filter {
 
 		// Filter out items, if loader keys are specified
 		foreach ( $this->filter_item_keys() as $item_key ) {
+			if ( is_object( $item_key ) ) {
+				$item_key = $item_key::class;
+			}
+
 			if ( ! isset( $this->items[ $item_key ] ) ) {
 				continue;
 			}
@@ -164,6 +187,58 @@ class List_Filter {
 	}
 
 	/**
+	 * Sets the query to only include items that are not an of the provided instances.
+	 *
+	 * @param array $values The values to filter.
+	 *
+	 * @return $this
+	 */
+	public function not_instance_of( ...$values ): static {
+		$this->args[ Filter::not_in->field( 'instanceof' ) ] = $values;
+
+		return $this;
+	}
+
+	/**
+	 * Sets the query to only include items that are an instance of all the provided instances.
+	 *
+	 * @param array $values The values to filter.
+	 *
+	 * @return $this
+	 */
+	public function has_all_instances( ...$values ): static {
+		$this->args[ Filter::and->field( 'instanceof' ) ] = $values;
+
+		return $this;
+	}
+
+	/**
+	 * Sets the query to only include items that are instance of any the provided instances.
+	 *
+	 * @param array $values The values to filter.
+	 *
+	 * @return $this
+	 */
+	public function has_any_instances( ...$values ): static {
+		$this->args[ Filter::in->field( 'instanceof' ) ] = $values;
+
+		return $this;
+	}
+
+	/**
+	 * Sets the query to only include items that are instance provided instances.
+	 *
+	 * @param string $value the instance
+	 *
+	 * @return $this
+	 */
+	public function instance_of( string $value ): static {
+		$this->args[ Filter::equals->field( 'instanceof' ) ] = $value;
+
+		return $this;
+	}
+
+	/**
 	 * Sets the query to filter out items whose field has any of the provided values.
 	 *
 	 * @param string $field  The field to check against.
@@ -171,7 +246,7 @@ class List_Filter {
 	 *
 	 * @return $this
 	 */
-	public function not_in( string $field, array $values ): static {
+	public function not_in( string $field, ...$values ): static {
 		$this->args[ Filter::not_in->field( $field ) ] = $values;
 
 		return $this;
@@ -185,7 +260,7 @@ class List_Filter {
 	 *
 	 * @return $this
 	 */
-	public function and( string $field, array $values ): static {
+	public function and( string $field, ...$values ): static {
 		$this->args[ Filter::and->field( $field ) ] = $values;
 
 		return $this;
@@ -199,7 +274,7 @@ class List_Filter {
 	 *
 	 * @return $this
 	 */
-	public function in( string $field, array $values ): static {
+	public function in( string $field, ...$values ): static {
 		$this->args[ Filter::in->field( $field ) ] = $values;
 
 		return $this;
@@ -227,7 +302,7 @@ class List_Filter {
 	 *
 	 * @return $this
 	 */
-	public function key_not_in( array $values ): static {
+	public function key_not_in( ...$values ): static {
 		$this->args[ Filter::not_in->key() ] = $values;
 
 		return $this;
@@ -240,24 +315,11 @@ class List_Filter {
 	 *
 	 * @return $this
 	 */
-	public function key_in( array $values ): static {
+	public function key_in( ...$values ): static {
 		$this->args[ Filter::in->key() ] = $values;
 
 		return $this;
 	}
 
-
-	/**
-	 * Sets the query to filter out items whose key is not identical to the provided value.
-	 *
-	 * @param mixed $value The value to check.
-	 *
-	 * @return $this
-	 */
-	public function key_equals( mixed $value ): static {
-		$this->args[ Filter::equals->key() ] = $value;
-
-		return $this;
-	}
 
 }

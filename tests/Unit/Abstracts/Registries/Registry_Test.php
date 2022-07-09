@@ -61,7 +61,7 @@ class Registry_Test extends Test_Case {
 	public function provider_can_add(): Generator {
 		yield 'Stores data in the array when valid' => [ true ];
 		yield 'Does not store data when invalid' => [ false ];
-		yield 'Does not store data when exception is thrown' => [ new Invalid_Registry_Item( 'foo', 9001 ) ];
+		yield 'Does not store data when exception is thrown' => [ new Invalid_Registry_Item( 'foo', 9001, 'error', null, null ) ];
 	}
 
 	/**
