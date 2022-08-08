@@ -44,7 +44,7 @@ class Array_Helper {
 			$result = [];
 			foreach ( $subject as $key => $value ) $result[ $key ] = $callback( $value );
 		} else {
-			$result = Array_Helper::map( $subject );
+			$result = Array_Helper::map( $subject, $callback );
 		}
 
 		return $result;
@@ -123,7 +123,7 @@ class Array_Helper {
 	 */
 	public static function dot( array $subject, string $dot ): mixed {
 		foreach ( explode( '.', $dot ) as $item ) {
-			if ( ! isset( $subject[ $item ] ) ) {
+			if ( ! isset( $subject[ $item ] ) && !is_null($subject[$item]) ) {
 				throw new Item_Not_Found( $item );
 			} else {
 				$subject = $subject[ $item ];

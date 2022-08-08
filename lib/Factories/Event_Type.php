@@ -177,7 +177,7 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	}
 
 	protected function broadcast( Logger_Item_Events $id, ?Data_Provider $provider = null ): static {
-		$this->get_broadcaster()->broadcast( $id->name, $provider );
+		$this->get_broadcaster()->broadcast( $id, $provider );
 
 		return $this;
 	}
@@ -189,7 +189,7 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	 * @return $this
 	 */
 	public function attach( Logger_Item_Events $key, Observer $observer ): static {
-		$this->get_broadcaster()->attach( $key->name, $observer );
+		$this->get_broadcaster()->attach( $key, $observer );
 
 		return $this;
 	}

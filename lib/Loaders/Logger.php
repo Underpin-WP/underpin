@@ -5,8 +5,10 @@ namespace Underpin\Loaders;
 use Exception;
 use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Enums\Logger_Events;
+use Underpin\Exceptions\Instance_Not_Ready;
 use Underpin\Exceptions\Invalid_Callback;
 use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Logger_Not_Ready;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Data_Providers\Int_Provider;
 use Underpin\Factories\Event_Type;
@@ -24,7 +26,7 @@ use UnitEnum;
  * @since   1.0.0
  * @package Underpin\Loaders
  */
-final class Logger extends Object_Registry implements Singleton, Interfaces\Can_Broadcast {
+final class Logger extends Object_Registry implements Singleton, Interfaces\Broadcaster {
 
 	use With_Broadcaster;
 
@@ -49,21 +51,30 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	 */
 	private static self $instance;
 
+	private static bool $setting_up = false;
+
 	/**
 	 * @throws Invalid_Registry_Item
 	 * @throws Unknown_Registry_Item
 	 */
 	public function __construct() {
-		self::mute();
+		self::$setting_up = true;
+		$this->is_muted = true;
 		$this->set_default_items();
-		self::unmute();
+		$this->is_muted = false;
 	}
 
 
 	/**
 	 * @return self
+	 * @throws Logger_Not_Ready
 	 */
 	public static function instance(): static {
+		// This instance is in the midst of being set up, so return null.
+		if ( self::$setting_up ) {
+			throw new Instance_Not_Ready( 'The logger is still being set up, and cannot be accessed.', null );
+		}
+
 		if ( ! isset( self::$instance ) || ! self::$instance instanceof self ) {
 			self::$instance = new self();
 		}
@@ -81,15 +92,21 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	 * @return array list of all events.
 	 */
 	public static function get_request_events( ?string $type = null ): array {
+		try {
+			$instance = self::instance();
+		} catch ( Instance_Not_Ready $exception ) {
+			return [];
+		}
+
 		if ( ! $type ) {
 			try {
-				return self::instance()->get( $type )->to_array();
-			} catch ( Unknown_Registry_Item $e ) {
+				return $instance->get( $type )->to_array();
+			} catch ( Unknown_Registry_Item|Logger_Not_Ready $e ) {
 				return [];
 			}
 		} else {
 			$result = [];
-			foreach ( self::instance() as $type => $events ) {
+			foreach ( $instance as $type => $events ) {
 				try {
 					$result[ $type ] = self::instance()->get( $type )->to_array();
 				} catch ( Unknown_Registry_Item $e ) {
@@ -107,6 +124,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	 *
 	 * @param int $volume
 	 *
+	 * @throws Instance_Not_Ready
 	 * @return Logger
 	 */
 	public static function set_volume( int $volume ): Logger {
@@ -125,7 +143,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	 * @return bool
 	 */
 	private function can_log( Event_Type $event_type ): bool {
-		return ! self::instance()->is_muted() && $event_type->get_volume() < self::instance()->volume;
+		return ! $this->is_muted() && $event_type->get_volume() < $this->volume;
 	}
 
 	/**
@@ -141,7 +159,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	public static function log( string $type, Log_Item $log_item ): ?Log_Item {
 		try {
 			$event_type = self::instance()->get( $type );
-		} catch ( Unknown_Registry_Item ) {
+		} catch ( Unknown_Registry_Item|Instance_Not_Ready ) {
 			return null;
 		}
 
@@ -152,96 +170,106 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 		return $event_type->log( $log_item );
 	}
 
-	protected static function auto_log(string $type, Log_Item|Exception $item): ?Log_Item {
-		if($item instanceof Log_Item){
-			return self::log($type, $item);
-		} else{
-			return self::log_exception($type, $item);
+	protected static function auto_log( string $type, Log_Item|Exception $item ): ?Log_Item {
+		if ( $item instanceof Log_Item ) {
+			return self::log( $type, $item );
+		} else {
+			return self::log_exception( $type, $item );
 		}
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function debug( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('debug', $item);
+		return self::auto_log( 'debug', $item );
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function info( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('info', $item);
+		return self::auto_log( 'info', $item );
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function notice( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('notice', $item);
+		return self::auto_log( 'notice', $item );
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function warning( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('warning', $item);
+		return self::auto_log( 'warning', $item );
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function error( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('error', $item);
+		return self::auto_log( 'error', $item );
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function critical( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('critical', $item);
+		return self::auto_log( 'critical', $item );
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function alert( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('alert', $item);
+		return self::auto_log( 'alert', $item );
 	}
 
 	/**
 	 * Logs an item of the specified type.
+	 *
 	 * @param Log_Item|Exception $item A log item to log, or an exception.
 	 *
 	 * @return Log_Item|null
 	 */
 	public static function emergency( Log_Item|Exception $item ): ?Log_Item {
-		return self::auto_log('emergency', $item);
+		return self::auto_log( 'emergency', $item );
 	}
 
 	/**
 	 * Mutes the logger.
+	 *
+	 * @throws Instance_Not_Ready
 	 *
 	 * @since 1.0.0
 	 */
@@ -255,6 +283,8 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 
 	/**
 	 * Un-Mutes the logger.
+	 *
+	 * @throws Instance_Not_Ready
 	 *
 	 * @since 1.0.0
 	 */
@@ -272,7 +302,11 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	 * @since 1.0.0
 	 */
 	public static function is_muted(): bool {
-		return self::instance()->is_muted;
+		try {
+			self::instance()->is_muted;
+		} catch ( Instance_Not_Ready ) {
+			return true;
+		}
 	}
 
 	/**
@@ -296,7 +330,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 			}
 
 			$error = $event_type->log_exception( $exception, $ref, $data );
-		} catch ( Invalid_Callback|Invalid_Registry_Item|Unknown_Registry_Item $e ) {
+		} catch ( Invalid_Callback|Invalid_Registry_Item|Unknown_Registry_Item|Instance_Not_Ready $e ) {
 			// Fail silently if the instance is invalid.
 			return null;
 		}
@@ -365,43 +399,39 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 				'volume'      => 50,
 			] ) )
 			->add( 'warning', array_merge( [
-				'always_enabled' => false,
-				'type'           => 'warning',
-				'description'    => 'Intended to log events when something seems wrong.',
-				'name'           => 'Warning',
-				'psr_level'      => 'warning',
-				'volume'         => 40,
+				'type'        => 'warning',
+				'description' => 'Intended to log events when something seems wrong.',
+				'name'        => 'Warning',
+				'psr_level'   => 'warning',
+				'volume'      => 40,
 			] ) )
 			->add( 'notice', array_merge( [
-				'always_enabled' => false,
-				'type'           => 'notice',
-				'description'    => 'Posts informative notices when something is neither good nor bad.',
-				'name'           => 'Notice',
-				'psr_level'      => 'notice',
-				'volume'         => 30,
+				'type'        => 'notice',
+				'description' => 'Posts informative notices when something is neither good nor bad.',
+				'name'        => 'Notice',
+				'psr_level'   => 'notice',
+				'volume'      => 30,
 			] ) )
 			->add( 'info', array_merge( [
-				'always_enabled' => false,
-				'type'           => 'info',
-				'description'    => 'Posts informative messages that something is most-likely going as-expected.',
-				'name'           => 'Info',
-				'psr_level'      => 'info',
-				'volume'         => 20,
+				'type'        => 'info',
+				'description' => 'Posts informative messages that something is most-likely going as-expected.',
+				'name'        => 'Info',
+				'psr_level'   => 'info',
+				'volume'      => 20,
 			] ) )
 			->add( 'debug', array_merge( [
-				'always_enabled' => false,
-				'type'           => 'debug',
-				'description'    => 'A place to put information that is only useful in debugging context.',
-				'name'           => 'Debug',
-				'psr_level'      => 'debug',
-				'volume'         => 10,
+				'type'        => 'debug',
+				'description' => 'A place to put information that is only useful in debugging context.',
+				'name'        => 'Debug',
+				'psr_level'   => 'debug',
+				'volume'      => 10,
 			] ) );
 
 		$this->broadcast( Logger_Events::ready );
 	}
 
 	/**
-	 * @param UnitEnum $key The enum case to use as the key.
+	 * @param UnitEnum            $key The enum case to use as the key.
 	 * @param Interfaces\Observer $observer
 	 *
 	 * @see Logger_Events
@@ -415,8 +445,8 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	}
 
 	/**
-	 * @param UnitEnum $key The enum case to use as the key.
-	 * @param string $observer_id The instance to detach.
+	 * @param UnitEnum $key         The enum case to use as the key.
+	 * @param string   $observer_id The instance to detach.
 	 *
 	 * @see Logger_Events
 	 *
@@ -427,4 +457,5 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 
 		return $this;
 	}
+
 }

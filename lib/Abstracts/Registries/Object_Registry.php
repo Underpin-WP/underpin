@@ -12,12 +12,12 @@ namespace Underpin\Abstracts\Registries;
 
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Factories\Event_Type;
 use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Object_Helper;
 use Underpin\Interfaces\Feature_Extension;
 use Underpin\Interfaces\With_Middleware;
 use Underpin\Loaders\Logger;
-use Underpin\WordPress\Abstracts\Registry;
 
 /**
  * Class Registry.
