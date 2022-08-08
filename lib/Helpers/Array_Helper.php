@@ -220,8 +220,8 @@ class Array_Helper {
 		$result = [];
 
 		foreach ( $subject as $subject_key => $value ) {
-			if ( Array_Helper::is_associative( $value ) ) {
-				$result[] = Array_Helper::merge( [ $key => $subject_key ], Array_Helper::wrap( $value ) );
+			if ( Array_Helper::is_associative( Array_Helper::wrap($value) ) ) {
+				$result[] = Array_Helper::merge( [ $key => $subject_key ], $value );
 			} else {
 				$result[] = Array_Helper::merge( [ $key => $subject_key ], [ $value_key => $value ] );
 			}
