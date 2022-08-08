@@ -13,6 +13,8 @@ use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Data_Providers\Int_Provider;
 use Underpin\Factories\Event_Type;
 use Underpin\Factories\Log_Item;
+use Underpin\Helpers\Array_Helper;
+use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Interfaces as Interfaces;
 use Underpin\Interfaces\Singleton;
 use Underpin\Traits\With_Broadcaster;
@@ -59,9 +61,10 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 */
 	public function __construct() {
 		self::$setting_up = true;
-		$this->is_muted = true;
+		$this->is_muted   = true;
 		$this->set_default_items();
-		$this->is_muted = false;
+		$this->is_muted   = false;
+		self::$setting_up = false;
 	}
 
 
@@ -100,21 +103,22 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 
 		if ( ! $type ) {
 			try {
-				return $instance->get( $type )->to_array();
+				return Array_Helper::merge(
+					...( new Array_Processor( $instance->to_array() ) )
+					->filter( fn ( $item ) => ! empty( $item->to_array() ) )
+					->map( fn ( $item ) => $item->to_array() )
+					->values()
+					->to_array()
+				);
 			} catch ( Unknown_Registry_Item|Logger_Not_Ready $e ) {
 				return [];
 			}
 		} else {
-			$result = [];
-			foreach ( $instance as $type => $events ) {
-				try {
-					$result[ $type ] = self::instance()->get( $type )->to_array();
-				} catch ( Unknown_Registry_Item $e ) {
-					$result[ $type ] = '<invalid instance>';
-				}
+			try {
+				return $instance->get( $type )->to_array();
+			} catch ( Unknown_Registry_Item $e ) {
+				return [];
 			}
-
-			return $result;
 		}
 	}
 
@@ -143,7 +147,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 * @return bool
 	 */
 	private function can_log( Event_Type $event_type ): bool {
-		return ! $this->is_muted() && $event_type->get_volume() < $this->volume;
+		return ! $this->is_muted() && $this->volume >= $event_type->get_volume();
 	}
 
 	/**
@@ -289,9 +293,9 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 * @since 1.0.0
 	 */
 	public static function unmute(): Logger {
-		$instance           = self::instance();
-		$instance->is_muted = false;
+		$instance = self::instance();
 		$instance->broadcast( Logger_Events::unmuted );
+		$instance->is_muted = false;
 
 		return $instance;
 	}
@@ -303,7 +307,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 */
 	public static function is_muted(): bool {
 		try {
-			self::instance()->is_muted;
+			return self::instance()->is_muted;
 		} catch ( Instance_Not_Ready ) {
 			return true;
 		}
@@ -375,56 +379,56 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 				'description' => 'Intended to be used only for the most-severe events.',
 				'name'        => "Emergency",
 				'psr_level'   => 'emergency',
-				'volume'      => 80,
+				'volume'      => 10,
 			] ) )
 			->add( 'alert', array_merge( $defaults, [
 				'type'        => 'alert',
 				'description' => 'Intended to be used when someone should be notified about this problem.',
 				'name'        => "Alert",
 				'psr_level'   => 'alert',
-				'volume'      => 70,
+				'volume'      => 20,
 			] ) )
 			->add( 'critical', array_merge( $defaults, [
 				'type'        => 'critical',
 				'description' => 'Intended to log events when an error occurs that is potentially damaging.',
 				'name'        => "Critical Error",
 				'psr_level'   => 'critical',
-				'volume'      => 60,
+				'volume'      => 30,
 			] ) )
 			->add( 'error', array_merge( $defaults, [
 				'type'        => 'error',
 				'description' => 'Intended to log events when something goes wrong.',
 				'name'        => "Error",
 				'psr_level'   => 'error',
-				'volume'      => 50,
+				'volume'      => 40,
 			] ) )
 			->add( 'warning', array_merge( [
 				'type'        => 'warning',
 				'description' => 'Intended to log events when something seems wrong.',
 				'name'        => 'Warning',
 				'psr_level'   => 'warning',
-				'volume'      => 40,
+				'volume'      => 50,
 			] ) )
 			->add( 'notice', array_merge( [
 				'type'        => 'notice',
 				'description' => 'Posts informative notices when something is neither good nor bad.',
 				'name'        => 'Notice',
 				'psr_level'   => 'notice',
-				'volume'      => 30,
+				'volume'      => 60,
 			] ) )
 			->add( 'info', array_merge( [
 				'type'        => 'info',
 				'description' => 'Posts informative messages that something is most-likely going as-expected.',
 				'name'        => 'Info',
 				'psr_level'   => 'info',
-				'volume'      => 20,
+				'volume'      => 70,
 			] ) )
 			->add( 'debug', array_merge( [
 				'type'        => 'debug',
 				'description' => 'A place to put information that is only useful in debugging context.',
 				'name'        => 'Debug',
 				'psr_level'   => 'debug',
-				'volume'      => 10,
+				'volume'      => 80,
 			] ) );
 
 		$this->broadcast( Logger_Events::ready );

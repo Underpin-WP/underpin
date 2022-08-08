@@ -42,7 +42,9 @@ class Array_Helper {
 	public static function each( array $subject, callable $callback ): array {
 		if ( Array_Helper::is_associative( $subject ) ) {
 			$result = [];
-			foreach ( $subject as $key => $value ) $result[ $key ] = $callback( $value );
+			foreach ( $subject as $key => $value ) {
+				$result[ $key ] = $callback( $value );
+			}
 		} else {
 			$result = Array_Helper::map( $subject, $callback );
 		}
@@ -123,7 +125,7 @@ class Array_Helper {
 	 */
 	public static function dot( array $subject, string $dot ): mixed {
 		foreach ( explode( '.', $dot ) as $item ) {
-			if ( ! isset( $subject[ $item ] ) && !is_null($subject[$item]) ) {
+			if ( ! isset( $subject[ $item ] ) && ! is_null( $subject[ $item ] ) ) {
 				throw new Item_Not_Found( $item );
 			} else {
 				$subject = $subject[ $item ];
@@ -174,8 +176,8 @@ class Array_Helper {
 	}
 
 	/**
-	 * Flattens arrays of arrays into a single array where the parent array is embedded as an item keyed by the $key param
-	 * Example:
+	 * Flattens arrays of arrays into a single array where the parent array is embedded as an item keyed by the $key
+	 * param Example:
 	 * [
 	 *   'group-1' => [['key' => 'value', 'another' => 'value'], ['key' => 'another-value', 'another' => 'value']],
 	 *   'group-2' => [['key' => 'value', 'another' => 'value'], ['key' => 'another-value', 'another' => 'value']],
@@ -212,7 +214,6 @@ class Array_Helper {
 	 *
 	 * @param array  $subject
 	 * @param string $key
-	 * @param string $value_key
 	 *
 	 * @return array
 	 */
@@ -365,7 +366,9 @@ class Array_Helper {
 	 */
 	public static function is_associative( array $items ): bool {
 		foreach ( array_keys( $items ) as $item ) {
-			if ( is_string( $item ) ) return true;
+			if ( is_string( $item ) ) {
+				return true;
+			}
 		}
 
 		return false;
@@ -394,7 +397,9 @@ class Array_Helper {
 	 */
 	public static function append( array &$array, mixed ...$items ): void {
 		$array = self::wrap( $array );
-		foreach ( $items as $item ) $array[] = $item;
+		foreach ( $items as $item ) {
+			$array[] = $item;
+		}
 	}
 
 	public static function flip( $array ): array {

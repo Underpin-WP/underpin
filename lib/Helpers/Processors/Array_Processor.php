@@ -112,8 +112,8 @@ class Array_Processor implements Can_Convert_To_Array, Stringable {
 		return $this;
 	}
 
-	public function to_indexed( string $key = 'key', string $value_key = 'value' ): static {
-		$this->subject = Array_Helper::to_indexed( $this->subject, $key, $value_key );
+	public function to_indexed( string $key = 'key' ): static {
+		$this->subject = Array_Helper::to_indexed( $this->subject, $key );
 
 		return $this;
 	}
