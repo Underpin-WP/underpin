@@ -17,6 +17,7 @@ use Underpin\Helpers\Object_Helper;
 use Underpin\Interfaces\Feature_Extension;
 use Underpin\Interfaces\With_Middleware;
 use Underpin\Loaders\Logger;
+use Underpin\WordPress\Abstracts\Registry;
 
 /**
  * Class Registry.

@@ -10,7 +10,7 @@ use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Observer;
 use Underpin\Loaders\Logger;
 
-class Broadcaster implements \Underpin\Interfaces\Broadcaster {
+class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 
 	protected Object_Registry $observer_registry;
 

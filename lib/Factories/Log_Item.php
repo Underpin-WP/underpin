@@ -11,8 +11,6 @@
 namespace Underpin\Factories;
 
 
-use Stringable;
-
 /**
  * Class Log_Item
  *

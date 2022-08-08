@@ -5,10 +5,10 @@ namespace Underpin\Tests\Unit\Abstracts\Registries;
 use Generator;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
-use Underpin\Abstracts\Registries\Registry;
 use Underpin\Helpers\Processors\List_Filter;
 use Underpin\Tests\Helpers;
 use Underpin\Tests\Test_Case;
+use Underpin\WordPress\Abstracts\Registry;
 
 class Registry_Test extends Test_Case {
 
@@ -141,7 +141,7 @@ class Registry_Test extends Test_Case {
 	}
 
 	/**
-	 * @covers \Underpin\Abstracts\Registries\Registry::query
+	 * @covers \Underpin\WordPress\Abstracts\Registry::query
 	 */
 	public function test_can_query() {
 		$mock = $this->getMockForAbstractClass( Registry::class );

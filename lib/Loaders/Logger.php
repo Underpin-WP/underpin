@@ -24,7 +24,7 @@ use UnitEnum;
  * @since   1.0.0
  * @package Underpin\Loaders
  */
-final class Logger extends Object_Registry implements Singleton, Interfaces\Broadcaster {
+final class Logger extends Object_Registry implements Singleton, Interfaces\Can_Broadcast {
 
 	use With_Broadcaster;
 

@@ -5,7 +5,7 @@ namespace Underpin\Factories;
 
 use Closure;
 
-class Registry extends \Underpin\Abstracts\Registries\Registry {
+class Registry extends \Underpin\WordPress\Abstracts\Registry {
 
 	public function __construct( protected Closure $validate_callback ) {
 	}

@@ -5,7 +5,6 @@ namespace Underpin\Tests\Unit\Abstracts\Registries;
 use Generator;
 use Mockery;
 use Underpin\Abstracts\Registries\Object_Registry;
-use Underpin\Abstracts\Registries\Registry;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Object_Helper;
@@ -14,6 +13,7 @@ use Underpin\Interfaces\With_Middleware;
 use Underpin\Loaders\Underpin;
 use Underpin\Tests\Helpers;
 use Underpin\Tests\Test_Case;
+use Underpin\WordPress\Abstracts\Registry;
 
 class Object_Registry_Test extends Test_Case {
 

@@ -3,7 +3,7 @@
 namespace Underpin\Traits;
 
 
-use Underpin\Factories\Broadcaster;
+use Underpin\Factories\Can_Broadcast;
 use Underpin\Factories\Log_Item;
 use Underpin\Interfaces\Data_Provider;
 use Underpin\Loaders\Logger;
@@ -11,11 +11,11 @@ use UnitEnum;
 
 trait With_Broadcaster {
 
-	protected Broadcaster $broadcaster;
+	protected Can_Broadcast $broadcaster;
 
-	protected function get_broadcaster(): \Underpin\Interfaces\Broadcaster {
+	protected function get_broadcaster(): \Underpin\Interfaces\Can_Broadcast {
 		if ( ! isset( $this->broadcaster ) ) {
-			$this->broadcaster = new Broadcaster;
+			$this->broadcaster = new Can_Broadcast;
 		}
 
 		return $this->broadcaster;

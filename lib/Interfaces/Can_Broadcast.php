@@ -7,7 +7,7 @@ namespace Underpin\Interfaces;
 
 use UnitEnum;
 
-interface Broadcaster {
+interface Can_Broadcast {
 
 	function attach( UnitEnum $key, Observer $observer ): static;
 
