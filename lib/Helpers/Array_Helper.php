@@ -212,14 +212,19 @@ class Array_Helper {
 	 *
 	 * @param array  $subject
 	 * @param string $key
+	 * @param string $value_key
 	 *
 	 * @return array
 	 */
-	public static function to_indexed( array $subject, string $key = 'key' ): array {
+	public static function to_indexed( array $subject, string $key = 'key', string $value_key = 'value' ): array {
 		$result = [];
 
 		foreach ( $subject as $subject_key => $value ) {
-			$result[] = Array_Helper::merge( [ $key => $subject_key ], Array_Helper::wrap( $value ) );
+			if ( Array_Helper::is_associative( $value ) ) {
+				$result[] = Array_Helper::merge( [ $key => $subject_key ], Array_Helper::wrap( $value ) );
+			} else {
+				$result[] = Array_Helper::merge( [ $key => $subject_key ], [ $value_key => $value ] );
+			}
 		}
 
 		return $result;
