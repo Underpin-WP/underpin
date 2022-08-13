@@ -2,23 +2,25 @@
 
 namespace Underpin\Interfaces;
 
-use Underpin\Abstracts\Builder;
+use Underpin\Exceptions\Operation_Failed;
 
-interface Model {
+interface Model extends Identifiable {
 
-	/**
-	 * @return Model_Item[]
-	 */
-	public function get_many(Builder $builder): array;
-
-	public function get_one(string|int $id): Model_Item;
-
-	public function update(Model_Item $item): static;
+	public function set_id( string|int $id ): static;
 
 	/**
-	 * @param Model_Item[] $items
-	 * @return Model_Item[]
+	 * @throws Operation_Failed
 	 */
-	public function update_many(array $items): array;
+	public function save(): static;
+
+	/**
+	 * @throws Operation_Failed
+	 */
+	public function delete(): static;
+
+	/**
+	 * @throws Operation_Failed
+	 */
+	public function clone(): Model;
 
 }
