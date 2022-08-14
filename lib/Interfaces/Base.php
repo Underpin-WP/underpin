@@ -8,5 +8,5 @@ interface Base
 {
 	public function get_provider() : Provider;
 
-	public function get_builder() : Integration_Provider;
+	public function get_integration() : Integration_Provider;
 }
