@@ -3,6 +3,8 @@
 namespace Underpin\Traits;
 
 
+use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Broadcaster;
 use Underpin\Factories\Log_Item;
 use Underpin\Interfaces\Data_Provider;
@@ -13,7 +15,7 @@ trait With_Broadcaster {
 
 	protected Broadcaster $broadcaster;
 
-	protected function get_broadcaster(): \Underpin\Interfaces\Broadcaster {
+	protected function get_broadcaster(): Broadcaster {
 		if ( ! isset( $this->broadcaster ) ) {
 			$this->broadcaster = new Broadcaster;
 		}
@@ -22,6 +24,10 @@ trait With_Broadcaster {
 	}
 
 
+	/**
+	 * @throws Unknown_Registry_Item
+	 * @throws Invalid_Registry_Item
+	 */
 	protected function broadcast( UnitEnum $key, ?Data_Provider $args = null ): static {
 		$this->get_broadcaster()->broadcast( $key, $args );
 
