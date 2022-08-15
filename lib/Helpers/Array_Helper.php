@@ -487,4 +487,26 @@ class Array_Helper {
 		return array_diff( ...self::map( func_get_args(), [ Array_Helper::class, 'wrap' ] ) );
 	}
 
+	/**
+	 * Combines arrays into a single array, with each item overriding items from the previous array.
+	 *
+	 * @param array ...$items
+	 *
+	 * @return array
+	 */
+	public static function replace_recursive(array ...$items): array {
+		return array_replace_recursive($items);
+	}
+
+	/**
+	 * Combines arrays into a single array, with each item overriding items from the previous array.
+	 *
+	 * @param array ...$items
+	 *
+	 * @return array
+	 */
+	public static function replace(array ...$items): array {
+		return array_replace($items);
+	}
+
 }

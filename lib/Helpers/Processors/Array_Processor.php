@@ -143,6 +143,33 @@ class Array_Processor implements Can_Convert_To_Array, Stringable {
 	}
 
 	/**
+	 * Combines arrays into a single array, with each item overriding items from the previous array.
+	 *
+	 * @param array ...$items
+	 *
+	 * @return $this
+	 */
+	public function replace_recursive(array ...$items): static {
+		$this->subject = Array_Helper::merge( $this->subject, ...$items );
+
+		return $this;
+	}
+
+	/**
+	 * Combines arrays into a single array, with each item overriding items from the previous array.
+	 *
+	 * @param array ...$items
+	 *
+	 * @return $this
+	 */
+	public function replace(array ...$items): static {
+		$this->subject = Array_Helper::merge( $this->subject, ...$items );
+
+		return $this;
+	}
+
+
+	/**
 	 * Adds an item to the beginning of the array.
 	 *
 	 * @param mixed ...$items items to add.
