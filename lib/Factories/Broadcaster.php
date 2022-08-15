@@ -3,6 +3,7 @@
 namespace Underpin\Factories;
 
 
+use ReflectionException;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Processors\Dependency_Processor;
@@ -21,16 +22,16 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 
 	/**
 	 * @throws Invalid_Registry_Item
-	 * @throws Unknown_Registry_Item
+	 * @throws Unknown_Registry_Item|ReflectionException
 	 */
 	public function attach( UnitEnum $key, Observer $observer ): static {
 		try {
-			$registry = $this->observer_registry->get( $key->value );
+			$this->observer_registry->get( $key->value );
 		} catch ( Unknown_Registry_Item ) {
 			$this->observer_registry->add( $key->value, new Object_Registry( Observer::class ) );
 		}
 
-		$registry[] = $observer;
+		$this->observer_registry->get( $key->value )->add( $observer->get_id(), $observer );
 
 		Logger::log(
 			'info',
