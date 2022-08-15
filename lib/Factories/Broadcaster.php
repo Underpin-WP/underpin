@@ -25,12 +25,12 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 	 */
 	public function attach( UnitEnum $key, Observer $observer ): static {
 		try {
-			$this->observer_registry->get( $key );
+			$registry = $this->observer_registry->get( $key->value );
 		} catch ( Unknown_Registry_Item ) {
-			$this->observer_registry->add( $key->getValue(), new Object_Registry( Observer::class ) );
+			$this->observer_registry->add( $key->value, new Object_Registry( Observer::class ) );
 		}
 
-		$this->observer_registry[ $key->getValue() ][] = $observer;
+		$registry[] = $observer;
 
 		Logger::log(
 			'info',
@@ -38,7 +38,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 				code   : 'event_attached',
 				message: 'Event attached',
 				context: 'registry_key',
-				ref    : $key,
+				ref    : $key->value,
 				data   : [
 					'subject' => get_called_class(),
 					'id'      => $observer->get_id(),
