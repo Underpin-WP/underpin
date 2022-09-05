@@ -13,13 +13,11 @@ use Underpin\Registries\Object_Registry;
 
 abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Response {
 
-	protected Object_Registry $middleware;
 	protected mixed           $response;
 	private bool              $middleware_ran = false;
 	protected Request         $request;
 
-	public function __construct() {
-		$this->middleware = new Object_Registry( Rest_Middleware::class, Rest_Middleware::class );
+	public function __construct(protected Object_Registry $middleware) {
 	}
 
 	public function set_request( Request $request ): static {

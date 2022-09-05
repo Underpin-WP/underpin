@@ -141,7 +141,7 @@ class String_Helper {
 	}
 
 	public static function after( $subject, $after = ' ' ): string {
-		return substr( $subject, strpos( $subject, $after ) );
+		return substr( $subject, strpos( $subject, $after ) + 1 );
 	}
 
 	public static function before( $subject, $before = ' ' ): string {

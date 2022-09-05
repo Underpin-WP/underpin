@@ -3,12 +3,19 @@
 namespace Underpin\Registries;
 
 use Underpin\Abstracts\Rest_Action;
+use Underpin\Abstracts\Rest_Middleware;
 use Underpin\Enums\Rest;
+use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Loader_Item;
+use Underpin\Interfaces\With_Middleware;
 
 class Controller implements Loader_Item, Can_Convert_To_Array {
+
+	private Object_Registry $middleware;
+	private bool            $middleware_ran;
 
 	/**
 	 * @param string                         $route
@@ -19,12 +26,30 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 	 */
 	public function __construct(
 		public readonly string $route,
-		public readonly ?string $get = null,
-		public readonly ?string $post = null,
-		public readonly ?string $put = null,
-		public readonly ?string $delete = null
+		protected ?string      $get = null,
+		protected ?string      $post = null,
+		protected ?string      $put = null,
+		protected ?string      $delete = null
 	) {
+		$this->middleware = new Object_Registry( Rest_Middleware::class, Rest_Middleware::class );
+	}
 
+	/**
+	 * Adds middleware
+	 *
+	 * @throws Unknown_Registry_Item
+	 * @throws Invalid_Registry_Item
+	 */
+	public function add_middleware( string $key, Rest_Middleware $middleware ): static {
+		$this->middleware->add( $key, $middleware );
+
+		return $this;
+	}
+
+	public function get_action( Rest $type ) {
+		$type = $type->value;
+
+		return new $this->$type( $this->middleware );
 	}
 
 	public function get_id(): string {
