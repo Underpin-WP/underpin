@@ -13,7 +13,7 @@ use Underpin\Interfaces\With_Middleware;
 abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Response {
 
 	protected Object_Registry $middleware;
-	protected                 $response;
+	protected mixed           $response;
 	private bool              $middleware_ran = false;
 	protected Request         $request;
 
