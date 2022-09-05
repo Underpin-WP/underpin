@@ -17,6 +17,8 @@ class Url_Param_Registry extends Object_Registry implements Can_Remove, Can_Conv
 
 	use Removable_Registry_Item;
 
+	protected string $abstraction_class = Url_Param::class;
+
 	/**
 	 * @param string $key
 	 *

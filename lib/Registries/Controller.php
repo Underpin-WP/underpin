@@ -10,12 +10,10 @@ use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Loader_Item;
-use Underpin\Interfaces\With_Middleware;
 
 class Controller implements Loader_Item, Can_Convert_To_Array {
 
 	private Object_Registry $middleware;
-	private bool            $middleware_ran;
 
 	/**
 	 * @param string                         $route
@@ -46,7 +44,7 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 		return $this;
 	}
 
-	public function get_action( Rest $type ) {
+	public function get_action( Rest $type ) : Rest_Action {
 		$type = $type->value;
 
 		return new $this->$type( $this->middleware );
