@@ -4,6 +4,7 @@ namespace Underpin\Registries;
 
 
 use Underpin\Abstracts\Rest_Middleware;
+use Underpin\Exceptions\Middleware_Exception;
 use Underpin\Factories\Request;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Feature_Extension;
@@ -31,7 +32,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	 * Does the middleware actions for this request.
 	 *
 	 * @return void
-	 * @throws \Underpin\Exceptions\Middleware_Exception
+	 * @throws Middleware_Exception
 	 */
 	public function do_middleware_actions(): void {
 		if ( ! $this->middleware_ran() ) {
