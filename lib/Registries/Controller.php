@@ -2,6 +2,7 @@
 
 namespace Underpin\Registries;
 
+use Underpin\Abstracts\Rest_Action;
 use Underpin\Enums\Rest;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;

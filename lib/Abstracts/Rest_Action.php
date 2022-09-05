@@ -1,15 +1,15 @@
 <?php
 
-namespace Underpin\Registries;
+namespace Underpin\Abstracts;
 
 
-use Underpin\Abstracts\Rest_Middleware;
 use Underpin\Exceptions\Middleware_Exception;
 use Underpin\Factories\Request;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Feature_Extension;
 use Underpin\Interfaces\Has_Response;
 use Underpin\Interfaces\With_Middleware;
+use Underpin\Registries\Object_Registry;
 
 abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Response {
 
