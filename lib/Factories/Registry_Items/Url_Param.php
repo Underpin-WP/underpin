@@ -35,7 +35,7 @@ class Url_Param implements Identifiable, Can_Convert_To_String {
 	 */
 	protected function validate( $value ): bool {
 		if ( gettype( $value ) !== $this->type->value ) {
-			throw new Validation_Failed( 'Param ' . $this->get_id() . ' expects int, ' . gettype( $value ) . ' given.' );
+			throw new Validation_Failed( 'Param ' . $this->get_id() . ' expects ' . $this->type->value . ', ' . gettype( $value ) . ' given.' );
 		}
 
 		return true;

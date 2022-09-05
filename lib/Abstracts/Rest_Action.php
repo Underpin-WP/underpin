@@ -4,6 +4,7 @@ namespace Underpin\Abstracts;
 
 
 use Underpin\Exceptions\Middleware_Exception;
+use Underpin\Factories\Registry_Items\Url_Param;
 use Underpin\Factories\Request;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Feature_Extension;
@@ -17,7 +18,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	private bool              $middleware_ran = false;
 	protected Request         $request;
 
-	public function __construct(protected Object_Registry $middleware) {
+	public function __construct(protected Object_Registry $middleware, protected Object_Registry $signature) {
 	}
 
 	public function set_request( Request $request ): static {
@@ -63,6 +64,15 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 
 	public function get_response(): mixed {
 		return $this->response;
+	}
+
+	/**
+	 * Retrieves the list of params used in this action.
+	 *
+	 * @return Url_Param[]
+	 */
+	public function get_signature(): array {
+		return $this->signature->to_array();
 	}
 
 }
