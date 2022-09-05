@@ -2,6 +2,8 @@
 
 namespace Underpin\Registries;
 
+use Underpin\Enums\Rest;
+use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Loader_Item;
 
