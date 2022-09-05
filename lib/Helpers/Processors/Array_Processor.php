@@ -6,8 +6,9 @@ use ReflectionException;
 use Stringable;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
+use Underpin\Interfaces\Can_Convert_To_String;
 
-class Array_Processor implements Can_Convert_To_Array, Stringable {
+class Array_Processor implements Can_Convert_To_Array, Can_Convert_To_String {
 
 	private string $separator = ',';
 
@@ -149,7 +150,7 @@ class Array_Processor implements Can_Convert_To_Array, Stringable {
 	 *
 	 * @return $this
 	 */
-	public function replace_recursive(array ...$items): static {
+	public function replace_recursive( array ...$items ): static {
 		$this->subject = Array_Helper::merge( $this->subject, ...$items );
 
 		return $this;
@@ -162,7 +163,7 @@ class Array_Processor implements Can_Convert_To_Array, Stringable {
 	 *
 	 * @return $this
 	 */
-	public function replace(array ...$items): static {
+	public function replace( array ...$items ): static {
 		$this->subject = Array_Helper::merge( $this->subject, ...$items );
 
 		return $this;
@@ -259,6 +260,12 @@ class Array_Processor implements Can_Convert_To_Array, Stringable {
 	 */
 	public function filter( callable $callback ): static {
 		$this->subject = Array_Helper::filter( $this->subject, $callback );
+
+		return $this;
+	}
+
+	public function where_not_null(): static {
+		$this->subject = Array_Helper::where_not_null( $this->subject );
 
 		return $this;
 	}
@@ -360,6 +367,10 @@ class Array_Processor implements Can_Convert_To_Array, Stringable {
 	}
 
 	public function __toString(): string {
+		return $this->to_string();
+	}
+
+	public function to_string(): string {
 		return implode( $this->separator, $this->subject );
 	}
 

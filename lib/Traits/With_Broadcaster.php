@@ -8,7 +8,7 @@ use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Broadcaster;
 use Underpin\Factories\Log_Item;
 use Underpin\Interfaces\Data_Provider;
-use Underpin\Loaders\Logger;
+use Underpin\Registries\Logger;
 use UnitEnum;
 
 trait With_Broadcaster {

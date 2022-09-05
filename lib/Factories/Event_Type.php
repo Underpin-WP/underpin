@@ -12,13 +12,12 @@ namespace Underpin\Factories;
 
 use Exception;
 use Underpin\Enums\Logger_Item_Events;
-use Underpin\Exceptions\Invalid_Callback;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Interfaces;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Data_Provider;
-use Underpin\Loaders\Logger;
-use Underpin\Interfaces;
+use Underpin\Registries\Logger;
 use Underpin\Traits\With_Broadcaster;
 
 /**

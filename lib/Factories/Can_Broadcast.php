@@ -8,7 +8,8 @@ use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Processors\Dependency_Processor;
 use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Observer;
-use Underpin\Loaders\Logger;
+use Underpin\Registries\Logger;
+use Underpin\Registries\Object_Registry;
 
 class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 

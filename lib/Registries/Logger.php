@@ -1,6 +1,6 @@
 <?php
 
-namespace Underpin\Loaders;
+namespace Underpin\Registries;
 
 use Exception;
 use Underpin\Abstracts\Registries\Object_Registry;
@@ -8,7 +8,6 @@ use Underpin\Enums\Logger_Events;
 use Underpin\Exceptions\Instance_Not_Ready;
 use Underpin\Exceptions\Invalid_Callback;
 use Underpin\Exceptions\Invalid_Registry_Item;
-use Underpin\Exceptions\Logger_Not_Ready;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Data_Providers\Int_Provider;
 use Underpin\Factories\Event_Type;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Underpin\Factories;
+namespace Underpin\Registries;
 
 class Object_Registry extends \Underpin\Abstracts\Registries\Object_Registry {
 

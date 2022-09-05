@@ -3,10 +3,10 @@
 namespace Underpin\Helpers\Processors;
 
 use Underpin\Factories\Log_Item;
-use Underpin\Factories\Object_Registry;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Item_With_Dependencies;
-use Underpin\Loaders\Logger;
+use Underpin\Registries\Logger;
+use Underpin\Registries\Object_Registry;
 
 
 class Dependency_Processor {

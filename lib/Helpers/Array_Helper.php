@@ -43,7 +43,7 @@ class Array_Helper {
 		if ( Array_Helper::is_associative( $subject ) ) {
 			$result = [];
 			foreach ( $subject as $key => $value ) {
-				$result[ $key ] = $callback( $value );
+				$result[ $key ] = $callback( $value, $key );
 			}
 		} else {
 			$result = Array_Helper::map( $subject, $callback );

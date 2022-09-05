@@ -2,7 +2,7 @@
 
 namespace Underpin\Exceptions;
 
-use Underpin\Loaders\Logger;
+use Underpin\Registries\Logger;
 
 
 class Exception extends \Exception {
