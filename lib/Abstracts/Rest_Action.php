@@ -3,13 +3,16 @@
 namespace Underpin\Abstracts;
 
 
+use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Middleware_Exception;
+use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Registry_Items\Url_Param;
 use Underpin\Factories\Request;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Feature_Extension;
 use Underpin\Interfaces\Has_Response;
 use Underpin\Interfaces\With_Middleware;
+use Underpin\Middlewares\Rest\Has_Param_Middleware;
 use Underpin\Registries\Object_Registry;
 
 abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Response {
@@ -19,6 +22,39 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	protected Request         $request;
 
 	public function __construct(protected Object_Registry $middleware, protected Object_Registry $signature) {
+	}
+
+
+	/**
+	 * Adds middleware.
+	 *
+	 * @throws Unknown_Registry_Item
+	 * @throws Invalid_Registry_Item
+	 */
+	protected function add_middleware( string $key, Rest_Middleware $middleware ): static {
+		$this->middleware->add( $key, $middleware );
+
+		return $this;
+	}
+
+	/**
+	 * Registers a typed URL param to be included in this request.
+	 *
+	 * @param Url_Param $param    The param to include
+	 * @param bool      $required Set to true if this param is required in the request.
+	 *
+	 * @return $this
+	 * @throws Invalid_Registry_Item
+	 * @throws Unknown_Registry_Item
+	 */
+	protected function add_param( Url_Param $param, bool $required = false ): static {
+		$this->signature->add( $param->get_id(), $param );
+
+		if ( $required ) {
+			$this->middleware->add( 'required_param_' . $param->get_id(), new Has_Param_Middleware( $param->get_id() ) );
+		}
+
+		return $this;
 	}
 
 	public function set_request( Request $request ): static {

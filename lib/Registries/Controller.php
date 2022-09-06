@@ -16,6 +16,7 @@ use Underpin\Middlewares\Rest\Has_Param_Middleware;
 class Controller implements Loader_Item, Can_Convert_To_Array {
 
 	private Object_Registry $middleware;
+	private Object_Registry $signature;
 
 	/**
 	 * @param string                         $route
@@ -36,7 +37,7 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 	}
 
 	/**
-	 * Adds middleware
+	 * Adds middleware.
 	 *
 	 * @throws Unknown_Registry_Item
 	 * @throws Invalid_Registry_Item
@@ -47,6 +48,16 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 		return $this;
 	}
 
+	/**
+	 * Registers a typed URL param to be included in this request.
+	 *
+	 * @param Url_Param $param    The param to include
+	 * @param bool      $required Set to true if this param is required in the request.
+	 *
+	 * @return $this
+	 * @throws Invalid_Registry_Item
+	 * @throws Unknown_Registry_Item
+	 */
 	public function add_param( Url_Param $param, bool $required = false ): static {
 		$this->signature->add( $param->get_id(), $param );
 
@@ -57,16 +68,33 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 		return $this;
 	}
 
+	/**
+	 * Gets the action in this controller from the request type.
+	 *
+	 * @param Rest $type The request type.
+	 *
+	 * @return Rest_Action
+	 */
 	public function get_action( Rest $type ): Rest_Action {
 		$type = strtolower( $type->value );
 
 		return new $this->$type( $this->middleware, $this->signature );
 	}
 
+	/**
+	 * Gets this controller's ID
+	 *
+	 * @return string
+	 */
 	public function get_id(): string {
 		return $this->route;
 	}
 
+	/**
+	 * Converts this endpoint to an array
+	 *
+	 * @return array
+	 */
 	public function to_array(): array {
 		return Array_Helper::where_not_null( [
 			Rest::Get->value    => $this->get,
