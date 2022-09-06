@@ -40,14 +40,13 @@ class List_Filter {
 	 * @since 1.3.0
 	 *
 	 * @param object $item Item to filter
-	 * @param array  $args List of arguments
 	 *
 	 * @return ?object The instance, if it matches the filters.
 	 */
-	protected function filter_item( object $item, array $args ): ?object {
+	protected function filter_item( object $item, ): ?object {
 		$valid = true;
 
-		foreach ( $args as $key => $arg ) {
+		foreach ( $this->args as $key => $arg ) {
 			/* @var string $field */
 			/* @var string $type */
 			extract( $this->prepare_field( $key ) );
@@ -58,17 +57,10 @@ class List_Filter {
 				$instances       = Array_Helper::wrap( $arg );
 				$valid_instances = [];
 				foreach ( $instances as $instance ) {
-					$valid_instances[] = $item instanceof $instance;
+					if ( $item instanceof $instance ) {
+						break;
+					}
 				}
-
-				$valid = match ( $type ) {
-					Filter::not_in->value => empty( $valid_instances ),
-					Filter::in->value     => ! empty( $valid_instances ),
-					Filter::and->value    => count( $valid_instances ) === count( $instance ),
-					Filter::equals->value => isset( $valid_instances[0] ) && $fields[0] === $arg
-				};
-
-				break;
 			}
 
 			try {
@@ -77,7 +69,7 @@ class List_Filter {
 				continue;
 			}
 
-			$fields = Array_Helper::intersect( $arg, $value );
+			$fields = Array_Helper::intersect( Array_Helper::wrap($arg), Array_Helper::wrap($value) );
 
 			// Check based on type.
 			$valid = match ( $type ) {
@@ -134,12 +126,12 @@ class List_Filter {
 	 * @return ?object loader item if found.
 	 */
 	public function find( array $args = [] ): ?object {
-		foreach ( $this->filter_item_keys() as $item_key ) {
+		foreach ( $this->filter_item_keys() as $item_key => $item ) {
 			if ( ! isset( $this->items[ $item_key ] ) ) {
 				continue;
 			}
 
-			$item = $this->filter_item( $this->items[ $item_key ], $args );
+			$item = $this->filter_item( $this->items[ $item_key ] );
 
 			if ( $item ) {
 				return $item;
@@ -161,25 +153,15 @@ class List_Filter {
 	 */
 	public function filter(): array {
 		$results = [];
-
-		// Filter out items, if loader keys are specified
-		foreach ( $this->filter_item_keys() as $item_key ) {
-			if ( is_object( $item_key ) ) {
-				$item_key = $item_key::class;
-			}
-
+		foreach ( $this->filter_item_keys() as $item_key => $item ) {
 			if ( ! isset( $this->items[ $item_key ] ) ) {
 				continue;
 			}
 
-			$item = $this->items[ $item_key ];
+			$item = $this->filter_item( $this->items[ $item_key ] );
 
 			if ( $item ) {
-				if ( isset( $args['preserve_keys'] ) && true === $args['preserve_keys'] ) {
-					$results[ $item_key ] = $item;
-				} else {
-					$results[] = $item;
-				}
+				$results[] = $item;
 			}
 		}
 
