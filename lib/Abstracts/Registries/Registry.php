@@ -12,6 +12,7 @@ namespace Underpin\Abstracts\Registries;
 
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Helpers\Array_Helper;
 use Underpin\Helpers\Processors\List_Filter;
 use Underpin\Interfaces\Queryable;
 
@@ -114,6 +115,30 @@ abstract class Registry implements Queryable {
 	 */
 	public function query(): List_Filter {
 		return new List_Filter( $this->to_array() );
+	}
+
+
+	/**
+	 * Maps through items in this registry.
+	 *
+	 * @param callable $callback
+	 *
+	 * @return array
+	 */
+	public function each( callable $callback ): array {
+		return Array_Helper::each( $this->to_array(), $callback );
+	}
+
+	/**
+	 * Plucks a value from an array, if it is an array. Falls back to default value if not-set.
+	 *
+	 * @param string      $key
+	 * @param mixed|false $default
+	 *
+	 * @return array
+	 */
+	public function pluck( string $key, mixed $default = false ): array {
+		return Array_Helper::pluck( $this->to_array(), $key, $default );
 	}
 
 }

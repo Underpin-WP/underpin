@@ -2,9 +2,13 @@
 
 namespace Underpin\Helpers;
 
+use Closure;
 use ReflectionException;
+use Underpin\Traits\With_Closure_Converter;
 
 class String_Helper {
+
+	use With_Closure_Converter;
 
 	public static function pluarize( $singular, $count, $plural = 's' ) {
 		if ( $count === 1 ) {
@@ -23,7 +27,7 @@ class String_Helper {
 	 * @return string a 32 character hash from the provided value.
 	 * @throws ReflectionException
 	 */
-	public static function create_hash( $data, $key = false ): string {
+	public static function create_hash( mixed $data, bool|string $key = false ): string {
 
 		// If object, convert to array.
 		if ( is_object( $data ) ) {
@@ -33,6 +37,11 @@ class String_Helper {
 		// Normalize the array
 		if ( is_array( $data ) ) {
 			$data = Array_Helper::normalize( $data );
+		}
+
+		// Convert closures
+		if ( $data instanceof Closure ) {
+			$data = self::convert_closure( $data );
 		}
 
 		if ( false === $key ) {

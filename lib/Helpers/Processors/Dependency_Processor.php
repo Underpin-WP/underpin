@@ -34,7 +34,6 @@ class Dependency_Processor {
 	}
 
 	public function filter_dependencies(): array {
-		$dependency_ids = Array_Helper::pluck( $this->items->to_array(), 'id' );
 		$queue          = $this->items->to_array();
 		$items          = [];
 		$queued_deps    = [];
@@ -44,7 +43,7 @@ class Dependency_Processor {
 			$item = $queue[0];
 
 			// If this item depends on something that doesn't exist, skip it.
-			$unmet_dependencies = array_diff( $this->get_dependencies( $item ), $dependency_ids );
+			$unmet_dependencies = array_diff( $this->get_dependencies( $item ), $this->items->pluck( 'id' ) );
 
 			if ( ! empty( $unmet_dependencies ) ) {
 				Logger::log(

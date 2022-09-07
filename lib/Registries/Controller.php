@@ -16,10 +16,11 @@ use Underpin\Middlewares\Rest\Has_Param_Middleware;
 class Controller implements Loader_Item, Can_Convert_To_Array {
 
 	private Object_Registry $middleware;
-	private Param_Registry $signature;
+	private Param_Registry  $signature;
 
 	/**
 	 * @param string                         $route
+	 * @param string                         $name The name of this route.
 	 * @param class-string<Rest_Action>|null $get
 	 * @param class-string<Rest_Action>|null $post
 	 * @param class-string<Rest_Action>|null $put
@@ -27,6 +28,7 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 	 */
 	public function __construct(
 		public readonly string $route,
+		public readonly string $name,
 		protected ?string      $get = null,
 		protected ?string      $post = null,
 		protected ?string      $put = null,

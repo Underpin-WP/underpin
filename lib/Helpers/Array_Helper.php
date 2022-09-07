@@ -8,8 +8,11 @@ use SplFileObject;
 use Underpin\Exceptions\Item_Not_Found;
 use Underpin\Exceptions\Invalid_Field;
 use Underpin\Helpers\Processors\Array_Processor;
+use Underpin\Traits\With_Closure_Converter;
 
 class Array_Helper {
+
+	use With_Closure_Converter;
 
 	public static function process( $subject ): Array_Processor {
 		return new Array_Processor( self::wrap( $subject ) );
@@ -214,6 +217,7 @@ class Array_Helper {
 	 *
 	 * @param array  $subject
 	 * @param string $key
+	 * @param string $value_key
 	 *
 	 * @return array
 	 */
@@ -221,7 +225,7 @@ class Array_Helper {
 		$result = [];
 
 		foreach ( $subject as $subject_key => $value ) {
-			if ( Array_Helper::is_associative( Array_Helper::wrap($value) ) ) {
+			if ( Array_Helper::is_associative( Array_Helper::wrap( $value ) ) ) {
 				$result[] = Array_Helper::merge( [ $key => $subject_key ], $value );
 			} else {
 				$result[] = Array_Helper::merge( [ $key => $subject_key ], [ $value_key => $value ] );
@@ -298,7 +302,7 @@ class Array_Helper {
 	 *
 	 * @return mixed The value
 	 */
-	public static function pluck( array $item, string $key, bool $default = false ): mixed {
+	public static function pluck( array $item, string $key, bool $default = null ): mixed {
 		$array = self::wrap( $item );
 
 		if ( isset( $array[ $key ] ) ) {
@@ -429,18 +433,7 @@ class Array_Helper {
 
 			// If closures need converted, and this is a closure, transform this into an identifiable string.
 			if ( true === $convert_colsures && $value instanceof Closure ) {
-				$ref  = new ReflectionFunction( $value );
-				$file = new SplFileObject( $ref->getFileName() );
-				$file->seek( $ref->getStartLine() - 1 );
-				$content = '';
-				while ( $file->key() < $ref->getEndLine() ) {
-					$content .= $file->current();
-					$file->next();
-				}
-				$array[ $key ] = array(
-					$content,
-					$ref->getStaticVariables(),
-				);
+				$array[ $key ] = self::convert_closure( $value );
 			}
 		}
 
@@ -494,8 +487,8 @@ class Array_Helper {
 	 *
 	 * @return array
 	 */
-	public static function replace_recursive(array ...$items): array {
-		return array_replace_recursive($items);
+	public static function replace_recursive( array ...$items ): array {
+		return array_replace_recursive( $items );
 	}
 
 	/**
@@ -505,8 +498,8 @@ class Array_Helper {
 	 *
 	 * @return array
 	 */
-	public static function replace(array ...$items): array {
-		return array_replace($items);
+	public static function replace( array ...$items ): array {
+		return array_replace( $items );
 	}
 
 }

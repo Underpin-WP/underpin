@@ -14,14 +14,15 @@ use Underpin\Interfaces\Has_Response;
 use Underpin\Interfaces\With_Middleware;
 use Underpin\Middlewares\Rest\Has_Param_Middleware;
 use Underpin\Registries\Object_Registry;
+use Underpin\Registries\Param_Registry;
 
 abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Response {
 
-	protected mixed           $response;
-	private bool              $middleware_ran = false;
-	protected Request         $request;
+	protected mixed   $response;
+	private bool      $middleware_ran = false;
+	protected Request $request;
 
-	public function __construct(protected Object_Registry $middleware, protected Object_Registry $signature) {
+	public function __construct( protected Object_Registry $middleware, protected Param_Registry $signature ) {
 	}
 
 
@@ -63,6 +64,10 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 		return $this;
 	}
 
+	public function get_request(): Request {
+		return $this->request;
+	}
+
 	/**
 	 * Does the middleware actions for this request.
 	 *
@@ -71,7 +76,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	 */
 	public function do_middleware_actions(): void {
 		if ( ! $this->middleware_ran() ) {
-			Array_Helper::each( $this->middleware->to_array(), fn ( Rest_Middleware $middleware ) => $middleware->run( $this->request ) );
+			$this->middleware->each( fn ( Rest_Middleware $middleware ) => $middleware->run( $this->request ) );
 			$this->middleware_ran = true;
 		}
 	}
