@@ -8,7 +8,6 @@ use Underpin\Exceptions\Middleware_Exception;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Registry_Items\Param;
 use Underpin\Factories\Request;
-use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Feature_Extension;
 use Underpin\Interfaces\Has_Response;
 use Underpin\Interfaces\With_Middleware;

@@ -14,8 +14,6 @@ class Param implements Identifiable, Can_Convert_To_String {
 	public function __construct(
 		protected string       $id,
 		protected Types        $type,
-		public readonly string $name = '',
-		public readonly string $description = ''
 	) {
 
 	}
