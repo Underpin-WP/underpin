@@ -7,7 +7,7 @@ use Underpin\Enums\Rest;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
-use Underpin\Factories\Registry_Items\Url_Param;
+use Underpin\Factories\Registry_Items\Param;
 use Underpin\Registries\Header_Registry;
 
 class Request {
@@ -76,22 +76,22 @@ class Request {
 	 *
 	 * @param string $key
 	 *
-	 * @return Url_Param
+	 * @return Param
 	 * @throws Unknown_Registry_Item
 	 */
-	public function get_param( string $key ): Url_Param {
+	public function get_param( string $key ): Param {
 		return $this->get_url()->get_params()->get( $key );
 	}
 
 	/**
 	 * Sets, or updates the URL param to the specified value.
 	 *
-	 * @param Url_Param $param
+	 * @param Param $param
 	 *
 	 * @return $this
 	 * @throws Operation_Failed
 	 */
-	public function set_param( Url_Param $param ): static {
+	public function set_param( Param $param ): static {
 		if ( $this->get_url()->get_params()->is_registered( $param->get_id() ) ) {
 			try {
 				$original = $this->get_url()->get_params()->get( $param->get_id() );

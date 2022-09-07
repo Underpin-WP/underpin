@@ -6,7 +6,7 @@ namespace Underpin\Abstracts;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Middleware_Exception;
 use Underpin\Exceptions\Unknown_Registry_Item;
-use Underpin\Factories\Registry_Items\Url_Param;
+use Underpin\Factories\Registry_Items\Param;
 use Underpin\Factories\Request;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Feature_Extension;
@@ -40,14 +40,14 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	/**
 	 * Registers a typed URL param to be included in this request.
 	 *
-	 * @param Url_Param $param    The param to include
-	 * @param bool      $required Set to true if this param is required in the request.
+	 * @param Param $param    The param to include
+	 * @param bool  $required Set to true if this param is required in the request.
 	 *
 	 * @return $this
 	 * @throws Invalid_Registry_Item
 	 * @throws Unknown_Registry_Item
 	 */
-	protected function add_param( Url_Param $param, bool $required = false ): static {
+	protected function add_param( Param $param, bool $required = false ): static {
 		$this->signature->add( $param->get_id(), $param );
 
 		if ( $required ) {
@@ -105,7 +105,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	/**
 	 * Retrieves the list of params used in this action.
 	 *
-	 * @return Url_Param[]
+	 * @return Param[]
 	 */
 	public function get_signature(): array {
 		return $this->signature->to_array();

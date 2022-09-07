@@ -7,25 +7,25 @@ use Underpin\Enums\Types;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Exceptions\Url_Exception;
-use Underpin\Factories\Registry_Items\Url_Param;
+use Underpin\Factories\Registry_Items\Param;
 use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Interfaces\Can_Convert_To_String;
 use Underpin\Interfaces\Can_Remove;
 use Underpin\Traits\Removable_Registry_Item;
 
-class Url_Param_Registry extends Object_Registry implements Can_Remove, Can_Convert_To_String {
+class Param_Registry extends Object_Registry implements Can_Remove, Can_Convert_To_String {
 
 	use Removable_Registry_Item;
 
-	protected string $abstraction_class = Url_Param::class;
+	protected string $abstraction_class = Param::class;
 
 	/**
 	 * @param string $key
 	 *
-	 * @return Url_Param
+	 * @return Param
 	 * @throws Unknown_Registry_Item
 	 */
-	public function get( string $key ): Url_Param {
+	public function get( string $key ): Param {
 		return parent::get( $key );
 	}
 
@@ -47,9 +47,9 @@ class Url_Param_Registry extends Object_Registry implements Can_Remove, Can_Conv
 			foreach ( $query as $key => $value ) {
 				if ( isset( $param_signature[ $key ] ) ) {
 					$type = $param_signature[ $key ];
-					$this->add( $key, ( new Url_Param( $key, $type ) )->set_value( $value ) );
+					$this->add( $key, ( new Param( $key, $type ) )->set_value( $value ) );
 				} else {
-					$this->add( $key, ( new Url_Param( $key, Types::String ) )->set_value( $value ) );
+					$this->add( $key, ( new Param( $key, Types::String ) )->set_value( $value ) );
 				}
 			}
 		} catch ( Invalid_Registry_Item|Unknown_Registry_Item $exception ) {
@@ -76,7 +76,7 @@ class Url_Param_Registry extends Object_Registry implements Can_Remove, Can_Conv
 	public function to_string(): string {
 		return (string) ( new Array_Processor( $this->to_array() ) )
 			->values()
-			->each( fn ( Url_Param $value ) => $value->to_string() )
+			->each( fn ( Param $value ) => $value->to_string() )
 			->set_separator( '&' );
 	}
 

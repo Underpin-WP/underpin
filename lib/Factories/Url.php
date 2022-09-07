@@ -7,24 +7,24 @@ use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Exceptions\Url_Exception;
-use Underpin\Factories\Registry_Items\Url_Param;
+use Underpin\Factories\Registry_Items\Param;
 use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Helpers\String_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Can_Convert_To_String;
-use Underpin\Registries\Url_Param_Registry;
+use Underpin\Registries\Param_Registry;
 
 class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 
-	protected Url_Param_Registry $params;
-	protected ?string            $path;
+	protected Param_Registry $params;
+	protected ?string        $path;
 	protected string             $protocol;
 	protected string             $host;
 	protected ?int               $port;
 	protected string             $fragment;
 
 	public function __construct() {
-		$this->params = new Url_Param_Registry;
+		$this->params = new Param_Registry;
 	}
 
 	/**
@@ -192,21 +192,21 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 	/**
 	 * Gets the URL param registry object.
 	 *
-	 * @return Url_Param_Registry
+	 * @return Param_Registry
 	 */
-	public function get_params(): Url_Param_Registry {
+	public function get_params(): Param_Registry {
 		return $this->params;
 	}
 
 	/**
 	 * Adds a param to the URL
 	 *
-	 * @param Url_Param $param
+	 * @param Param $param
 	 *
 	 * @return $this
 	 * @throws Operation_Failed
 	 */
-	public function add_param( Url_Param $param ): static {
+	public function add_param( Param $param ): static {
 		try {
 			$this->params->add( $param->get_id(), $param );
 		} catch ( Unknown_Registry_Item|Invalid_Registry_Item $e ) {

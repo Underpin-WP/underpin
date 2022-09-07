@@ -7,7 +7,7 @@ use Underpin\Exceptions\Validation_Failed;
 use Underpin\Interfaces\Can_Convert_To_String;
 use Underpin\Interfaces\Identifiable;
 
-class Url_Param implements Identifiable, Can_Convert_To_String {
+class Param implements Identifiable, Can_Convert_To_String {
 
 	protected mixed $value;
 
