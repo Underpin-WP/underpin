@@ -8,6 +8,7 @@ use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Registry_Items\Param;
+use Underpin\Interfaces\Identifiable;
 use Underpin\Registries\Header_Registry;
 
 class Request {
@@ -19,9 +20,32 @@ class Request {
 	protected string          $ip;
 	protected Url             $url;
 	protected string          $body;
+	protected ?Identifiable   $identity = null;
 
 	public function __construct() {
 		$this->headers = new Header_Registry;
+	}
+
+	/**
+	 * Updates this request's identity
+	 *
+	 * @return ?Identifiable
+	 */
+	public function get_identity(): ?Identifiable {
+		return $this->identity;
+	}
+
+	/**
+	 * Sets this request's identity
+	 *
+	 * @param ?Identifiable $id
+	 *
+	 * @return $this
+	 */
+	public function set_identity( ?Identifiable $id ): static {
+		$this->identity = $id;
+
+		return $this;
 	}
 
 	/**
@@ -117,6 +141,7 @@ class Request {
 
 	/**
 	 * Removes a header
+	 *
 	 * @param string $id
 	 *
 	 * @return $this
