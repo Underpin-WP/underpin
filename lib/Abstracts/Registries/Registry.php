@@ -13,8 +13,7 @@ namespace Underpin\Abstracts\Registries;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Array_Helper;
-use Underpin\Helpers\Processors\List_Filter;
-use Underpin\Interfaces\Queryable;
+use Underpin\Interfaces\Can_Convert_To_Array;
 
 /**
  * Class Registry.
@@ -22,7 +21,7 @@ use Underpin\Interfaces\Queryable;
  * @since   1.0.0
  * @package Underpin\Abstracts
  */
-abstract class Registry implements Queryable {
+abstract class Registry implements Can_Convert_To_Array {
 
 	protected array $storage = [];
 
@@ -107,18 +106,6 @@ abstract class Registry implements Queryable {
 	}
 
 	/**
-	 * Instantiates a list filter query against this registry.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @return List_Filter query object
-	 */
-	public function query(): List_Filter {
-		return new List_Filter( $this->to_array() );
-	}
-
-
-	/**
 	 * Maps through items in this registry.
 	 *
 	 * @param callable $callback
@@ -141,4 +128,42 @@ abstract class Registry implements Queryable {
 		return Array_Helper::pluck( $this->to_array(), $key, $default );
 	}
 
+	/**
+	 * @throws Invalid_Registry_Item
+	 */
+	public static function seed( array $items ): static {
+		$instance = new static;
+
+		foreach ( $items as $key => $item ) {
+			$instance->add( $key, $item );
+		}
+
+		return $instance;
+	}
+
+	/**
+	 * Reduces the registry to a single value.
+	 *
+	 * @param callable $callback
+	 * @param mixed    $initial
+	 *
+	 * @return mixed
+	 */
+	public function reduce( callable $callback, mixed $initial ): mixed {
+		return Array_Helper::reduce( $this->to_array(), $callback, $initial );
+	}
+
+	/**
+	 * Filters items using a callback function.
+	 *
+	 * @param callable $callback
+	 *
+	 * @return static
+	 * @throws Invalid_Registry_Item
+	 */
+	public function filter( callable $callback ): static {
+		$filtered = Array_Helper::filter( $this->to_array(), $callback );
+
+		return static::seed($filtered);
+	}
 }

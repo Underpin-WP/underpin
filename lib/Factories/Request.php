@@ -8,6 +8,7 @@ use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Registry_Items\Param;
+use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Identifiable;
 use Underpin\Registries\Header_Registry;
 
@@ -21,9 +22,51 @@ class Request {
 	protected Url             $url;
 	protected string          $body;
 	protected ?Identifiable   $identity = null;
+	protected array           $flags    = [];
 
 	public function __construct() {
 		$this->headers = new Header_Registry;
+	}
+
+	/**
+	 * Sets a flag on this request.
+	 *
+	 * @param string $flag
+	 *
+	 * @return $this
+	 */
+	public function set_flag( string $flag ): static {
+		if ( ! $this->has_flag( $flag ) ) {
+			$this->flags[] = $flag;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Unsets a flag on this request.
+	 *
+	 * @param string $flag
+	 *
+	 * @return $this
+	 */
+	public function unset_flag( string $flag ): static {
+		if ( $this->has_flag( $flag ) ) {
+			unset( $this->flags[ $flag ] );
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Returns true if this flag is set.
+	 *
+	 * @param string $flag
+	 *
+	 * @return bool
+	 */
+	public function has_flag( string $flag ): bool {
+		return in_array( $flag, $this->flags );
 	}
 
 	/**
@@ -32,7 +75,7 @@ class Request {
 	 * @return ?Identifiable
 	 */
 	public function get_identity(): ?Identifiable {
-		return $this->identity;
+		return $this->identity ?? null;
 	}
 
 	/**

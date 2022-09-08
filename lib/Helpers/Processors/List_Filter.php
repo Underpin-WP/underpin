@@ -7,10 +7,11 @@ use Underpin\Enums\Filter;
 use Underpin\Exceptions\Invalid_Field;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Helpers\Object_Helper;
+use Underpin\Traits\Filter_Params;
 
 class List_Filter {
 
-	protected array $args = [];
+	use Filter_Params;
 
 	public function __construct( protected array $items ) {
 
@@ -46,7 +47,7 @@ class List_Filter {
 	protected function filter_item( object $item, ): ?object {
 		$valid = true;
 
-		foreach ( $this->args as $key => $arg ) {
+		foreach ( $this->filter_args as $key => $arg ) {
 			/* @var string $field */
 			/* @var string $type */
 			extract( $this->prepare_field( $key ) );
@@ -69,7 +70,7 @@ class List_Filter {
 				continue;
 			}
 
-			$fields = Array_Helper::intersect( Array_Helper::wrap($arg), Array_Helper::wrap($value) );
+			$fields = Array_Helper::intersect( Array_Helper::wrap( $arg ), Array_Helper::wrap( $value ) );
 
 			// Check based on type.
 			$valid = match ( $type ) {
@@ -103,13 +104,13 @@ class List_Filter {
 		$items = $this->items;
 
 		// Filter out keys, if keys are specified
-		if ( isset( $this->args[ Filter::in->key() ] ) ) {
-			$items = Array_Helper::intersect( array_keys( $this->items ), $this->args[ Filter::in->key() ] );
-			unset( $this->args[ Filter::in->key() ] );
+		if ( isset( $this->filter_args[ Filter::in->key() ] ) ) {
+			$items = Array_Helper::intersect( array_keys( $this->items ), $this->filter_args[ Filter::in->key() ] );
+			unset( $this->filter_args[ Filter::in->key() ] );
 		}
 
-		if ( isset( $this->args[ Filter::not_in->key() ] ) ) {
-			$items = Array_Helper::diff( array_keys( $this->items ), $this->args[ Filter::not_in->key() ] );
+		if ( isset( $this->filter_args[ Filter::not_in->key() ] ) ) {
+			$items = Array_Helper::diff( array_keys( $this->items ), $this->filter_args[ Filter::not_in->key() ] );
 		}
 
 		return $items;
@@ -169,139 +170,18 @@ class List_Filter {
 	}
 
 	/**
-	 * Sets the query to only include items that are not an of the provided instances.
+	 * Seeds a new instance of the list filter, using pre-generated arguments and items.
 	 *
-	 * @param array $values The values to filter.
+	 * @param array $items
+	 * @param array $args
 	 *
-	 * @return $this
+	 * @return static
 	 */
-	public function not_instance_of( ...$values ): static {
-		$this->args[ Filter::not_in->field( 'instanceof' ) ] = $values;
+	public static function seed( array $items, array $args ): static {
+		$self              = new static( $items );
+		$self->filter_args = $args;
 
-		return $this;
+		return $self;
 	}
-
-	/**
-	 * Sets the query to only include items that are an instance of all the provided instances.
-	 *
-	 * @param array $values The values to filter.
-	 *
-	 * @return $this
-	 */
-	public function has_all_instances( ...$values ): static {
-		$this->args[ Filter::and->field( 'instanceof' ) ] = $values;
-
-		return $this;
-	}
-
-	/**
-	 * Sets the query to only include items that are instance of any the provided instances.
-	 *
-	 * @param array $values The values to filter.
-	 *
-	 * @return $this
-	 */
-	public function has_any_instances( ...$values ): static {
-		$this->args[ Filter::in->field( 'instanceof' ) ] = $values;
-
-		return $this;
-	}
-
-	/**
-	 * Sets the query to only include items that are instance provided instances.
-	 *
-	 * @param string $value the instance
-	 *
-	 * @return $this
-	 */
-	public function instance_of( string $value ): static {
-		$this->args[ Filter::equals->field( 'instanceof' ) ] = $value;
-
-		return $this;
-	}
-
-	/**
-	 * Sets the query to filter out items whose field has any of the provided values.
-	 *
-	 * @param string $field  The field to check against.
-	 * @param array  $values The values to filter.
-	 *
-	 * @return $this
-	 */
-	public function not_in( string $field, ...$values ): static {
-		$this->args[ Filter::not_in->field( $field ) ] = $values;
-
-		return $this;
-	}
-
-	/**
-	 * Sets the query to filter out items whose field does not have all the provided values.
-	 *
-	 * @param string $field  The field to check against.
-	 * @param array  $values The values to filter.
-	 *
-	 * @return $this
-	 */
-	public function and( string $field, ...$values ): static {
-		$this->args[ Filter::and->field( $field ) ] = $values;
-
-		return $this;
-	}
-
-	/**
-	 * Sets the query to filter out items whose field does not have all the provided values.
-	 *
-	 * @param string $field  The field to check against.
-	 * @param array  $values The values to filter.
-	 *
-	 * @return $this
-	 */
-	public function in( string $field, ...$values ): static {
-		$this->args[ Filter::in->field( $field ) ] = $values;
-
-		return $this;
-	}
-
-
-	/**
-	 * Sets the query to filter out items whose value is not identical to the provided value.
-	 *
-	 * @param string $field The field to check against.
-	 * @param mixed  $value The value to check.
-	 *
-	 * @return $this
-	 */
-	public function equals( string $field, mixed $value ): static {
-		$this->args[ Filter::equals->field( $field ) ] = $value;
-
-		return $this;
-	}
-
-	/**
-	 * Sets the query to filter out items whose key has any of the provided values.
-	 *
-	 * @param array $values The values to filter.
-	 *
-	 * @return $this
-	 */
-	public function key_not_in( ...$values ): static {
-		$this->args[ Filter::not_in->key() ] = $values;
-
-		return $this;
-	}
-
-	/**
-	 * Sets the query to filter out items whose key does not have all the provided values.
-	 *
-	 * @param array $values The values to filter.
-	 *
-	 * @return $this
-	 */
-	public function key_in( ...$values ): static {
-		$this->args[ Filter::in->key() ] = $values;
-
-		return $this;
-	}
-
 
 }

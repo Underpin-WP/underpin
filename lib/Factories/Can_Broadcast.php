@@ -16,7 +16,7 @@ class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 	protected Object_Registry $observer_registry;
 
 	public function __construct() {
-		$this->observer_registry = new Object_Registry( Object_Registry::class );
+		$this->observer_registry = Object_Registry::make( Object_Registry::class );
 	}
 
 	/**
@@ -27,7 +27,7 @@ class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 		try {
 			$this->observer_registry->get( $key );
 		} catch ( Unknown_Registry_Item ) {
-			$this->observer_registry->add( $key, new Object_Registry( Observer::class ) );
+			$this->observer_registry->add( $key, Object_Registry::make( Observer::class ) );
 		}
 
 		$this->observer_registry[ $key ][] = $observer;

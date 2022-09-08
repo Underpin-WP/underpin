@@ -30,6 +30,10 @@ class Array_Helper {
 		return array_map( $callback, $subject );
 	}
 
+	public static function reduce( array $subject, callable $callback, mixed $initial ) {
+		return array_reduce( $callback, $subject, $initial );
+	}
+
 	public static function where_not_null( array $subject ): array {
 		return self::filter( $subject, fn ( $item ) => $item !== null );
 	}

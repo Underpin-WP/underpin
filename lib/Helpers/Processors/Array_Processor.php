@@ -248,6 +248,18 @@ class Array_Processor implements Can_Convert_To_Array, Can_Convert_To_String {
 	}
 
 	/**
+	 * @param callable $callback
+	 * @param mixed    $initial
+	 *
+	 * @return $this
+	 */
+	public function reduce( callable $callback, mixed $initial ): static {
+		$this->subject = Array_Helper::reduce($this->subject, $callback, $initial);
+
+		return $this;
+	}
+
+	/**
 	 * Iterates over each value in the <b>array</b>
 	 * passing them to the <b>callback</b> function.
 	 * If the <b>callback</b> function returns true, the

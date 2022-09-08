@@ -84,8 +84,8 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 	 *
 	 * @return string
 	 */
-	public function get_path(): string {
-		return $this->path;
+	public function get_path(): ?string {
+		return $this->path ?? null;
 	}
 
 	/**
@@ -164,7 +164,7 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 	 * @return int|null
 	 */
 	public function get_port(): ?int {
-		return $this->port;
+		return $this->port ?? null;
 	}
 
 	/**
@@ -173,7 +173,7 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 	 * @return string|null
 	 */
 	public function get_fragment(): ?string {
-		return $this->fragment;
+		return $this->fragment ?? null;
 	}
 
 	/**
@@ -249,7 +249,7 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 			'port'     => $this->get_port() ? ':' . $this->get_port() : null,
 			'path'     => $this->get_path(),
 			'params'   => ! empty( $this->get_params()->to_array() ) ? '?' . $this->get_params() : null,
-			'fragment' => '#' . $this->get_fragment(),
+			'fragment' => $this->get_fragment() ? '#' . $this->get_fragment() : null,
 		];
 	}
 

@@ -18,7 +18,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 	protected Object_Registry $observer_registry;
 
 	public function __construct() {
-		$this->observer_registry = new Object_Registry( Object_Registry::class );
+		$this->observer_registry = Object_Registry::make( Object_Registry::class );
 	}
 
 	/**
@@ -29,7 +29,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 		try {
 			$this->observer_registry->get( $key->value );
 		} catch ( Unknown_Registry_Item ) {
-			$this->observer_registry->add( $key->value, new Object_Registry( Observer::class ) );
+			$this->observer_registry->add( $key->value, Object_Registry::make( Observer::class ) );
 		}
 
 		$this->observer_registry->get( $key->value )->add( $observer->get_id(), $observer );

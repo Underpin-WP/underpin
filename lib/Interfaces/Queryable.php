@@ -3,9 +3,8 @@
 namespace Underpin\Interfaces;
 
 
-use Underpin\Helpers\Processors\List_Filter;
+use Underpin\Helpers\Processors\Registry_Query;
 
 interface Queryable extends Can_Convert_To_Array {
-	function query(): List_Filter;
-	function get(string $key): mixed;
+	function query(): Registry_Query;
 }

@@ -4,8 +4,12 @@ namespace Underpin\Registries;
 
 class Object_Registry extends \Underpin\Abstracts\Registries\Object_Registry {
 
-	public function __construct( protected string $abstraction_class, ?string $default = null ) {
-		$this->default_factory = $default ?? $this->abstraction_class;
+	public static function make( string $abstraction_class, ?string $default = null ): static {
+		$self                    = new static;
+		$self->abstraction_class = $abstraction_class;
+		$self->default_factory   = $default ?? $self->abstraction_class;
+
+		return $self;
 	}
 
 }

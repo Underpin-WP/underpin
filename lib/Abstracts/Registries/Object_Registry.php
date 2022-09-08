@@ -14,7 +14,9 @@ use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Object_Helper;
+use Underpin\Helpers\Processors\Registry_Query;
 use Underpin\Interfaces\Feature_Extension;
+use Underpin\Interfaces\Queryable;
 use Underpin\Interfaces\With_Middleware;
 use Underpin\Registries\Logger;
 
@@ -24,7 +26,7 @@ use Underpin\Registries\Logger;
  * @since   1.0.0
  * @package Underpin\Abstracts
  */
-abstract class Object_Registry extends Registry {
+abstract class Object_Registry extends Registry implements Queryable {
 
 	/**
 	 * The abstraction class name.
@@ -111,6 +113,15 @@ abstract class Object_Registry extends Registry {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Queries this registry
+	 *
+	 * @return Registry_Query
+	 */
+	public function query(): Registry_Query {
+		return new Registry_Query( $this );
 	}
 
 	/**

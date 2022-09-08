@@ -32,7 +32,7 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 		protected ?string      $put = null,
 		protected ?string      $delete = null
 	) {
-		$this->middleware = new Object_Registry( Rest_Middleware::class, Rest_Middleware::class );
+		$this->middleware = Object_Registry::make( Rest_Middleware::class, Rest_Middleware::class );
 		$this->signature  = new Param_Registry;
 	}
 

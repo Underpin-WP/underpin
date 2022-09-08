@@ -20,7 +20,7 @@ abstract class Loader implements Queryable {
 	 * @throws Invalid_Registry_Item
 	 */
 	public function __construct( $abstraction_class, Loader_Item ...$loader_item ) {
-		$this->registry = new Object_Registry( $abstraction_class );
+		$this->registry = Object_Registry::seed( $abstraction_class );
 		foreach ( Array_Helper::after(func_get_args(), 1) as $loader_item ) {
 			/* @var Loader_Item $loader_item */
 			$this->registry->add( $loader_item->get_id(), $loader_item );
