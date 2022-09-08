@@ -9,6 +9,36 @@ trait Filter_Params {
 
 	protected array $filter_args = [];
 
+	public function less_than( string $field, int|float $number ): static {
+		$this->filter_args[ Filter::less_than->field( $field ) ] = $number;
+
+		return $this;
+	}
+
+	public function less_than_or_equal( string $field, int|float $number ): static {
+		$this->filter_args[ Filter::less_than_or_equal_to->field( $field ) ] = $number;
+
+		return $this;
+	}
+
+	public function greater_than( string $field, int|float $number ): static {
+		$this->filter_args[ Filter::greater_than->field( $field ) ] = $number;
+
+		return $this;
+	}
+
+	public function greater_than_or_equal( string $field, int|float $number ): static {
+		$this->filter_args[ Filter::greater_than_or_equal_to->field( $field ) ] = $number;
+
+		return $this;
+	}
+
+	public function filter_from_callback( string $field, callable $callback ): static {
+		$this->filter_args[ Filter::callback->field( $field ) ] = $callback;
+
+		return $this;
+	}
+
 	/**
 	 * Sets the query to only include items that are not an of the provided instances.
 	 *

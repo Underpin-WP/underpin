@@ -70,15 +70,24 @@ class List_Filter {
 				continue;
 			}
 
-			$fields = Array_Helper::intersect( Array_Helper::wrap( $arg ), Array_Helper::wrap( $value ) );
+			if ( $type === Filter::callback->value ) {
+				$valid = $arg( $value );
+			} else {
 
-			// Check based on type.
-			$valid = match ( $type ) {
-				Filter::not_in->value => empty( $fields ),
-				Filter::in->value     => ! empty( $fields ),
-				Filter::and->value    => count( $fields ) === count( $arg ),
-				Filter::equals->value => isset( $fields[0] ) && $fields[0] === $arg,
-			};
+				$fields = Array_Helper::intersect( Array_Helper::wrap( $arg ), Array_Helper::wrap( $value ) );
+
+				// Check based on type.
+				$valid = match ( $type ) {
+					Filter::not_in->value                   => empty( $fields ),
+					Filter::in->value                       => ! empty( $fields ),
+					Filter::and->value                      => count( $fields ) === count( $arg ),
+					Filter::equals->value                   => isset( $fields[0] ) && $fields[0] === $arg,
+					Filter::less_than->value                => array_sum( Array_Helper::wrap( $value ) ) < $arg,
+					Filter::greater_than->value             => array_sum( Array_Helper::wrap( $value ) ) > $arg,
+					Filter::greater_than_or_equal_to->value => array_sum( Array_Helper::wrap( $value ) ) >= $arg,
+					Filter::less_than_or_equal_to->value    => array_sum( Array_Helper::wrap( $value ) ) <= $arg,
+				};
+			}
 
 			if ( false === $valid ) {
 				break;

@@ -2,6 +2,7 @@
 
 namespace Underpin\Helpers;
 
+use Exception;
 use Underpin\Exceptions\Invalid_Field;
 
 
@@ -61,17 +62,22 @@ class Object_Helper {
 	 *
 	 * @throws Invalid_Field
 	 */
-	public static function pluck( object $value, string $field ): mixed {
-		// Bail early if this field is not in this object.
-		if ( is_callable( [ $value, "get_$field" ] ) ) {
-			$object_field = call_user_func( [ $value, "get_$field" ] );
-		} elseif ( property_exists( $value, $field ) ) {
-			$object_field = $value->$field;
-		} else {
-			throw new Invalid_Field( message: 'The provided field cannot be retrieved.', code: 0, type: 'error', previous: null, ref: null );
+	public static function pluck( object $value, string $fields ): mixed {
+		$fields = explode( '.', $fields );
+		foreach ( $fields as $field ) {
+			// Bail early if this field is not in this object.
+			if ( is_callable( [ $value, "get_$field" ] ) ) {
+				$value = call_user_func( [ $value, "get_$field" ] );
+			} else {
+				try {
+					$value = $value->$field;
+				} catch ( Exception $e ) {
+					throw new Invalid_Field( message: 'The provided field cannot be retrieved.', code: 0, type: 'error', previous: $e );
+				}
+			}
 		}
 
-		return $object_field;
+		return $value;
 	}
 
 }

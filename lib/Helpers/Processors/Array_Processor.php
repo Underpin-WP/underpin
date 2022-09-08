@@ -4,6 +4,7 @@ namespace Underpin\Helpers\Processors;
 
 use ReflectionException;
 use Stringable;
+use Underpin\Enums\Direction;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Can_Convert_To_String;
@@ -228,8 +229,8 @@ class Array_Processor implements Can_Convert_To_Array, Can_Convert_To_String {
 	 *
 	 * @return static
 	 */
-	public function sort( callable|int $method = SORT_REGULAR ): static {
-		Array_Helper::sort( $this->subject, $method );
+	public function sort( callable|int $method = SORT_REGULAR, Direction $direction = Direction::Ascending ): static {
+		Array_Helper::sort( $this->subject, $method, $direction );
 
 		return $this;
 	}

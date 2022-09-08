@@ -8,6 +8,7 @@ use Underpin\Enums\Direction;
 use Underpin\Exceptions\Exception;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Helpers\Object_Helper;
+use Underpin\Registries\Object_Registry;
 
 class Basic extends Sort_Method {
 
@@ -29,12 +30,18 @@ class Basic extends Sort_Method {
 				$result = (int) $item_a <=> (int) $item_b;
 				break;
 			default:
-				try {
-					settype( $item_a, 'string' );
-					settype( $item_b, 'string' );
-					$result = strcmp( (string) $item_a, (string) $item_b );
-				} catch ( Exception $e ) {
-					throw new Operation_Failed( 'could not sort items using basic sort method.', previous: $e );
+				if ( $item_a instanceof Object_Registry ) {
+					$result = count( $item_a->to_array() ) <=> count( $item_b->to_array() );
+				} elseif ( $item_a instanceof \DateTime ) {
+					$result = (int) $item_a->format( 'U' ) <=> (int) $item_b->format( 'U' );
+				} else {
+					try {
+						settype( $item_a, 'string' );
+						settype( $item_b, 'string' );
+						$result = strcmp( (string) $item_a, (string) $item_b );
+					} catch ( Exception $e ) {
+						throw new Operation_Failed( 'could not sort items using basic sort method.', previous: $e );
+					}
 				}
 		}
 

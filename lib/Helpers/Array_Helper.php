@@ -5,6 +5,7 @@ namespace Underpin\Helpers;
 use Closure;
 use ReflectionFunction;
 use SplFileObject;
+use Underpin\Enums\Direction;
 use Underpin\Exceptions\Item_Not_Found;
 use Underpin\Exceptions\Invalid_Field;
 use Underpin\Helpers\Processors\Array_Processor;
@@ -31,7 +32,7 @@ class Array_Helper {
 	}
 
 	public static function reduce( array $subject, callable $callback, mixed $initial ) {
-		return array_reduce( $callback, $subject, $initial );
+		return array_reduce( $subject, $callback, $initial );
 	}
 
 	public static function where_not_null( array $subject ): array {
@@ -203,7 +204,7 @@ class Array_Helper {
 	 * @param string $group_key The key to use for the group identifier.
 	 *
 	 */
-	public static function flatten( array $subject, $group_key = 'group' ): array {
+	public static function flatten( array $subject, string $group_key = 'group' ): array {
 		$result = [];
 		foreach ( $subject as $group_id => $items ) {
 			foreach ( $items as $item ) {
@@ -267,11 +268,16 @@ class Array_Helper {
 	 * @param array        $subject The item to sort
 	 * @param callable|int $method  The method. Can be any supported flag documented in PHP's asort, or a sorting
 	 *                              callback.
+	 * @param Direction    $direction
 	 *
 	 * @return void
 	 */
-	public static function sort( array &$subject, callable|int $method = SORT_REGULAR ): void {
-		is_callable( $method ) ? uasort( $subject, $method ) : asort( $subject, $method );
+	public static function sort( array &$subject, callable|int $method = SORT_REGULAR, Direction $direction = Direction::Ascending ): void {
+		if($direction === Direction::Ascending) {
+			is_callable( $method ) ? uasort( $subject, $method ) : asort( $subject, $method );
+		}else{
+			is_callable( $method ) ? uasort( $subject, $method ) : arsort( $subject, $method );
+		}
 	}
 
 	/**
@@ -321,26 +327,26 @@ class Array_Helper {
 	 *
 	 * @param object[]|array[] $items   The list of items.
 	 * @param string           $key     The key that the value is set against.
-	 * @param bool             $default The default value to use when the value is not set.
+	 * @param mixed            $default The default value to use when the value is not set.
 	 *
 	 * @return array Array of values plucked from the list.
 	 */
-	public static function pluck_recursive( array $items, string $key, bool $default = false ): array {
+	public static function pluck_recursive( array $items, string $key, mixed $default = false ): array {
 		$result = [];
-		foreach ( $items as $item ) {
+		foreach ( $items as $id => $item ) {
 			if ( is_object( $item ) ) {
 				try {
-					$result[] = Object_Helper::pluck( $item, $key );
+					$result[ $id ] = Object_Helper::pluck( $item, $key );
 				} catch ( Invalid_Field $e ) {
-					$result[] = $default;
+					$result[ $id ] = $default;
 					continue;
 				}
 			} elseif ( Array_Helper::is_associative( $item ) ) {
-				$result[] = self::pluck( $item, $key, $default );
+				$result[ $id ] = self::pluck( $item, $key, $default );
 			} elseif ( is_array( $item ) ) {
-				$result[] = array_merge( $result, self::pluck_recursive( $item, $key, $default ) );
+				$result[ $id ] = array_merge( $result, self::pluck_recursive( $item, $key, $default ) );
 			} else {
-				$result[] = $default;
+				$result[ $id ] = $default;
 			}
 		}
 

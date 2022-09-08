@@ -12,6 +12,7 @@ use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Helpers\String_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Can_Convert_To_String;
+use Underpin\Interfaces\Identifiable;
 use Underpin\Registries\Param_Registry;
 
 class Url implements Can_Convert_To_String, Can_Convert_To_Array {
@@ -235,6 +236,15 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 	 */
 	public function to_string(): string {
 		return (string) ( new Array_Processor( $this->to_array() ) )->where_not_null()->set_separator( '' );
+	}
+
+	/**
+	 * Accessor for URL. Makes it possible to easily pluck this value.
+	 *
+	 * @return string
+	 */
+	public function get_url(): string {
+		return $this->to_string();
 	}
 
 	/**

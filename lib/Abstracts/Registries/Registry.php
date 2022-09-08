@@ -10,10 +10,14 @@
 
 namespace Underpin\Abstracts\Registries;
 
+use ReflectionException;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Array_Helper;
+use Underpin\Helpers\Object_Helper;
+use Underpin\Helpers\String_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
+use Underpin\Interfaces\Identifiable;
 
 /**
  * Class Registry.
@@ -124,18 +128,30 @@ abstract class Registry implements Can_Convert_To_Array {
 	 *
 	 * @return array
 	 */
-	public function pluck( string $key, mixed $default = false ): array {
-		return Array_Helper::pluck( $this->to_array(), $key, $default );
+	public function pluck( string $key, mixed $default = false ): mixed {
+		return Array_Helper::pluck_recursive( $this->to_array(), $key, $default );
 	}
 
 	/**
+	 * Constructs a registry using an array of items keyed by their ID.
+	 *
 	 * @throws Invalid_Registry_Item
+	 * @throws ReflectionException
 	 */
-	public static function seed( array $items ): static {
-		$instance = new static;
+	public function seed( array $items ): static {
+		$instance          = clone $this;
+		$instance->storage = [];
+
+		$is_assoc = Array_Helper::is_associative( $items );
 
 		foreach ( $items as $key => $item ) {
-			$instance->add( $key, $item );
+			if ( ! $is_assoc && $item instanceof Identifiable ) {
+				$instance->add( $item->get_id(), $item );
+			} elseif ( ! $is_assoc ) {
+				$instance->add( String_Helper::create_hash( $item ), $item );
+			} else {
+				$instance->add( $key, $item );
+			}
 		}
 
 		return $instance;
@@ -164,6 +180,7 @@ abstract class Registry implements Can_Convert_To_Array {
 	public function filter( callable $callback ): static {
 		$filtered = Array_Helper::filter( $this->to_array(), $callback );
 
-		return static::seed($filtered);
+		return $this->seed( $filtered );
 	}
+
 }

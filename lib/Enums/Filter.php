@@ -8,6 +8,11 @@ enum Filter: string {
 	case in = 'in';
 	case and = 'and';
 	case equals = 'equals';
+	case less_than = 'less_than';
+	case greater_than = 'greater_than';
+	case greater_than_or_equal_to = 'greater_than_or_equal_to';
+	case less_than_or_equal_to = 'less_than_or_equal_to';
+	case callback = 'callback';
 
 	public function field( string $field ): string {
 		return "{$field}__$this->value";
