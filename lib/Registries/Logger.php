@@ -85,43 +85,6 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	}
 
 	/**
-	 * Retrieves all events that have happened for this request.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param ?string $type The event type to retrieve. If null, this will get all events.
-	 *
-	 * @return array list of all events.
-	 */
-	public static function get_request_events( ?string $type = null ): array {
-		try {
-			$instance = self::instance();
-		} catch ( Instance_Not_Ready $exception ) {
-			return [];
-		}
-
-		if ( ! $type ) {
-			try {
-				return Array_Helper::merge(
-					...( new Array_Processor( $instance->to_array() ) )
-					->filter( fn ( $item ) => ! empty( $item->to_array() ) )
-					->map( fn ( $item ) => $item->to_array() )
-					->values()
-					->to_array()
-				);
-			} catch ( Unknown_Registry_Item|Logger_Not_Ready $e ) {
-				return [];
-			}
-		} else {
-			try {
-				return $instance->get( $type )->to_array();
-			} catch ( Unknown_Registry_Item $e ) {
-				return [];
-			}
-		}
-	}
-
-	/**
 	 * Sets the volume for logged events.
 	 * If an event requires the volume is higher than this set value, it will not be logged.
 	 *
