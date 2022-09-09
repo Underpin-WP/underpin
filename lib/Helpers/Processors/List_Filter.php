@@ -38,8 +38,6 @@ class List_Filter {
 	/**
 	 * Determines if a registry item passes the arguments.
 	 *
-	 * @since 1.3.0
-	 *
 	 * @param object $item Item to filter
 	 *
 	 * @return ?object The instance, if it matches the filters.
@@ -105,8 +103,6 @@ class List_Filter {
 	/**
 	 * Pre-filters the list of items.
 	 *
-	 * @since 1.3.0
-	 *
 	 * @return array
 	 */
 	protected function filter_item_keys(): array {
@@ -129,13 +125,9 @@ class List_Filter {
 	/**
 	 * Finds the first loader item that matches the provided arguments.
 	 *
-	 * @since 1.3.0
-	 *
-	 * @param array $args List of filter arguments
-	 *
 	 * @return ?object loader item if found.
 	 */
-	public function find( array $args = [] ): ?object {
+	public function find(): ?object {
 		foreach ( $this->filter_item_keys() as $item_key => $item ) {
 			if ( ! isset( $this->items[ $item_key ] ) ) {
 				continue;
@@ -154,10 +146,6 @@ class List_Filter {
 
 	/**
 	 * Queries a loader registry.
-	 *
-	 * @since 1.0.0
-	 * @since 1.3.0 Filtered items no-longer preserve keys by default. Include "preserve_keys" argument in array if you
-	 *              want to preserve keys.
 	 *
 	 * @return object[] Array of registry items.
 	 */

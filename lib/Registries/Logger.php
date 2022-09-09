@@ -3,11 +3,13 @@
 namespace Underpin\Registries;
 
 use Exception;
+use ReflectionException;
 use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Enums\Logger_Events;
 use Underpin\Exceptions\Instance_Not_Ready;
 use Underpin\Exceptions\Invalid_Callback;
 use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Data_Providers\Int_Provider;
 use Underpin\Factories\Event_Type;
@@ -15,6 +17,7 @@ use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Interfaces as Interfaces;
+use Underpin\Interfaces\Observer;
 use Underpin\Interfaces\Singleton;
 use Underpin\Traits\With_Broadcaster;
 use UnitEnum;
@@ -24,7 +27,6 @@ use UnitEnum;
  * Class Logger
  * Houses methods to manage event logging
  *
- * @since   1.0.0
  * @package Underpin\Loaders
  */
 final class Logger extends Object_Registry implements Singleton, Interfaces\Broadcaster {
@@ -56,7 +58,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 
 	/**
 	 * @throws Invalid_Registry_Item
-	 * @throws Unknown_Registry_Item
+	 * @throws Operation_Failed
 	 */
 	public function __construct() {
 		self::$setting_up = true;
@@ -69,7 +71,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 
 	/**
 	 * @return self
-	 * @throws Logger_Not_Ready
+	 * @throws Instance_Not_Ready
 	 */
 	public static function instance(): static {
 		// This instance is in the midst of being set up, so return null.
@@ -115,7 +117,6 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	/**
 	 * Enqueues an event to be logged in the system
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param string   $type     Event log type
 	 * @param Log_Item $log_item Item to log
@@ -125,11 +126,11 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	public static function log( string $type, Log_Item $log_item ): ?Log_Item {
 		try {
 			$event_type = self::instance()->get( $type );
-		} catch ( Unknown_Registry_Item|Instance_Not_Ready ) {
-			return null;
-		}
 
-		if ( ! self::instance()->can_log( $event_type ) ) {
+			if ( ! self::instance()->can_log( $event_type ) ) {
+				return null;
+			}
+		} catch ( Unknown_Registry_Item|Instance_Not_Ready ) {
 			return null;
 		}
 
@@ -237,7 +238,6 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 *
 	 * @throws Instance_Not_Ready
 	 *
-	 * @since 1.0.0
 	 */
 	public static function mute(): Logger {
 		$instance           = self::instance();
@@ -252,7 +252,6 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 *
 	 * @throws Instance_Not_Ready
 	 *
-	 * @since 1.0.0
 	 */
 	public static function unmute(): Logger {
 		$instance = self::instance();
@@ -265,7 +264,6 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	/**
 	 * Fetches the mute status of the logger.
 	 *
-	 * @since 1.0.0
 	 */
 	public static function is_muted(): bool {
 		try {
@@ -278,7 +276,6 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	/**
 	 * Logs an error from within an exception.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param string          $type      Error log type
 	 * @param Exception       $exception Exception instance to log.
@@ -296,12 +293,23 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 			}
 
 			$error = $event_type->log_exception( $exception, $ref, $data );
-		} catch ( Invalid_Callback|Invalid_Registry_Item|Unknown_Registry_Item|Instance_Not_Ready $e ) {
+		} catch ( Unknown_Registry_Item $e ) {
 			// Fail silently if the instance is invalid.
 			return null;
 		}
 
 		return $error;
+	}
+
+	/**
+	 * Gets all events in the logger
+	 *
+	 * @return Mutable_Collection
+	 * @throws Operation_Failed
+	 * @throws ReflectionException
+	 */
+	public function get_events(): Mutable_Collection {
+		return Immutable_Collection::make( Log_Item::class )->seed( $this->reduce( fn ( array $acc, Event_Type $event_type ) => array_merge( $acc, $event_type->to_array() ), [] ) );
 	}
 
 	/**
@@ -328,7 +336,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 
 	/**
 	 * @throws Invalid_Registry_Item
-	 * @throws Unknown_Registry_Item
+	 * @throws Operation_Failed
 	 */
 	protected function set_default_items(): void {
 		$defaults = [
@@ -397,12 +405,14 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	}
 
 	/**
-	 * @param UnitEnum            $key The enum case to use as the key.
-	 * @param Interfaces\Observer $observer
-	 *
-	 * @see Logger_Events
+	 * @param UnitEnum $key The enum case to use as the key.
+	 * @param Observer $observer
 	 *
 	 * @return $this
+	 * @throws Operation_Failed
+	 * @throws Unknown_Registry_Item
+	 * @see Logger_Events
+	 *
 	 */
 	public function attach( UnitEnum $key, Interfaces\Observer $observer ): static {
 		$this->get_broadcaster()->attach( $key, $observer );
@@ -417,6 +427,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 * @see Logger_Events
 	 *
 	 * @return $this
+	 * @throws Operation_Failed
 	 */
 	function detach( UnitEnum $key, string $observer_id ): static {
 		$this->get_broadcaster()->detach( $key, $observer_id );

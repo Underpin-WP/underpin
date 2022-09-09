@@ -2,11 +2,11 @@
 
 namespace Underpin\Helpers\Processors;
 
+use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Item_With_Dependencies;
 use Underpin\Registries\Logger;
-use Underpin\Registries\Object_Registry;
 
 
 class Dependency_Processor {
@@ -14,9 +14,9 @@ class Dependency_Processor {
 	/**
 	 * @var Object_Registry List of items
 	 */
-	private Object_Registry|\Underpin\Abstracts\Registries\Object_Registry $items;
+	private Object_Registry $items;
 
-	public function __construct( \Underpin\Abstracts\Registries\Object_Registry $items ) {
+	public function __construct( Object_Registry $items ) {
 		$this->items = $items;
 	}
 

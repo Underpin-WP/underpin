@@ -3,7 +3,6 @@
  * Event Type Abstraction
  * Handles events related to logging events of a specified type.
  *
- * @since   1.0.0
  * @package Underpin\Abstracts
  */
 
@@ -13,7 +12,7 @@ namespace Underpin\Factories;
 use Exception;
 use Underpin\Enums\Logger_Item_Events;
 use Underpin\Exceptions\Invalid_Registry_Item;
-use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Interfaces;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Data_Provider;
@@ -23,7 +22,6 @@ use Underpin\Traits\With_Broadcaster;
 /**
  * Class Event_Type
  *
- * @since   1.0.0
  * @package Underpin\Abstracts
  */
 class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfaces\Data_Provider, Interfaces\Feature_Extension {
@@ -38,7 +36,6 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 		/**
 		 * Event type
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var string
 		 */
@@ -47,7 +44,6 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 		/**
 		 * The minimum volume to be able to see events of this type.
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var int
 		 */
@@ -56,7 +52,6 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 		/**
 		 * A string used to group different event types together.
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var string
 		 */
@@ -81,7 +76,6 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 		/**
 		 * PSR3 Syslog Level. Can be emergency, alert, critical, error, warning, notice, info, or debug.
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var string
 		 */
@@ -99,8 +93,6 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	/**
 	 * Log events to the logger.
 	 *
-	 * @since 1.0.0
-	 * @since 2.0.0 - Added support for multiple logger writers
 	 */
 	public function log_events() {
 		$this->broadcast( Logger_Item_Events::write_events, $this );
@@ -109,7 +101,6 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	/**
 	 * Enqueues an event to be logged in the system.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param Interfaces\Log_Item $item The item to log
 	 *
@@ -121,7 +112,7 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 			$this->events[] = $item->set_type( $this );
 
 			$this->broadcast( Logger_Item_Events::event_logged, $item );
-		} catch ( Invalid_Registry_Item|Unknown_Registry_Item $e ) {
+		} catch ( Invalid_Registry_Item|Operation_Failed $e ) {
 		}
 		Logger::unmute();
 
@@ -131,7 +122,6 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	/**
 	 * Logs an error from an exception object.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param Exception       $exception Exception instance to log.
 	 * @param string|int|null $ref

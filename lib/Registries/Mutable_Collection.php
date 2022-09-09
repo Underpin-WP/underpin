@@ -2,7 +2,7 @@
 
 namespace Underpin\Registries;
 
-class Object_Registry extends \Underpin\Abstracts\Registries\Object_Registry {
+class Mutable_Collection extends \Underpin\Abstracts\Registries\Object_Registry {
 
 	public static function make( string $abstraction_class, ?string $default = null ): static {
 		$self                    = new static;

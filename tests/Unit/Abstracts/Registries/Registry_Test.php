@@ -4,7 +4,7 @@ namespace Underpin\Tests\Unit\Abstracts\Registries;
 
 use Generator;
 use Underpin\Exceptions\Invalid_Registry_Item;
-use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Helpers\Processors\List_Filter;
 use Underpin\Tests\Helpers;
 use Underpin\Tests\Test_Case;
@@ -80,7 +80,7 @@ class Registry_Test extends Test_Case {
 		Helpers::set_protected_property( $mock, 'storage', [ 'foo' => 'bar' ] );
 
 		if ( ! $exists ) {
-			$this->expectException( Unknown_Registry_Item::class );
+			$this->expectException( Operation_Failed::class );
 		}
 
 		$mock->get( 'foo' );
@@ -92,7 +92,7 @@ class Registry_Test extends Test_Case {
 	}
 
 	/**
-	 * @throws Unknown_Registry_Item
+	 * @throws Operation_Failed
 	 */
 	public function test_can_get() {
 		$mock = $this->getMockForAbstractClass( originalClassName: Registry::class, mockedMethods: [ 'is_registered' ] );
@@ -114,7 +114,7 @@ class Registry_Test extends Test_Case {
 
 		Helpers::set_protected_property( $mock, 'storage', [ 'foo' => 'bar' ] );
 
-		$this->expectException( Unknown_Registry_Item::class );
+		$this->expectException( Operation_Failed::class );
 
 		$mock->get( 'baz' );
 	}

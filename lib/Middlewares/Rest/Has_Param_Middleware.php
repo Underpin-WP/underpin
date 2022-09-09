@@ -4,7 +4,7 @@ namespace Underpin\Middlewares\Rest;
 
 use Underpin\Abstracts\Rest_Middleware;
 use Underpin\Exceptions\Middleware_Exception;
-use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Factories\Request;
 
 class Has_Param_Middleware extends Rest_Middleware {
@@ -16,9 +16,13 @@ class Has_Param_Middleware extends Rest_Middleware {
 	public function run( Request $request ): void {
 		try {
 			$request->get_param( $this->param );
-		} catch ( Unknown_Registry_Item $exception ) {
+		} catch ( Operation_Failed $exception ) {
 			throw new Middleware_Exception( message: 'Missing ' . $this->param . '.', code: 400, previous: $exception );
 		}
+	}
+
+	public function get_id(): string|int {
+		return "has_param_$this->param";
 	}
 
 }

@@ -3,7 +3,6 @@
  * Single Log item instance.
  * Handles output and formatting for log item.
  *
- * @since   1.0.0
  * @package Underpin\Factories
  */
 
@@ -11,12 +10,9 @@
 namespace Underpin\Factories;
 
 
-use Stringable;
-
 /**
  * Class Log_Item
  *
- * @since   1.0.0
  * @package Underpin\Factories
  */
 class Log_Item implements \Underpin\Interfaces\Log_Item {
@@ -24,7 +20,6 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 	/**
 	 * Event type.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @var string Event code
 	 */
@@ -34,7 +29,6 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 	/**
 	 * Event type object.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @var Event_Type|null Event
 	 */
@@ -43,7 +37,6 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 	/**
 	 * Log Item Constructor.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param string          $code    The event code to use.
 	 * @param string          $message The message to log.
@@ -55,7 +48,6 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		/**
 		 * Event code.
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var string Event code
 		 */
@@ -63,7 +55,6 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		/**
 		 * Message
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var string Message.
 		 */
@@ -72,7 +63,6 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		/**
 		 * Context.
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var mixed Reference Context. Usually a slug that offers context to what the ID is.
 		 */
@@ -81,7 +71,6 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 		/**
 		 * Ref.
 		 *
-		 * @since 1.0.0
 		 *
 		 * @var mixed Reference. Usually an id or something related to this item.
 		 */
@@ -90,16 +79,23 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 	) {
 	}
 
-	public function set_type( Event_Type $type ): static {
+	public function set_type( ?Event_Type $type ): static {
 		$this->event_type = $type;
 
 		return $this;
 	}
 
+	public function get_event_type(): ?Event_Type {
+		if ( ! isset( $this->event_type ) ) {
+			return null;
+		}
+
+		return $this->event_type;
+	}
+
 	/**
 	 * Formats the event log.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @return string
 	 */
@@ -117,7 +113,7 @@ class Log_Item implements \Underpin\Interfaces\Log_Item {
 			$additional_data['psr_level'] = $this->event_type->get_psr_level();
 		}
 
-		$log_message = 'Underpin ' . $this->type . ' event' . ': ' . $this->code . ' - ' . $this->message;
+		$log_message = 'Underpin ' . $this->event_type->name . ' event' . ': ' . $this->code . ' - ' . $this->message;
 
 
 		$data = array_merge(

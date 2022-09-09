@@ -2,20 +2,16 @@
 
 namespace Underpin\Registries;
 
-use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Enums\Types;
-use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Exceptions\Url_Exception;
 use Underpin\Factories\Registry_Items\Param;
 use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Interfaces\Can_Convert_To_String;
 use Underpin\Interfaces\Can_Remove;
-use Underpin\Traits\Removable_Registry_Item;
 
-class Param_Registry extends Object_Registry implements Can_Remove, Can_Convert_To_String {
-
-	use Removable_Registry_Item;
+class Param_Collection extends Mutable_Collection_With_Remove implements Can_Remove, Can_Convert_To_String {
 
 	protected string $abstraction_class = Param::class;
 
@@ -52,7 +48,7 @@ class Param_Registry extends Object_Registry implements Can_Remove, Can_Convert_
 					$this->add( $key, ( new Param( $key, Types::String ) )->set_value( $value ) );
 				}
 			}
-		} catch ( Invalid_Registry_Item|Unknown_Registry_Item $exception ) {
+		} catch ( Operation_Failed $exception ) {
 			throw new Url_Exception( 'Could not create URL from string', 500, $exception );
 		}
 

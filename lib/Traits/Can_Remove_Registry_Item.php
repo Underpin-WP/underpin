@@ -4,7 +4,7 @@ namespace Underpin\Traits;
 
 use Underpin\Exceptions\Operation_Failed;
 
-trait Removable_Registry_Item {
+trait Can_Remove_Registry_Item {
 
 	protected array $storage = [];
 

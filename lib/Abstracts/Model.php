@@ -16,7 +16,7 @@ abstract class Model implements \Underpin\Interfaces\Model {
 	/**
 	 * @throws Item_Not_Found
 	 */
-	public function get( int|string $id ): Beer {
+	public function get( int|string $id ): object {
 		return $this->data_store->read( $id );
 	}
 

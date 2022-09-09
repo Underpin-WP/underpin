@@ -3,7 +3,6 @@
  * Registry Class.
  * This is used any time a set of identical things are stored.
  *
- * @since   1.0.0
  * @package Underpin\Abstracts
  */
 
@@ -12,9 +11,9 @@ namespace Underpin\Abstracts\Registries;
 
 use ReflectionException;
 use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Array_Helper;
-use Underpin\Helpers\Object_Helper;
 use Underpin\Helpers\String_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Identifiable;
@@ -22,7 +21,6 @@ use Underpin\Interfaces\Identifiable;
 /**
  * Class Registry.
  *
- * @since   1.0.0
  * @package Underpin\Abstracts
  */
 abstract class Registry implements Can_Convert_To_Array {
@@ -32,7 +30,6 @@ abstract class Registry implements Can_Convert_To_Array {
 	/**
 	 * Validates an item. This runs just before adding items to the registry.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param string $key   The key to validate.
 	 * @param mixed  $value The value to validate.
@@ -68,16 +65,19 @@ abstract class Registry implements Can_Convert_To_Array {
 	/**
 	 * Validates, and adds an item to the registry.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param string $key   The key to validate.
 	 * @param mixed  $value The value to validate.
 	 *
 	 * @return static The current instance
-	 * @throws Invalid_Registry_Item
+	 * @throws Operation_Failed
 	 */
 	public function add( string $key, mixed $value ): static {
-		$valid = $this->validate_item( $key, $value );
+		try {
+			$valid = $this->validate_item( $key, $value );
+		} catch ( Invalid_Registry_Item $e ) {
+			throw new Operation_Failed( 'Item is not valid and could not be added', previous: $e );
+		}
 
 		if ( true === $valid ) {
 			$this->_add( $key, $value );
@@ -135,8 +135,7 @@ abstract class Registry implements Can_Convert_To_Array {
 	/**
 	 * Constructs a registry using an array of items keyed by their ID.
 	 *
-	 * @throws Invalid_Registry_Item
-	 * @throws ReflectionException
+	 * @throws Operation_Failed
 	 */
 	public function seed( array $items ): static {
 		$instance          = clone $this;
@@ -175,7 +174,7 @@ abstract class Registry implements Can_Convert_To_Array {
 	 * @param callable $callback
 	 *
 	 * @return static
-	 * @throws Invalid_Registry_Item
+	 * @throws Operation_Failed
 	 */
 	public function filter( callable $callback ): static {
 		$filtered = Array_Helper::filter( $this->to_array(), $callback );

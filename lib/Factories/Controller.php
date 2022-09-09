@@ -2,11 +2,11 @@
 
 namespace Underpin\Registries;
 
+use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Abstracts\Rest_Action;
 use Underpin\Abstracts\Rest_Middleware;
 use Underpin\Enums\Rest;
-use Underpin\Exceptions\Invalid_Registry_Item;
-use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Factories\Registry_Items\Param;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
@@ -15,8 +15,8 @@ use Underpin\Middlewares\Rest\Has_Param_Middleware;
 
 class Controller implements Loader_Item, Can_Convert_To_Array {
 
-	private Object_Registry $middleware;
-	private Param_Registry  $signature;
+	public readonly Object_Registry  $middleware;
+	public readonly Param_Collection $signature;
 
 	/**
 	 * @param string                         $route
@@ -32,18 +32,17 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 		protected ?string      $put = null,
 		protected ?string      $delete = null
 	) {
-		$this->middleware = Object_Registry::make( Rest_Middleware::class, Rest_Middleware::class );
-		$this->signature  = new Param_Registry;
+		$this->middleware = Mutable_Collection::make( Rest_Middleware::class, Rest_Middleware::class );
+		$this->signature  = new Param_Collection;
 	}
 
 	/**
 	 * Adds middleware.
 	 *
-	 * @throws Unknown_Registry_Item
-	 * @throws Invalid_Registry_Item
+	 * @throws Operation_Failed
 	 */
-	public function add_middleware( string $key, Rest_Middleware $middleware ): static {
-		$this->middleware->add( $key, $middleware );
+	public function add_middleware( Rest_Middleware $middleware ): static {
+		$this->middleware->add( $middleware->get_id(), $middleware );
 
 		return $this;
 	}
@@ -55,8 +54,7 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 	 * @param bool  $required Set to true if this param is required in the request.
 	 *
 	 * @return $this
-	 * @throws Invalid_Registry_Item
-	 * @throws Unknown_Registry_Item
+	 * @throws Operation_Failed
 	 */
 	public function add_param( Param $param, bool $required = false ): static {
 		$this->signature->add( $param->get_id(), $param );

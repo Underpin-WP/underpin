@@ -8,7 +8,7 @@ use Underpin\Enums\Direction;
 use Underpin\Exceptions\Exception;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Helpers\Object_Helper;
-use Underpin\Registries\Object_Registry;
+use Underpin\Registries\Mutable_Collection;
 
 class Basic extends Sort_Method {
 
@@ -30,7 +30,7 @@ class Basic extends Sort_Method {
 				$result = (int) $item_a <=> (int) $item_b;
 				break;
 			default:
-				if ( $item_a instanceof Object_Registry ) {
+				if ( $item_a instanceof Mutable_Collection ) {
 					$result = count( $item_a->to_array() ) <=> count( $item_b->to_array() );
 				} elseif ( $item_a instanceof \DateTime ) {
 					$result = (int) $item_a->format( 'U' ) <=> (int) $item_b->format( 'U' );

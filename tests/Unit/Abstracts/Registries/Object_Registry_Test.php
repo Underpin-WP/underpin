@@ -36,7 +36,7 @@ class Object_Registry_Test extends Test_Case {
 	 * @return void
 	 * @covers \Underpin\Abstracts\Registries\Object_Registry::add
 	 * @throws \Underpin\Exceptions\Invalid_Registry_Item
-	 * @throws \Underpin\Exceptions\Unknown_Registry_Item
+	 * @throws \Underpin\Exceptions\Operation_Failed
 	 */
 	public function test_can_add(): void {
 		$class = $this->createPartialMock( Object_Registry::class, [ '_add', 'validate_item', 'init_object' ] );

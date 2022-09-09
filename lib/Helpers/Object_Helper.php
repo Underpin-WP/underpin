@@ -11,7 +11,6 @@ class Object_Helper {
 	/**
 	 * Helper function used to construct factory classes from a standard array syntax.
 	 *
-	 * @since 1.2
 	 *
 	 * @param string|array|object $value           The value used to generate the class.
 	 *                                             Can be an array with "class" and "args", an associative array, a

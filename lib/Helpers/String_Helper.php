@@ -4,6 +4,7 @@ namespace Underpin\Helpers;
 
 use Closure;
 use ReflectionException;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Traits\With_Closure_Converter;
 
 class String_Helper {
@@ -25,29 +26,32 @@ class String_Helper {
 	 * @param false|string $key  Optional. The secret key to provide. Required if hash needs to be secure.
 	 *
 	 * @return string a 32 character hash from the provided value.
-	 * @throws ReflectionException
+	 * @throws Operation_Failed
 	 */
 	public static function create_hash( mixed $data, bool|string $key = false ): string {
+		try {
+			// If object, convert to array.
+			if ( is_object( $data ) ) {
+				$data = (array) $data;
+			}
 
-		// If object, convert to array.
-		if ( is_object( $data ) ) {
-			$data = (array) $data;
-		}
+			// Normalize the array
+			if ( is_array( $data ) ) {
+				$data = Array_Helper::normalize( $data );
+			}
 
-		// Normalize the array
-		if ( is_array( $data ) ) {
-			$data = Array_Helper::normalize( $data );
-		}
+			// Convert closures
+			if ( $data instanceof Closure ) {
+				$data = self::convert_closure( $data );
+			}
 
-		// Convert closures
-		if ( $data instanceof Closure ) {
-			$data = self::convert_closure( $data );
-		}
-
-		if ( false === $key ) {
-			return hash( 'md5', serialize( $data ) );
-		} else {
-			return hash_hmac( 'md5', serialize( $data ), $key );
+			if ( false === $key ) {
+				return hash( 'md5', serialize( $data ) );
+			} else {
+				return hash_hmac( 'md5', serialize( $data ), $key );
+			}
+		} catch ( ReflectionException $e ) {
+			throw new Operation_Failed( 'Could not create hash from the provided data.', previous: $e );
 		}
 	}
 

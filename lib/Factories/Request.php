@@ -11,21 +11,21 @@ use Underpin\Factories\Registry_Items\Param;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Identifiable;
 use Underpin\Registries\Header_Registry;
+use Underpin\Registries\Mutable_Collection_With_Remove;
 
 class Request {
 
-	protected Header_Registry $headers;
-	protected string          $path;
-	protected string          $host;
-	protected Rest            $method;
-	protected string          $ip;
-	protected Url             $url;
-	protected string          $body;
-	protected ?Identifiable   $identity = null;
-	protected array           $flags    = [];
+	protected Mutable_Collection_With_Remove $headers;
+	protected string                         $path;
+	protected Rest                           $method;
+	protected string                         $ip;
+	protected Url                            $url;
+	protected string                         $body;
+	protected ?Identifiable                  $identity = null;
+	protected array                          $flags    = [];
 
 	public function __construct() {
-		$this->headers = new Header_Registry;
+		$this->headers = Mutable_Collection_With_Remove::make( Header::class );
 	}
 
 	/**
@@ -116,9 +116,9 @@ class Request {
 	/**
 	 * Retrieves the list of headers in this request.
 	 *
-	 * @return Header_Registry
+	 * @return Mutable_Collection_With_Remove
 	 */
-	public function get_headers(): Header_Registry {
+	public function get_headers(): Mutable_Collection_With_Remove {
 		return $this->headers;
 	}
 
@@ -131,7 +131,7 @@ class Request {
 	public function set_header( Header $header ): static {
 		try {
 			$this->get_headers()->add( $header->get_id(), $header );
-		} catch ( Unknown_Registry_Item|Invalid_Registry_Item $e ) {
+		} catch ( Operation_Failed|Invalid_Registry_Item $e ) {
 			throw new Operation_Failed( "Could not set header", 500, previous: $e );
 		}
 
@@ -175,7 +175,7 @@ class Request {
 
 		try {
 			$this->get_url()->get_params()->add( $param->get_id(), $param );
-		} catch ( Invalid_Registry_Item|Unknown_Registry_Item $e ) {
+		} catch ( Operation_Failed $e ) {
 			throw new Operation_Failed( 'Could not set the param.', 500, 'error', $e );
 		}
 

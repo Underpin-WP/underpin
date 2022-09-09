@@ -5,31 +5,37 @@ namespace Underpin\Factories;
 
 use ReflectionException;
 use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Processors\Dependency_Processor;
 use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Observer;
 use Underpin\Registries\Logger;
-use Underpin\Registries\Object_Registry;
+use Underpin\Registries\Mutable_Collection;
+use Underpin\Registries\Mutable_Collection_With_Remove;
 use UnitEnum;
 
 class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 
-	protected Object_Registry $observer_registry;
+	protected Mutable_Collection $observer_registry;
 
 	public function __construct() {
-		$this->observer_registry = Object_Registry::make( Object_Registry::class );
+		$this->observer_registry = Mutable_Collection::make( Mutable_Collection::class );
 	}
 
 	/**
-	 * @throws Invalid_Registry_Item
-	 * @throws Unknown_Registry_Item|ReflectionException
+	 * @param UnitEnum $key
+	 * @param Observer $observer
+	 *
+	 * @return $this
+	 * @throws Operation_Failed
+	 * @throws Unknown_Registry_Item
 	 */
 	public function attach( UnitEnum $key, Observer $observer ): static {
 		try {
 			$this->observer_registry->get( $key->value );
-		} catch ( Unknown_Registry_Item ) {
-			$this->observer_registry->add( $key->value, Object_Registry::make( Observer::class ) );
+		} catch ( Operation_Failed ) {
+			$this->observer_registry->add( $key->value, Mutable_Collection_With_Remove::make( Observer::class ) );
 		}
 
 		$this->observer_registry->get( $key->value )->add( $observer->get_id(), $observer );
@@ -52,10 +58,17 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 	}
 
 	/**
-	 * @throws Unknown_Registry_Item
+	 * @throws Operation_Failed
 	 */
 	public function detach( UnitEnum $key, $observer_id ): static {
-		foreach ( $this->observer_registry->get( $key ) as $iterator => $observer ) {
+		try {
+			/* @var Mutable_Collection_With_Remove $item */
+			$item = $this->observer_registry->get( $key->name );
+		} catch ( Unknown_Registry_Item $e ) {
+			return $this;
+		}
+
+		foreach ( $item as $iterator => $observer ) {
 			if ( $observer->id === $observer_id ) {
 				Logger::log(
 					'info',
@@ -63,7 +76,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 						code   : 'event_detached',
 						message: 'Event detached',
 						context: 'registry_key',
-						ref    : $key,
+						ref    : $key->name,
 						data   : [
 							'subject'     => get_called_class(),
 							'name'        => $observer->name,
@@ -71,20 +84,17 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 						]
 					)
 				);
-				unset( $this->observer_registry[ $key ][ $iterator ] );
+				$item->remove( $iterator );
 			}
 		}
 
 		return $this;
 	}
 
-	/**
-	 * @throws Invalid_Registry_Item
-	 * @throws Unknown_Registry_Item
-	 */
 	public function broadcast( UnitEnum $key, ?Data_Provider $args = null ): void {
 		try {
-			if ( false === $args || empty( $this->observer_registry->get( $key->name )->to_array() ) ) {
+			$item = $this->observer_registry->get( $key->name );
+			if ( false === $args || empty( $item->to_array() ) ) {
 				return;
 			}
 		} catch ( Unknown_Registry_Item ) {
@@ -92,7 +102,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 		}
 
 		/* @var Observer $observer */
-		foreach ( Dependency_Processor::prepare( $this->observer_registry->get( $key->name ) ) as $observer ) {
+		foreach ( Dependency_Processor::prepare( $item ) as $observer ) {
 			$observer->update( $this, $args );
 		}
 	}

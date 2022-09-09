@@ -4,7 +4,7 @@ namespace Underpin\Factories\Observers;
 
 
 use Underpin\Exceptions\Invalid_Registry_Item;
-use Underpin\Exceptions\Unknown_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Factories\Data_Providers\Plugin_Builder_Provider;
 use Underpin\Interfaces\Data_Provider;
 use Underpin\Abstracts\Observer;
@@ -17,7 +17,7 @@ class Loader extends Observer {
 	}
 
 	/**
-	 * @throws Unknown_Registry_Item
+	 * @throws Operation_Failed
 	 * @throws Invalid_Registry_Item
 	 */
 	public function update( $instance, ?Data_Provider $provider ): void {

@@ -9,7 +9,6 @@ interface Event_Type {
 	/**
 	 * Event type
 	 *
-	 * @since 1.0.0
 	 *
 	 * @var string
 	 */
@@ -18,7 +17,6 @@ interface Event_Type {
 	/**
 	 * The minimum volume to be able to see events of this type.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @var int
 	 */
@@ -27,7 +25,6 @@ interface Event_Type {
 	/**
 	 * A string used to group different event types together.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @var string
 	 */
@@ -36,7 +33,6 @@ interface Event_Type {
 	/**
 	 * PSR3 Syslog Level. Can be emergency, alert, critical, error, warning, notice, info, or debug.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @var string
 	 */
@@ -45,7 +41,6 @@ interface Event_Type {
 	/**
 	 * Enqueues an event to be logged in the system.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param Log_Item $item
 	 *
@@ -56,7 +51,6 @@ interface Event_Type {
 	/**
 	 * Logs an error from an exception object.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @param Exception       $exception Exception instance to log.
 	 * @param string|int|null $ref
