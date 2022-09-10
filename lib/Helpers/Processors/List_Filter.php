@@ -35,6 +35,7 @@ class List_Filter {
 		return [ 'field' => $field, 'type' => $type ];
 	}
 
+
 	/**
 	 * Determines if a registry item passes the arguments.
 	 *
@@ -51,19 +52,12 @@ class List_Filter {
 			extract( $this->prepare_field( $key ) );
 
 
-			// Make an instanceof check. If this fails, don't bother going any further.
-			if ( 'instanceof' === $field ) {
-				$instances       = Array_Helper::wrap( $arg );
-				$valid_instances = [];
-				foreach ( $instances as $instance ) {
-					if ( $item instanceof $instance ) {
-						break;
-					}
-				}
-			}
-
 			try {
-				$value = Object_Helper::pluck( $item, $field );
+				if ( 'instanceof' === $field ) {
+					$value = array_keys(array_merge( class_uses( $item ), class_implements( $item ), class_parents( $item ) ));
+				} else {
+					$value = Object_Helper::pluck( $item, $field );
+				}
 			} catch ( Invalid_Field $e ) {
 				continue;
 			}

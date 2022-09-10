@@ -4,13 +4,28 @@ namespace Underpin\Factories;
 
 use Underpin\Helpers\String_Helper;
 use Underpin\Interfaces\Can_Convert_To_String;
+use Underpin\Interfaces\Identifiable;
 
-class Header implements Can_Convert_To_String {
+class Header implements Can_Convert_To_String, Identifiable {
 
-	protected mixed $value;
+	protected ?string $id = null;
 
-	public function __construct( protected string $key ) {
+	public function __construct( protected string $key, protected string $value ) {
 
+	}
+
+	/**
+	 * Gets a string identifier for this header.
+	 *
+	 * @return string
+	 * @throws \Underpin\Exceptions\Operation_Failed
+	 */
+	public function get_id(): string {
+		if ( ! $this->id ) {
+			$this->id = String_Helper::create_hash( $this->to_string() );
+		}
+
+		return $this->id;
 	}
 
 	/**
@@ -21,10 +36,10 @@ class Header implements Can_Convert_To_String {
 	 * @return Header
 	 */
 	public static function from_string( string $header ): Header {
-		$id    = String_Helper::before( $header, ':' );
+		$key   = String_Helper::before( $header, ':' );
 		$value = trim( String_Helper::after( $header, ':' ) );
 
-		return ( new static( $id ) )->set_value( $value );
+		return new static( $key, $value );
 	}
 
 	/**
@@ -34,19 +49,6 @@ class Header implements Can_Convert_To_String {
 	 */
 	public function get_value(): mixed {
 		return $this->value;
-	}
-
-	/**
-	 * Sets the header value.
-	 *
-	 * @param mixed $value
-	 *
-	 * @return $this
-	 */
-	public function set_value( mixed $value ): static {
-		$this->value = $value;
-
-		return $this;
 	}
 
 	/**

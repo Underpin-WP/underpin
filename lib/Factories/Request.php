@@ -170,15 +170,7 @@ class Request {
 	 * @throws Operation_Failed
 	 */
 	public function set_header( Header $header ): static {
-		try {
-			// Headers are not set based on the key because it's possible to set multiple headers with the same ID
-			// If you're trying to find a specific header, you'll need to run a query against get_headers.
-			// Super annoying, I know, but hey - I didn't create http headers!
-			// @see get_headers_by_key
-			$this->get_headers()->add( count( $this->headers->to_array() ), $header );
-		} catch ( Operation_Failed|Invalid_Registry_Item $e ) {
-			throw new Operation_Failed( "Could not set header", 500, previous: $e );
-		}
+		$this->get_headers()->add( $header->get_id(), $header );
 
 		return $this;
 	}
