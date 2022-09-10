@@ -12,8 +12,8 @@ abstract class Registry_Mutator {
 
 	/**
 	 * @throws Operation_Failed
-	 * @return Object_Registry
+	 * @return array
 	 */
-	abstract public function mutate(): Object_Registry;
+	abstract public function mutate(): array;
 
 }

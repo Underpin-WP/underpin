@@ -98,7 +98,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 				return;
 			}
 			/* @var Observer $observer */
-			foreach ( ( new Dependency_Processor( $item ) )->mutate()->to_array() as $observer ) {
+			foreach ( ( new Dependency_Processor( $item ) )->mutate() as $observer ) {
 				$observer->update( $this, $args );
 			}
 		} catch ( Operation_Failed|Unknown_Registry_Item ) {

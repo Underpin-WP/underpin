@@ -84,7 +84,7 @@ class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 			}
 
 			/* @var Observer $observer */
-			foreach ( ( new Dependency_Processor( $this->observer_registry->get( $key ) ) )->mutate()->to_array() as $observer ) {
+			foreach ( ( new Dependency_Processor( $this->observer_registry->get( $key ) ) )->mutate() as $observer ) {
 				$observer->update( $this, $args );
 			}
 		} catch ( Operation_Failed|Unknown_Registry_Item ) {
