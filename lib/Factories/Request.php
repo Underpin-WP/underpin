@@ -8,9 +8,9 @@ use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Registry_Items\Param;
-use Underpin\Helpers\Array_Helper;
+use Underpin\Helpers\String_Helper;
 use Underpin\Interfaces\Identifiable;
-use Underpin\Registries\Header_Registry;
+use Underpin\Registries\Immutable_Collection;
 use Underpin\Registries\Mutable_Collection_With_Remove;
 
 class Request {
@@ -23,9 +23,23 @@ class Request {
 	protected string                         $body;
 	protected ?Identifiable                  $identity = null;
 	protected array                          $flags    = [];
+	protected static Request                 $current;
 
 	public function __construct() {
 		$this->headers = Mutable_Collection_With_Remove::make( Header::class );
+	}
+
+	/**
+	 * Gets the current request.
+	 *
+	 * @return Request
+	 */
+	public static function current(): Request {
+		if ( ! isset( static::$current ) ) {
+			static::$current = new static;
+		}
+
+		return static::$current;
 	}
 
 	/**
@@ -56,6 +70,18 @@ class Request {
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Sets or unsets a flag based on a boolean value
+	 *
+	 * @param string $flag
+	 * @param bool   $binding
+	 *
+	 * @return $this
+	 */
+	public function bind_flag( string $flag, bool $binding ): static {
+		return $binding ? $this->set_flag( $flag ) : $this->unset_flag( $flag );
 	}
 
 	/**
@@ -123,6 +149,21 @@ class Request {
 	}
 
 	/**
+	 * Gets all the headers from the specified key.
+	 *
+	 * It is technically possible for a request to have multiple headers with identical keys
+	 * Because of this, we can't simply get a header by the key directly.
+	 *
+	 * @param string $key
+	 *
+	 * @return array
+	 * @throws Operation_Failed
+	 */
+	public function get_headers_by_key( string $key ): array {
+		return $this->headers->query()->in( 'key', $key )->get_results()->to_array();
+	}
+
+	/**
 	 * @param Header $header
 	 *
 	 * @return $this
@@ -130,7 +171,11 @@ class Request {
 	 */
 	public function set_header( Header $header ): static {
 		try {
-			$this->get_headers()->add( $header->get_id(), $header );
+			// Headers are not set based on the key because it's possible to set multiple headers with the same ID
+			// If you're trying to find a specific header, you'll need to run a query against get_headers.
+			// Super annoying, I know, but hey - I didn't create http headers!
+			// @see get_headers_by_key
+			$this->get_headers()->add( count( $this->headers->to_array() ), $header );
 		} catch ( Operation_Failed|Invalid_Registry_Item $e ) {
 			throw new Operation_Failed( "Could not set header", 500, previous: $e );
 		}
@@ -216,28 +261,6 @@ class Request {
 	 */
 	public function get_method(): Rest {
 		return $this->method;
-	}
-
-	/**
-	 * Sets the Request IP address.
-	 *
-	 * @param string $ip
-	 *
-	 * @return $this
-	 */
-	public function set_ip( string $ip ): static {
-		$this->ip = $ip;
-
-		return $this;
-	}
-
-	/**
-	 * Gets the request IP address.
-	 *
-	 * @return string
-	 */
-	public function get_ip(): string {
-		return $this->ip;
 	}
 
 	/**
