@@ -174,7 +174,6 @@ abstract class Registry implements Can_Convert_To_Array {
 	 * @param callable $callback
 	 *
 	 * @return static
-	 * @throws Operation_Failed
 	 */
 	public function filter( callable $callback ): static {
 		$filtered = Array_Helper::filter( $this->to_array(), $callback );

@@ -1,6 +1,6 @@
 <?php
 
-namespace Underpin\Registries;
+namespace Underpin\Factories;
 
 use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Abstracts\Rest_Action;
@@ -12,6 +12,8 @@ use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Loader_Item;
 use Underpin\Middlewares\Rest\Has_Param_Middleware;
+use Underpin\Registries\Mutable_Collection;
+use Underpin\Registries\Param_Collection;
 
 class Controller implements Loader_Item, Can_Convert_To_Array {
 

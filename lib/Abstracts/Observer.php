@@ -5,10 +5,11 @@ namespace Underpin\Abstracts;
 
 use Underpin\Helpers\Array_Helper;
 use Underpin\Helpers\Processors\Array_Processor;
+use Underpin\Traits\With_Dependencies;
 
 abstract class Observer implements \Underpin\Interfaces\Observer {
 
-	protected array  $dependencies = [];
+	use With_Dependencies;
 
 	public function __construct( protected string $id, protected int $priority = 10 ) {
 	}
@@ -18,42 +19,6 @@ abstract class Observer implements \Underpin\Interfaces\Observer {
 	 */
 	public function get_id(): string {
 		return $this->id;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function get_priority(): int {
-		return $this->priority;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function get_dependencies(): array {
-		return $this->dependencies;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function add_dependency( string $dependency_id ): static {
-		Array_Helper::append( $this->dependencies, $dependency_id );
-
-		return $this;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function remove_dependency( string $dependency_id ): static {
-		$this->dependencies = ( new Array_Processor( $this->dependencies ) )
-			->flip()
-			->remove( $dependency_id )
-			->flip()
-			->to_array();
-
-		return $this;
 	}
 
 }

@@ -14,4 +14,13 @@ abstract class Rest_Middleware implements Identifiable {
 	 */
 	abstract public function run( Request $request ): void;
 
+	/**
+	 * Gets the ID for this middleware.
+	 *
+	 * @return string|int
+	 */
+	public function get_id(): string|int {
+		return static::class;
+	}
+
 }

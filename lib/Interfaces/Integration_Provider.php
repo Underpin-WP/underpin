@@ -3,6 +3,7 @@
 namespace Underpin\Interfaces;
 
 use Underpin\Exceptions\Unmet_Requirements;
+use Underpin\Factories\Url;
 
 interface Integration_Provider {
 
@@ -14,11 +15,11 @@ interface Integration_Provider {
 	public function get_file(): string;
 
 	/**
-	 * The fill URL path to the root directory of this plugin's base file.
+	 * URL object with the full path to the root directory of this plugin's base file.
 	 *
-	 * @return string
+	 * @return Url
 	 */
-	public function get_url(): string;
+	public function get_url(): Url;
 
 	/**
 	 * The full path to this plugin's root.

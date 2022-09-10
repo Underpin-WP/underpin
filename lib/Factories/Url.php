@@ -18,10 +18,10 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 
 	protected Param_Collection $params;
 	protected ?string          $path;
-	protected string             $protocol;
-	protected string             $host;
-	protected ?int               $port;
-	protected string             $fragment;
+	protected string           $protocol;
+	protected string           $host;
+	protected ?int             $port;
+	protected string           $fragment;
 
 	public function __construct() {
 		$this->params = new Param_Collection;
@@ -99,6 +99,17 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 		$this->path = String_Helper::prepend( $path, '/' );
 
 		return $this;
+	}
+
+	/**
+	 * Appends an item to the path
+	 *
+	 * @param string $path
+	 *
+	 * @return $this
+	 */
+	public function append_path( string $path ): static {
+		return $this->set_path( String_Helper::trim_trailing( $this->get_path(), '/' ) . String_Helper::prepend( $path, '/' ) );
 	}
 
 	/**
