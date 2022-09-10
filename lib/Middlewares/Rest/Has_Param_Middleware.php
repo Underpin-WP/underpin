@@ -2,12 +2,12 @@
 
 namespace Underpin\Middlewares\Rest;
 
-use Underpin\Abstracts\Rest_Middleware;
+use Underpin\Abstracts\Request_Middleware;
 use Underpin\Exceptions\Middleware_Exception;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Factories\Request;
 
-class Has_Param_Middleware extends Rest_Middleware {
+class Has_Param_Middleware extends Request_Middleware {
 
 	public function __construct( protected string $param ) {
 

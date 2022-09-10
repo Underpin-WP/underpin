@@ -2,13 +2,13 @@
 
 namespace Underpin\Middlewares\Rest;
 
-use Underpin\Abstracts\Rest_Middleware;
+use Underpin\Abstracts\Request_Middleware;
 use Underpin\Enums\Types;
 use Underpin\Exceptions\Middleware_Exception;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Factories\Request;
 
-abstract class Validate_Type_Middleware extends Rest_Middleware {
+abstract class Validate_Type_Middleware extends Request_Middleware {
 
 	public function __construct( protected string $param, protected Types $type ) {
 

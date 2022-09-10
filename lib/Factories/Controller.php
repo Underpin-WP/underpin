@@ -4,7 +4,7 @@ namespace Underpin\Factories;
 
 use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Abstracts\Rest_Action;
-use Underpin\Abstracts\Rest_Middleware;
+use Underpin\Abstracts\Request_Middleware;
 use Underpin\Enums\Rest;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Factories\Registry_Items\Param;
@@ -34,7 +34,7 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 		protected ?string      $put = null,
 		protected ?string      $delete = null
 	) {
-		$this->middleware = Mutable_Collection::make( Rest_Middleware::class, Rest_Middleware::class );
+		$this->middleware = Mutable_Collection::make( Request_Middleware::class, Request_Middleware::class );
 		$this->signature  = new Param_Collection;
 	}
 
@@ -43,7 +43,7 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 	 *
 	 * @throws Operation_Failed
 	 */
-	public function add_middleware( Rest_Middleware $middleware ): static {
+	public function add_middleware( Request_Middleware $middleware ): static {
 		$this->middleware->add( $middleware->get_id(), $middleware );
 
 		return $this;

@@ -7,7 +7,7 @@ use Underpin\Factories\Request;
 use Underpin\Interfaces\Identifiable;
 use Underpin\Interfaces\With_Middleware;
 
-abstract class Rest_Middleware implements Identifiable {
+abstract class Request_Middleware implements Identifiable {
 
 	/**
 	 * @throws Middleware_Exception

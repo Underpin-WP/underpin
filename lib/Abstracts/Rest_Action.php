@@ -27,7 +27,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	 *
 	 * @throws Operation_Failed
 	 */
-	protected function add_middleware( Rest_Middleware $middleware ): static {
+	protected function add_middleware( Request_Middleware $middleware ): static {
 		$this->middleware->add( $middleware->get_id(), $middleware );
 
 		return $this;
@@ -68,7 +68,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	 * @return void
 	 */
 	public function do_middleware_actions(): void {
-			$this->middleware->each( fn ( Rest_Middleware $middleware ) => $middleware->run( $this->request ) );
+			$this->middleware->each( fn ( Request_Middleware $middleware ) => $middleware->run( $this->request ) );
 	}
 
 	/**
