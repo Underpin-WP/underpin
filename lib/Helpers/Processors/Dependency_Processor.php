@@ -108,12 +108,6 @@ class Dependency_Processor extends Registry_Mutator {
 		return $last_dependency;
 	}
 
-	public static function prepare( $items ): array {
-		$instance = new self( $items );
-
-		return $instance->filter_dependencies();
-	}
-
 	public function mutate(): Object_Registry {
 		return $this->items->seed( $this->filter_dependencies() );
 	}
