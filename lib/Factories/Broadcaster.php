@@ -97,14 +97,14 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 			if ( false === $args || empty( $item->to_array() ) ) {
 				return;
 			}
-		} catch ( Unknown_Registry_Item ) {
+			/* @var Observer $observer */
+			foreach ( ( new Dependency_Processor( $item ) )->mutate()->to_array() as $observer ) {
+				$observer->update( $this, $args );
+			}
+		} catch ( Operation_Failed|Unknown_Registry_Item ) {
 			return;
 		}
 
-		/* @var Observer $observer */
-		foreach ( Dependency_Processor::prepare( $item ) as $observer ) {
-			$observer->update( $this, $args );
-		}
 	}
 
 }

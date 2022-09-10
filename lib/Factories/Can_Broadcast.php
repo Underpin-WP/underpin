@@ -5,11 +5,13 @@ namespace Underpin\Factories;
 
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
+use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Processors\Dependency_Processor;
 use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Observer;
 use Underpin\Registries\Logger;
 use Underpin\Registries\Mutable_Collection;
+use UnitEnum;
 
 class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 
@@ -19,10 +21,9 @@ class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 		$this->observer_registry = Mutable_Collection::make( Mutable_Collection::class );
 	}
 
-	/**
-	 * @throws Operation_Failed
-	 */
-	public function attach( $key, Observer $observer ): void {
+	public function attach( UnitEnum $key, Observer $observer ): static {
+		$key = $key->name;
+
 		try {
 			$this->observer_registry->get( $key );
 		} catch ( Operation_Failed ) {
@@ -44,12 +45,13 @@ class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 				]
 			)
 		);
+
+		return $this;
 	}
 
-	/**
-	 * @throws Operation_Failed
-	 */
-	public function detach( $key, $observer_id ): void {
+	public function detach( UnitEnum $key, $observer_id ): static {
+		$key = $key->name;
+
 		foreach ( $this->observer_registry->get( $key ) as $iterator => $observer ) {
 			if ( $observer->id === $observer_id ) {
 				Logger::log(
@@ -70,25 +72,25 @@ class Can_Broadcast implements \Underpin\Interfaces\Can_Broadcast {
 			}
 		}
 
+		return $this;
 	}
 
-	/**
-	 * @throws Invalid_Registry_Item
-	 * @throws Operation_Failed
-	 */
 	public function broadcast( string $key, ?Data_Provider $args = null ): void {
 		try {
-			if ( false === $args || empty( $this->observer_registry->get( $key )->to_array() ) ) {
+			$items = $this->observer_registry->get( $key );
+
+			if ( false === $args || empty( $items->to_array() ) ) {
 				return;
 			}
-		} catch ( Operation_Failed ) {
+
+			/* @var Observer $observer */
+			foreach ( ( new Dependency_Processor( $this->observer_registry->get( $key ) ) )->mutate()->to_array() as $observer ) {
+				$observer->update( $this, $args );
+			}
+		} catch ( Operation_Failed|Unknown_Registry_Item ) {
 			return;
 		}
 
-		/* @var Observer $observer */
-		foreach ( Dependency_Processor::prepare( $this->observer_registry->get( $key ) ) as $observer ) {
-			$observer->update( $this, $args );
-		}
 	}
 
 }

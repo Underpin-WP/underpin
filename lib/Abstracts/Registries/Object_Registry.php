@@ -9,10 +9,13 @@
 
 namespace Underpin\Abstracts\Registries;
 
+use Underpin\Abstracts\Registry_Mutator;
 use Underpin\Exceptions\Invalid_Registry_Item;
+use Underpin\Exceptions\Operation_Failed;
 use Underpin\Helpers\Object_Helper;
 use Underpin\Helpers\Processors\Registry_Query;
 use Underpin\Interfaces\Queryable;
+use Underpin\Registries\Immutable_Collection;
 
 /**
  * Class Registry.

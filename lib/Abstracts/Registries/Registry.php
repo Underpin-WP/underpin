@@ -10,6 +10,7 @@
 namespace Underpin\Abstracts\Registries;
 
 use ReflectionException;
+use Underpin\Abstracts\Registry_Mutator;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
@@ -181,4 +182,12 @@ abstract class Registry implements Can_Convert_To_Array {
 		return $this->seed( $filtered );
 	}
 
+	/**
+	 * Merges multiple registries into a single registry.
+	 *
+	 * @throws Operation_Failed
+	 */
+	public function merge( Registry ...$items ): static {
+		return $this->seed( Array_Helper::merge( ...Array_Helper::map( $items, fn ( Registry $item ) => $item->to_array() ) ) );
+	}
 }

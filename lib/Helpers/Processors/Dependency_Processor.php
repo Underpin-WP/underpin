@@ -3,22 +3,14 @@
 namespace Underpin\Helpers\Processors;
 
 use Underpin\Abstracts\Registries\Object_Registry;
+use Underpin\Abstracts\Registry_Mutator;
 use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Interfaces\Item_With_Dependencies;
 use Underpin\Registries\Logger;
 
 
-class Dependency_Processor {
-
-	/**
-	 * @var Object_Registry List of items
-	 */
-	private Object_Registry $items;
-
-	public function __construct( Object_Registry $items ) {
-		$this->items = $items;
-	}
+class Dependency_Processor extends Registry_Mutator {
 
 	private function get_dependencies( Item_With_Dependencies $item ): array {
 		$deps = $item->get_dependencies();
@@ -34,9 +26,14 @@ class Dependency_Processor {
 	}
 
 	public function filter_dependencies(): array {
-		$queue          = $this->items->to_array();
-		$items          = [];
-		$queued_deps    = [];
+		$queue       = array_values( $this->items->to_array() );
+		$items       = [];
+		$queued_deps = [];
+
+		// If there's zero, or 1 item in the array, there's nothing to sort. Just return it.
+		if ( count( $queue ) < 2 ) {
+			return $queue;
+		}
 
 		while ( ! empty( $queue ) ) {
 			/* @var Item_With_Dependencies $item */
@@ -113,7 +110,12 @@ class Dependency_Processor {
 
 	public static function prepare( $items ): array {
 		$instance = new self( $items );
+
 		return $instance->filter_dependencies();
+	}
+
+	public function mutate(): Object_Registry {
+		return $this->items->seed( $this->filter_dependencies() );
 	}
 
 }
