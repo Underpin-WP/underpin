@@ -2,10 +2,10 @@
 
 namespace Underpin\Registries;
 
-use Head_Tag;
 use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Exceptions\Middleware_Exception;
 use Underpin\Exceptions\Operation_Failed;
+use Underpin\Factories\Head_Tag;
 use Underpin\Factories\Request;
 use Underpin\Helpers\Processors\Dependency_Processor;
 use Underpin\Interfaces\Can_Remove;
