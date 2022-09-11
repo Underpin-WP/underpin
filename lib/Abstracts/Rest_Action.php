@@ -18,7 +18,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	protected mixed   $response;
 	protected Request $request;
 
-	public function __construct( public readonly Mutable_Collection $middleware, public readonly Param_Collection $signature ) {
+	public function __construct( protected Mutable_Collection $middleware, protected Param_Collection $signature ) {
 	}
 
 
@@ -68,7 +68,7 @@ abstract class Rest_Action implements Feature_Extension, With_Middleware, Has_Re
 	 * @return void
 	 */
 	public function do_middleware_actions(): void {
-			$this->middleware->each( fn ( Request_Middleware $middleware ) => $middleware->run( $this->request ) );
+		$this->middleware->each( fn ( Request_Middleware $middleware ) => $middleware->run( $this->request ) );
 	}
 
 	/**

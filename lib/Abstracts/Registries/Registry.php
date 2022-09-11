@@ -188,6 +188,6 @@ abstract class Registry implements Can_Convert_To_Array {
 	 * @throws Operation_Failed
 	 */
 	public function merge( Registry ...$items ): static {
-		return $this->seed( Array_Helper::merge( ...Array_Helper::map( $items, fn ( Registry $item ) => $item->to_array() ) ) );
+		return $this->seed( Array_Helper::merge( $this->to_array(), ...Array_Helper::map( $items, fn ( Registry $item ) => $item->to_array() ) ) );
 	}
 }

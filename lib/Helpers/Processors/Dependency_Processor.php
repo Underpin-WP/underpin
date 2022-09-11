@@ -26,7 +26,7 @@ class Dependency_Processor extends Registry_Mutator {
 	}
 
 	public function filter_dependencies(): array {
-		$queue       = array_values( $this->items->to_array() );
+		$queue       = $this->items->to_array();
 		$items       = [];
 		$queued_deps = [];
 
@@ -36,8 +36,9 @@ class Dependency_Processor extends Registry_Mutator {
 		}
 
 		while ( ! empty( $queue ) ) {
+			$key = array_key_first( $queue );
 			/* @var Item_With_Dependencies $item */
-			$item = $queue[0];
+			$item = $queue[ $key ];
 
 			// If this item depends on something that doesn't exist, skip it.
 			$unmet_dependencies = array_diff( $this->get_dependencies( $item ), $this->items->pluck( 'id' ) );
@@ -71,12 +72,12 @@ class Dependency_Processor extends Registry_Mutator {
 
 			// If all dependencies have been added, add this after the last dependency
 			$last_dependency_key = $this->get_last_dependency( $item, $items );
-			if ( 0 === $last_dependency_key ) {
-				array_unshift( $items, $item );
+			if ( null === $last_dependency_key ) {
+				$items = array_merge( [ $key => $item ], $items );
 			} else {
 				$items = array_merge(
-					array_slice( $items, 0, $last_dependency_key + 1 ),
-					[ $item ],
+					array_slice( $items, 0, $last_dependency_key + 1, true ),
+					[ $key => $item ],
 					array_slice( $items, $last_dependency_key + 1, count( $items ) - $last_dependency_key + 1 )
 				);
 			}
@@ -87,10 +88,19 @@ class Dependency_Processor extends Registry_Mutator {
 		return $items;
 	}
 
-	protected function get_last_dependency( Item_With_Dependencies $item, $items ): int|string {
-		$last_dependency = 0;
+	protected function get_last_dependency( Item_With_Dependencies $item, $items ): ?int {
 		foreach ( $items as $key => $value ) {
 			/* @var Item_With_Dependencies $value */
+
+			// If neither have dependencies, use priority.
+			if ( empty( $item->get_dependencies() ) && empty( $value->get_dependencies() ) ) {
+				if ( $item->get_priority() > $value->get_priority() ) {
+					$last_dependency = $key;
+				}
+				continue;
+			}
+
+			// If the value is a dependency, use it.
 			$found_dependencies = in_array( $value->get_id(), $item->get_dependencies() );
 			if ( ! empty( $found_dependencies ) ) {
 				$last_dependency = $key;
@@ -105,7 +115,13 @@ class Dependency_Processor extends Registry_Mutator {
 			}
 		}
 
-		return $last_dependency;
+		if ( ! isset( $last_dependency ) ) {
+			return null;
+		}
+
+		$keys = array_keys( $items );
+
+		return array_search( $last_dependency, $keys );
 	}
 
 	public function mutate(): array {
