@@ -153,7 +153,7 @@ class List_Filter {
 			$item = $this->filter_item( $this->items[ $item_key ] );
 
 			if ( $item ) {
-				$results[] = $item;
+				$results[$item_key] = $item;
 			}
 		}
 

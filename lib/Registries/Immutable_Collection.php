@@ -6,7 +6,7 @@ use Underpin\Exceptions\Operation_Failed;
 
 class Immutable_Collection extends Mutable_Collection {
 
-	protected bool $mutable;
+	protected bool $mutable = true;
 
 	public function seed( array $items ): static {
 		$this->mutable   = true;
@@ -15,6 +15,12 @@ class Immutable_Collection extends Mutable_Collection {
 		$this->mutable   = false;
 
 		return $result;
+	}
+
+	public function lock(): static {
+		$this->mutable = false;
+
+		return $this;
 	}
 
 	/**

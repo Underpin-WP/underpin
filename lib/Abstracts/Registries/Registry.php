@@ -9,8 +9,6 @@
 
 namespace Underpin\Abstracts\Registries;
 
-use ReflectionException;
-use Underpin\Abstracts\Registry_Mutator;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
