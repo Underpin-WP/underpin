@@ -6,10 +6,6 @@ use Underpin\Exceptions\Operation_Failed;
 
 interface Model {
 
-	public function get_id(): string|int|null;
-
-	public function set_id( string|int $id ): static;
-
 	/**
 	 * @throws Operation_Failed
 	 */

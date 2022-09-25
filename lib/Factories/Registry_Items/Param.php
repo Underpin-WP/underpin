@@ -18,10 +18,19 @@ class Param implements Identifiable, Can_Convert_To_String {
 
 	}
 
+	/**
+	 * @return Types
+	 */
 	public function get_type(): Types {
 		return $this->type;
 	}
 
+	/**
+	 * @param mixed $value
+	 *
+	 * @return $this
+	 * @throws Validation_Failed
+	 */
 	public function set_value( mixed $value ): static {
 		if ( $this->validate( $value ) ) {
 			$this->value = $value;
@@ -44,18 +53,30 @@ class Param implements Identifiable, Can_Convert_To_String {
 		return true;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function get_value(): mixed {
 		return $this->value;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function get_id(): string {
 		return $this->id;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function __toString(): string {
 		return $this->to_string();
 	}
 
+	/**
+	 * @return string
+	 */
 	public function to_string(): string {
 		return (string) $this->value;
 	}

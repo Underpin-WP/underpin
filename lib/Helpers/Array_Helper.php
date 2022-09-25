@@ -133,7 +133,7 @@ class Array_Helper {
 	 */
 	public static function dot( array $subject, string $dot ): mixed {
 		foreach ( explode( '.', $dot ) as $item ) {
-			if ( ! isset( $subject[ $item ] ) && ! is_null( $subject[ $item ] ) ) {
+			if ( !isset( $subject[ $item ] ) ) {
 				throw new Item_Not_Found( $item );
 			} else {
 				$subject = $subject[ $item ];
@@ -312,7 +312,7 @@ class Array_Helper {
 	 *
 	 * @return mixed The value
 	 */
-	public static function pluck( array $item, string $key, bool $default = null ): mixed {
+	public static function pluck( array $item, string $key, mixed $default = null ): mixed {
 		$array = self::wrap( $item );
 
 		if ( isset( $array[ $key ] ) ) {

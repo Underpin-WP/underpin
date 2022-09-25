@@ -18,5 +18,14 @@ interface Query {
 	 */
 	public function get_results(): array;
 
+	/**
+	 * @return int
+	 */
 	public function get_count(): int;
+
+	/**
+	 * @return int[]
+	 */
+	public function get_ids(): array;
+
 }
