@@ -6,9 +6,11 @@ use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Abstracts\Rest_Action;
 use Underpin\Abstracts\Request_Middleware;
 use Underpin\Enums\Rest;
+use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Factories\Registry_Items\Param;
 use Underpin\Helpers\Array_Helper;
+use Underpin\Helpers\Object_Helper;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Loader_Item;
 use Underpin\Middlewares\Rest\Has_Param_Middleware;
@@ -28,11 +30,11 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 	 * @param class-string<Rest_Action>|null $delete
 	 */
 	public function __construct(
-		public readonly string $route,
-		protected ?string      $get = null,
-		protected ?string      $post = null,
-		protected ?string      $put = null,
-		protected ?string      $delete = null
+		public readonly string                  $route,
+		protected string|array|Rest_Action|null $get = null,
+		protected string|array|Rest_Action|null $post = null,
+		protected string|array|Rest_Action|null $put = null,
+		protected string|array|Rest_Action|null $delete = null
 	) {
 		$this->middleware = Mutable_Collection::make( Request_Middleware::class, Request_Middleware::class );
 		$this->signature  = new Param_Collection;
@@ -74,11 +76,22 @@ class Controller implements Loader_Item, Can_Convert_To_Array {
 	 * @param Rest $type The request type.
 	 *
 	 * @return Rest_Action
+	 * @throws Operation_Failed|Invalid_Registry_Item
 	 */
 	public function get_action( Rest $type ): Rest_Action {
 		$type = strtolower( $type->value );
 
-		return new $this->$type( $this->middleware, $this->signature );
+		if ( ! $type ) {
+			throw new Operation_Failed( 'Could not get rest action. The provided action is not valid' );
+		}
+
+		$result = Object_Helper::make_class( $this->$type( $this->middleware, $this->signature ) );
+
+		if ( ! $result instanceof Rest_Action ) {
+			throw new Invalid_Registry_Item( 'Action is invalid. It must be an instance of Rest_Action' );
+		}
+
+		return $result;
 	}
 
 	/**
