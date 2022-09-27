@@ -4,13 +4,10 @@ namespace Underpin\Factories;
 
 
 use Underpin\Enums\Rest;
-use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Registry_Items\Param;
-use Underpin\Helpers\String_Helper;
 use Underpin\Interfaces\Identifiable;
-use Underpin\Registries\Immutable_Collection;
 use Underpin\Registries\Mutable_Collection_With_Remove;
 
 class Request {
@@ -20,6 +17,7 @@ class Request {
 	protected Rest                           $method;
 	protected string                         $ip;
 	protected Url                            $url;
+	protected Url                            $redirect;
 	protected string                         $body;
 	protected ?Identifiable                  $identity = null;
 	protected array                          $flags    = [];
@@ -275,6 +273,21 @@ class Request {
 	 */
 	public function get_body(): string {
 		return $this->body;
+	}
+
+	/**
+	 * @param Url $to
+	 *
+	 * @return static
+	 */
+	public function set_redirect( Url $to ): static {
+		$this->redirect = $to;
+
+		return $this;
+	}
+
+	public function get_redirect(): Url {
+		return $this->redirect;
 	}
 
 }
