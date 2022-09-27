@@ -24,7 +24,7 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 	protected string           $fragment;
 
 	public function __construct() {
-		$this->params = new Param_Collection;
+		$this->clear_params();
 	}
 
 	/**
@@ -235,6 +235,17 @@ class Url implements Can_Convert_To_String, Can_Convert_To_Array {
 	 */
 	public function remove_param( string $key ): static {
 		$this->params->remove( $key );
+
+		return $this;
+	}
+
+	/**
+	 * Resets the param collection.
+	 *
+	 * @return $this
+	 */
+	public function clear_params(): static {
+		$this->params = new Param_Collection();
 
 		return $this;
 	}
