@@ -275,19 +275,4 @@ class Request {
 		return $this->body;
 	}
 
-	/**
-	 * @param Url $to
-	 *
-	 * @return static
-	 */
-	public function set_redirect( Url $to ): static {
-		$this->redirect = $to;
-
-		return $this;
-	}
-
-	public function get_redirect(): Url {
-		return $this->redirect;
-	}
-
 }
