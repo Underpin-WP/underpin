@@ -28,4 +28,19 @@ interface Query {
 	 */
 	public function get_ids(): array;
 
+	/**
+	 * Sets a limit on how many records will be received
+	 *
+	 * @param int $count
+	 *
+	 * @return $this
+	 */
+	public function set_limit( int $count ): static;
+
+	/**
+	 * Gets the limit on how many records will be received
+	 *
+	 * @return int
+	 */
+	public function get_limit(): int;
 }
