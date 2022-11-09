@@ -16,9 +16,4 @@ interface Model {
 	 */
 	public function delete(): static;
 
-	/**
-	 * @throws Operation_Failed
-	 */
-	public function clone(): Model;
-
 }
