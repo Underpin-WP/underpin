@@ -3,7 +3,7 @@
 namespace Underpin\Interfaces;
 
 
-interface Observer {
+interface Observer extends Identifiable_String {
 
 	/**
 	 * @param                    $instance
