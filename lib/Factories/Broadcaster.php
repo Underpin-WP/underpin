@@ -3,19 +3,17 @@
 namespace Underpin\Factories;
 
 
-use ReflectionException;
-use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Helpers\Processors\Dependency_Processor;
+use Underpin\Interfaces\Can_Broadcast;
 use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Observer;
 use Underpin\Registries\Logger;
 use Underpin\Registries\Mutable_Collection;
 use Underpin\Registries\Mutable_Collection_With_Remove;
-use UnitEnum;
 
-class Broadcaster implements \Underpin\Interfaces\Broadcaster {
+class Broadcaster implements Can_Broadcast {
 
 	protected Mutable_Collection $observer_registry;
 
