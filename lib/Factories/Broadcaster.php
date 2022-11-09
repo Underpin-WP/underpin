@@ -96,9 +96,9 @@ class Broadcaster implements Can_Broadcast {
 			if ( false === $args || empty( $item->to_array() ) ) {
 				return;
 			}
-			/* @var Observer $observer */
+			/* @var callable $observer */
 			foreach ( $item->to_array() as $observer ) {
-				$observer->update( $this, $args );
+				$observer( $this, $args );
 			}
 		} catch ( Operation_Failed|Unknown_Registry_Item ) {
 			return;
