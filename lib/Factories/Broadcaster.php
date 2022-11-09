@@ -5,10 +5,8 @@ namespace Underpin\Factories;
 
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
-use Underpin\Helpers\Processors\Dependency_Processor;
 use Underpin\Interfaces\Can_Broadcast;
 use Underpin\Interfaces\Data_Provider;
-use Underpin\Interfaces\Observer;
 use Underpin\Registries\Immutable_Collection;
 use Underpin\Registries\Logger;
 use Underpin\Registries\Mutable_Collection;
