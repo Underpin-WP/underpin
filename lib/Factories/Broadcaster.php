@@ -9,6 +9,7 @@ use Underpin\Helpers\Processors\Dependency_Processor;
 use Underpin\Interfaces\Can_Broadcast;
 use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Observer;
+use Underpin\Registries\Immutable_Collection;
 use Underpin\Registries\Logger;
 use Underpin\Registries\Mutable_Collection;
 use Underpin\Registries\Mutable_Collection_With_Remove;
@@ -91,12 +92,13 @@ class Broadcaster implements Can_Broadcast {
 
 	public function broadcast( string $key, ?Data_Provider $args = null ): void {
 		try {
+			/* @var Immutable_Collection $item */
 			$item = $this->observer_registry->get( $key );
 			if ( false === $args || empty( $item->to_array() ) ) {
 				return;
 			}
 			/* @var Observer $observer */
-			foreach ( ( new Dependency_Processor( $item ) )->mutate() as $observer ) {
+			foreach ( $item->to_array() as $observer ) {
 				$observer->update( $this, $args );
 			}
 		} catch ( Operation_Failed|Unknown_Registry_Item ) {
