@@ -3,7 +3,7 @@
 namespace Underpin\Interfaces;
 
 
-interface Observer extends Item_With_Dependencies {
+interface Observer {
 
 	/**
 	 * @param                    $instance
