@@ -23,21 +23,22 @@ class Broadcaster implements Can_Broadcast {
 	}
 
 	/**
-	 * @param string $key
-	 * @param Observer $observer
+	 * @param string   $key
+	 * @param callable $observer
 	 *
 	 * @return $this
 	 * @throws Operation_Failed
 	 * @throws Unknown_Registry_Item
 	 */
-	public function attach( string $key, Observer $observer ): static {
+	public function attach( string $key, callable $observer ): static {
 		try {
 			$this->observer_registry->get( $key );
 		} catch ( Operation_Failed ) {
-			$this->observer_registry->add( $key, Mutable_Collection_With_Remove::make( Observer::class ) );
+			$this->observer_registry->add( $key, new Registry( fn ( $item ) => is_callable( $item ) ) );
 		}
 
-		$this->observer_registry->get( $key )->add( $observer->get_id(), $observer );
+		$id = count( $this->observer_registry->to_array() );
+		$this->observer_registry->get( $key )->add( $id, $observer );
 
 		Logger::log(
 			'info',
@@ -48,7 +49,7 @@ class Broadcaster implements Can_Broadcast {
 				ref    : $key,
 				data   : [
 					'subject' => get_called_class(),
-					'id'      => $observer->get_id(),
+					'id'      => $id,
 				]
 			)
 		);
