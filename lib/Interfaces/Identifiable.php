@@ -7,7 +7,7 @@ namespace Underpin\Interfaces;
 interface Identifiable {
 
 	/**
-	 * @return string|int
+	 * @return string|int|null
 	 */
-	public function get_id(): string|int;
+	public function get_id(): string|int|null;
 }
