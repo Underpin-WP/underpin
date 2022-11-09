@@ -17,6 +17,7 @@ use Underpin\Factories\Log_Item;
 use Underpin\Helpers\Array_Helper;
 use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Interfaces as Interfaces;
+use Underpin\Interfaces\Data_Provider;
 use Underpin\Interfaces\Observer;
 use Underpin\Interfaces\Singleton;
 use Underpin\Traits\With_Broadcaster;
@@ -29,7 +30,7 @@ use UnitEnum;
  *
  * @package Underpin\Loaders
  */
-final class Logger extends Object_Registry implements Singleton, Interfaces\Broadcaster {
+final class Logger extends Object_Registry implements Singleton, Interfaces\Can_Broadcast {
 
 	use With_Broadcaster;
 
@@ -405,7 +406,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	}
 
 	/**
-	 * @param UnitEnum $key The enum case to use as the key.
+	 * @param string $key The enum case to use as the key.
 	 * @param Observer $observer
 	 *
 	 * @return $this
@@ -414,14 +415,14 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 * @see Logger_Events
 	 *
 	 */
-	public function attach( UnitEnum $key, Interfaces\Observer $observer ): static {
+	public function attach( string $key, Interfaces\Observer $observer ): static {
 		$this->get_broadcaster()->attach( $key, $observer );
 
 		return $this;
 	}
 
 	/**
-	 * @param UnitEnum $key         The enum case to use as the key.
+	 * @param string $key         The enum case to use as the key.
 	 * @param string   $observer_id The instance to detach.
 	 *
 	 * @see Logger_Events
@@ -429,8 +430,21 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Broa
 	 * @return $this
 	 * @throws Operation_Failed
 	 */
-	function detach( UnitEnum $key, string $observer_id ): static {
+	function detach( string $key, string $observer_id ): static {
 		$this->get_broadcaster()->detach( $key, $observer_id );
+
+		return $this;
+	}
+
+	protected function broadcast( Logger_Events $key, ?Data_Provider $args = null ): static {
+		$this->get_broadcaster()->broadcast( $key->name, $args );
+
+		Logger::debug( new Log_Item(
+			code   : 'item_broadcasted',
+			message: "An item was broadcasted",
+			context: 'instance',
+			ref    : get_called_class()
+		) );
 
 		return $this;
 	}

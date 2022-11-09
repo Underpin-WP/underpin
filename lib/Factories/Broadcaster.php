@@ -24,21 +24,21 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 	}
 
 	/**
-	 * @param UnitEnum $key
+	 * @param string $key
 	 * @param Observer $observer
 	 *
 	 * @return $this
 	 * @throws Operation_Failed
 	 * @throws Unknown_Registry_Item
 	 */
-	public function attach( UnitEnum $key, Observer $observer ): static {
+	public function attach( string $key, Observer $observer ): static {
 		try {
-			$this->observer_registry->get( $key->value );
+			$this->observer_registry->get( $key );
 		} catch ( Operation_Failed ) {
-			$this->observer_registry->add( $key->value, Mutable_Collection_With_Remove::make( Observer::class ) );
+			$this->observer_registry->add( $key, Mutable_Collection_With_Remove::make( Observer::class ) );
 		}
 
-		$this->observer_registry->get( $key->value )->add( $observer->get_id(), $observer );
+		$this->observer_registry->get( $key )->add( $observer->get_id(), $observer );
 
 		Logger::log(
 			'info',
@@ -46,7 +46,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 				code   : 'event_attached',
 				message: 'Event attached',
 				context: 'registry_key',
-				ref    : $key->value,
+				ref    : $key,
 				data   : [
 					'subject' => get_called_class(),
 					'id'      => $observer->get_id(),
@@ -60,10 +60,10 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 	/**
 	 * @throws Operation_Failed
 	 */
-	public function detach( UnitEnum $key, $observer_id ): static {
+	public function detach( string $key, $observer_id ): static {
 		try {
 			/* @var Mutable_Collection_With_Remove $item */
-			$item = $this->observer_registry->get( $key->name );
+			$item = $this->observer_registry->get( $key );
 		} catch ( Unknown_Registry_Item $e ) {
 			return $this;
 		}
@@ -76,7 +76,7 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 						code   : 'event_detached',
 						message: 'Event detached',
 						context: 'registry_key',
-						ref    : $key->name,
+						ref    : $key,
 						data   : [
 							'subject'     => get_called_class(),
 							'name'        => $observer->name,
@@ -91,9 +91,9 @@ class Broadcaster implements \Underpin\Interfaces\Broadcaster {
 		return $this;
 	}
 
-	public function broadcast( UnitEnum $key, ?Data_Provider $args = null ): void {
+	public function broadcast( string $key, ?Data_Provider $args = null ): void {
 		try {
-			$item = $this->observer_registry->get( $key->name );
+			$item = $this->observer_registry->get( $key );
 			if ( false === $args || empty( $item->to_array() ) ) {
 				return;
 			}

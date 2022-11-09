@@ -24,18 +24,4 @@ trait With_Broadcaster {
 		return $this->broadcaster;
 	}
 
-
-	protected function broadcast( UnitEnum $key, ?Data_Provider $args = null ): static {
-		$this->get_broadcaster()->broadcast( $key, $args );
-
-		Logger::debug( new Log_Item(
-			code   : 'item_broadcasted',
-			message: "An item was broadcasted",
-			context: 'instance',
-			ref    : get_called_class()
-		) );
-
-		return $this;
-	}
-
 }

@@ -95,7 +95,7 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	 *
 	 */
 	public function log_events() {
-		$this->broadcast( Logger_Item_Events::write_events, $this );
+		$this->broadcast( Logger_Item_Events::write_events->name, $this );
 	}
 
 	/**
@@ -166,7 +166,7 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	}
 
 	protected function broadcast( Logger_Item_Events $id, ?Data_Provider $provider = null ): static {
-		$this->get_broadcaster()->broadcast( $id, $provider );
+		$this->get_broadcaster()->broadcast( $id->name, $provider );
 
 		return $this;
 	}
@@ -178,7 +178,7 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 	 * @return $this
 	 */
 	public function attach( Logger_Item_Events $key, Observer $observer ): static {
-		$this->get_broadcaster()->attach( $key, $observer );
+		$this->get_broadcaster()->attach( $key->name, $observer );
 
 		return $this;
 	}
