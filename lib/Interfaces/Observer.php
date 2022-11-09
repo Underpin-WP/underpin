@@ -3,7 +3,7 @@
 namespace Underpin\Interfaces;
 
 
-interface Observer extends Identifiable_String {
+interface Observer {
 
 	/**
 	 * @param                    $instance
@@ -12,5 +12,8 @@ interface Observer extends Identifiable_String {
 	 * @return void
 	 */
 	public function update( $instance, ?Data_Provider $provider ): void;
-
+	/**
+	 * @return string
+	 */
+	public function get_id(): string;
 }
