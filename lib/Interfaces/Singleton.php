@@ -1,8 +1,14 @@
 <?php
 namespace Underpin\Interfaces;
 
+use Underpin\Exceptions\Instance_Not_Ready;
+
 interface Singleton {
 
-	public static function instance() : self;
+	/**
+	 * @return static
+	 * @throws Instance_Not_Ready
+	 */
+	public static function instance() : static;
 
 }

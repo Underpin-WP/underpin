@@ -3,7 +3,6 @@
  * Single Log item instance.
  * Handles output and formatting for log item.
  *
- * @since   1.0.0
  * @package Underpin\Factories
  */
 
@@ -11,126 +10,96 @@
 namespace Underpin\Factories;
 
 
-use Underpin\Abstracts\Event_Type;
-use WP_Error;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Class Log_Item
  *
- * @since   1.0.0
  * @package Underpin\Factories
  */
-class Log_Item {
-
-	/**
-	 * Event code.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var string Event code
-	 */
-	public $code;
-
-	/**
-	 * Message
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var string Message.
-	 */
-	public $message;
-
-	/**
-	 * Ref.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var mixed Reference. Usually an id or something related to this item.
-	 */
-	public $ref;
-
-	/**
-	 * Context.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var mixed Reference Context. Usually a slug that offers context to what the ID is.
-	 */
-	public $context;
-
-	/**
-	 * Event data.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @var array Data.
-	 */
-	public $data;
+class Log_Item implements \Underpin\Interfaces\Log_Item {
 
 	/**
 	 * Event type.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @var string Event code
 	 */
-	public $type;
+	public readonly string $type;
 
 
 	/**
 	 * Event type object.
 	 *
-	 * @since 1.0.0
 	 *
-	 * @var Event_Type Event
+	 * @var Event_Type|null Event
 	 */
-	protected $event_type;
+	protected ?Event_Type $event_type = null;
 
 	/**
 	 * Log Item Constructor.
 	 *
-	 * @since 1.0.0
 	 *
-	 * @param string $type    Event log type
-	 * @param string $code    The event code to use.
-	 * @param string $message The message to log.
-	 * @param array  $data    Arbitrary data associated with this event message.
+	 * @param string          $code    The event code to use.
+	 * @param string          $message The message to log.
+	 * @param string          $context
+	 * @param int|string|null $ref
+	 * @param array           $data    Arbitrary data associated with this event message.
 	 */
-	public function __construct( $type, $code, $message, $data = array() ) {
-		if ( $type instanceof Event_Type ) {
-			$this->type       = $type->type;
-			$this->event_type = $type;
-		} else {
-			$this->type = $type;
-		}
-		$this->code    = $code;
-		$this->message = $message;
-		$this->data    = $data;
+	public function __construct(
+		/**
+		 * Event code.
+		 *
+		 *
+		 * @var string Event code
+		 */
+		public readonly string          $code,
+		/**
+		 * Message
+		 *
+		 *
+		 * @var string Message.
+		 */
+		public readonly string          $message,
 
-		if ( isset( $this->data['context'] ) ) {
-			$this->context = $this->data['context'];
-			unset( $this->data['context'] );
+		/**
+		 * Context.
+		 *
+		 *
+		 * @var mixed Reference Context. Usually a slug that offers context to what the ID is.
+		 */
+		public readonly string          $context = '',
+
+		/**
+		 * Ref.
+		 *
+		 *
+		 * @var mixed Reference. Usually an id or something related to this item.
+		 */
+		public readonly int|string|null $ref = null,
+		public readonly array           $data = array()
+	) {
+	}
+
+	public function set_type( ?Event_Type $type ): static {
+		$this->event_type = $type;
+
+		return $this;
+	}
+
+	public function get_event_type(): ?Event_Type {
+		if ( ! isset( $this->event_type ) ) {
+			return null;
 		}
 
-		if ( isset( $this->data['ref'] ) ) {
-			$this->ref = $this->data['ref'];
-			unset( $this->data['ref'] );
-		}
-
+		return $this->event_type;
 	}
 
 	/**
 	 * Formats the event log.
 	 *
-	 * @since 1.0.0
 	 *
 	 * @return string
 	 */
-	public function format() {
+	public function __toString(): string {
 		$additional_data = [];
 
 		if ( ! empty( $this->ref ) ) {
@@ -139,12 +108,12 @@ class Log_Item {
 		}
 
 		if ( $this->event_type instanceof Event_Type ) {
-			$additional_data['group']     = $this->event_type->group;
-			$additional_data['volume']    = $this->event_type->volume;
-			$additional_data['psr_level'] = $this->event_type->psr_level;
+			$additional_data['group']     = $this->event_type->get_group();
+			$additional_data['volume']    = $this->event_type->get_volume();
+			$additional_data['psr_level'] = $this->event_type->get_psr_level();
 		}
 
-		$log_message = 'Underpin ' . $this->type . ' event' . ': ' . $this->code . ' - ' . $this->message;
+		$log_message = 'Underpin ' . $this->event_type->name . ' event' . ': ' . $this->code . ' - ' . $this->message;
 
 
 		$data = array_merge(
@@ -157,17 +126,6 @@ class Log_Item {
 		}
 
 		return date( 'm/d/Y H:i:s' ) . ': ' . $log_message;
-	}
-
-	/**
-	 * Converts this log item to a WP Error object.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return WP_Error
-	 */
-	public function error() {
-		return new WP_Error( $this->code, $this->message, $this->data );
 	}
 
 }
