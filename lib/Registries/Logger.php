@@ -407,7 +407,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 
 	/**
 	 * @param string $key The enum case to use as the key.
-	 * @param Observer $observer
+	 * @param callable $observer
 	 *
 	 * @return $this
 	 * @throws Operation_Failed
@@ -415,7 +415,7 @@ final class Logger extends Object_Registry implements Singleton, Interfaces\Can_
 	 * @see Logger_Events
 	 *
 	 */
-	public function attach( string $key, Interfaces\Observer $observer ): static {
+	public function attach( string $key, callable $observer ): static {
 		$this->get_broadcaster()->attach( $key, $observer );
 
 		return $this;
