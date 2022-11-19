@@ -4,7 +4,7 @@ namespace Underpin\Traits;
 
 trait With_String_Identity {
 
-	protected int $id;
+	protected string $id;
 
 	public function get_id(): ?string {
 		return $this->id;
