@@ -100,16 +100,17 @@ class List_Filter {
 	 * @return array
 	 */
 	protected function filter_item_keys(): array {
-		$items = $this->items;
+		$items = array_keys($this->items);
 
 		// Filter out keys, if keys are specified
 		if ( isset( $this->filter_args[ Filter::in->key() ] ) ) {
-			$items = Array_Helper::intersect( array_keys( $this->items ), $this->filter_args[ Filter::in->key() ] );
+			$items = Array_Helper::intersect( $items, $this->filter_args[ Filter::in->key() ] );
 			unset( $this->filter_args[ Filter::in->key() ] );
 		}
 
 		if ( isset( $this->filter_args[ Filter::not_in->key() ] ) ) {
-			$items = Array_Helper::diff( array_keys( $this->items ), $this->filter_args[ Filter::not_in->key() ] );
+			$items = Array_Helper::diff( $items, $this->filter_args[ Filter::not_in->key() ] );
+			unset( $this->filter_args[ Filter::not_in->key() ] );
 		}
 
 		return $items;
@@ -122,7 +123,7 @@ class List_Filter {
 	 * @return ?object loader item if found.
 	 */
 	public function find(): ?object {
-		foreach ( $this->filter_item_keys() as $item_key => $item ) {
+		foreach ( $this->filter_item_keys() as $item_key ) {
 			if ( ! isset( $this->items[ $item_key ] ) ) {
 				continue;
 			}
@@ -145,7 +146,7 @@ class List_Filter {
 	 */
 	public function filter(): array {
 		$results = [];
-		foreach ( $this->filter_item_keys() as $item_key => $item ) {
+		foreach ( $this->filter_item_keys() as $item_key ) {
 			if ( ! isset( $this->items[ $item_key ] ) ) {
 				continue;
 			}
