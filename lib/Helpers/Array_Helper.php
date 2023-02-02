@@ -15,7 +15,14 @@ class Array_Helper {
 
 	use With_Closure_Converter;
 
-	public static function process( $subject ): Array_Processor {
+	/**
+	 * Process this array
+	 *
+	 * @param mixed $subject
+	 *
+	 * @return Array_Processor
+	 */
+	public static function process( mixed $subject ): Array_Processor {
 		return new Array_Processor( self::wrap( $subject ) );
 	}
 
@@ -312,7 +319,7 @@ class Array_Helper {
 	 *
 	 * @return mixed The value
 	 */
-	public static function pluck( array $item, string $key, mixed $default = null ): mixed {
+	public static function pluck( mixed $item, string $key, mixed $default = null ): mixed {
 		$array = self::wrap( $item );
 
 		if ( isset( $array[ $key ] ) ) {
@@ -396,7 +403,7 @@ class Array_Helper {
 	 *
 	 * @return void
 	 */
-	public static function prepend( array &$array, mixed ...$items ): void {
+	public static function prepend( mixed &$array, mixed ...$items ): void {
 		$array = self::wrap( $array );
 		array_unshift( $array, ...$items );
 	}
@@ -409,7 +416,7 @@ class Array_Helper {
 	 *
 	 * @return void
 	 */
-	public static function append( array &$array, mixed ...$items ): void {
+	public static function append( mixed &$array, mixed ...$items ): void {
 		$array = self::wrap( $array );
 		foreach ( $items as $item ) {
 			$array[] = $item;

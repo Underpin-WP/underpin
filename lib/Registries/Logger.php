@@ -7,21 +7,16 @@ use ReflectionException;
 use Underpin\Abstracts\Registries\Object_Registry;
 use Underpin\Enums\Logger_Events;
 use Underpin\Exceptions\Instance_Not_Ready;
-use Underpin\Exceptions\Invalid_Callback;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
 use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Factories\Data_Providers\Int_Provider;
 use Underpin\Factories\Event_Type;
 use Underpin\Factories\Log_Item;
-use Underpin\Helpers\Array_Helper;
-use Underpin\Helpers\Processors\Array_Processor;
 use Underpin\Interfaces as Interfaces;
 use Underpin\Interfaces\Data_Provider;
-use Underpin\Interfaces\Observer;
 use Underpin\Interfaces\Singleton;
 use Underpin\Traits\With_Broadcaster;
-use UnitEnum;
 
 
 /**

@@ -13,6 +13,7 @@ use Exception;
 use Underpin\Enums\Logger_Item_Events;
 use Underpin\Exceptions\Invalid_Registry_Item;
 use Underpin\Exceptions\Operation_Failed;
+use Underpin\Exceptions\Unknown_Registry_Item;
 use Underpin\Interfaces;
 use Underpin\Interfaces\Can_Convert_To_Array;
 use Underpin\Interfaces\Data_Provider;
@@ -173,11 +174,13 @@ class Event_Type implements Interfaces\Event_Type, Can_Convert_To_Array, Interfa
 
 	/**
 	 * @param Logger_Item_Events $key
-	 * @param Observer           $observer
+	 * @param callable           $observer
 	 *
 	 * @return $this
+	 * @throws Operation_Failed
+	 * @throws Unknown_Registry_Item
 	 */
-	public function attach( Logger_Item_Events $key, Observer $observer ): static {
+	public function attach( Logger_Item_Events $key, callable $observer ): static {
 		$this->get_broadcaster()->attach( $key->name, $observer );
 
 		return $this;
