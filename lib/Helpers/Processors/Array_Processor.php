@@ -189,11 +189,12 @@ class Array_Processor implements Can_Convert_To_Array, Can_Convert_To_String {
 	 *
 	 * @param mixed ...$items Items to add
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	public function append( ...$items ): static {
 		Array_Helper::append( $this->subject, ...$items );
 
+		return $this;
 	}
 
 	/**
