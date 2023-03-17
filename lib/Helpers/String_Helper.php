@@ -20,6 +20,33 @@ class String_Helper {
 	}
 
 	/**
+	 * Converts the given string to use camelCase
+	 *
+	 * @param string $subject
+	 *
+	 * @return string
+	 */
+	public static function camel_case(string $subject): string
+	{
+		return lcfirst(static::pascal_case($subject));
+	}
+
+	/**
+	 * Converts the given string to use PascalCase
+	 *
+	 * @param string $subject
+	 *
+	 * @return string
+	 */
+	public static function pascal_case(string $subject) : string
+	{
+		return Array_Helper::process(explode(' ', str_replace(['-', '_'], ' ', $subject)))
+											 ->map(fn (string $piece) => ucfirst($piece))
+											 ->set_separator('')
+											 ->to_string();
+	}
+
+	/**
 	 * Creates a 32 character hash from the provided value.
 	 *
 	 * @param mixed        $data The value to hash.
