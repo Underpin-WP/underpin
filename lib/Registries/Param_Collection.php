@@ -72,7 +72,7 @@ class Param_Collection extends Mutable_Collection_With_Remove implements Can_Rem
 	public function to_string(): string {
 		return (string) ( new Array_Processor( $this->to_array() ) )
 			->values()
-			->each( fn ( Param $value ) => $value->to_string() )
+			->each( fn ( Param $value ) => $value->get_id() . '=' . $value->to_string() )
 			->set_separator( '&' );
 	}
 
