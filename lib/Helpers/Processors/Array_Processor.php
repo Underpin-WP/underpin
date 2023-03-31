@@ -152,7 +152,7 @@ class Array_Processor implements Can_Convert_To_Array, Can_Convert_To_String {
 	 * @return $this
 	 */
 	public function replace_recursive( array ...$items ): static {
-		$this->subject = Array_Helper::merge( $this->subject, ...$items );
+		$this->subject = Array_Helper::replace_recursive( $this->subject, ...$items );
 
 		return $this;
 	}
@@ -165,7 +165,7 @@ class Array_Processor implements Can_Convert_To_Array, Can_Convert_To_String {
 	 * @return $this
 	 */
 	public function replace( array ...$items ): static {
-		$this->subject = Array_Helper::merge( $this->subject, ...$items );
+		$this->subject = Array_Helper::replace( $this->subject, ...$items );
 
 		return $this;
 	}
@@ -205,8 +205,8 @@ class Array_Processor implements Can_Convert_To_Array, Can_Convert_To_String {
 	 *
 	 * @throws ReflectionException
 	 */
-	public function normalize( $convert_colsures = true, $recursive = true ): static {
-		$this->subject = Array_Helper::normalize( $this->subject, $convert_colsures, $recursive );
+	public function normalize($convert_closures = true, $recursive = true ): static {
+		$this->subject = Array_Helper::normalize( $this->subject, $convert_closures, $recursive );
 
 		return $this;
 	}

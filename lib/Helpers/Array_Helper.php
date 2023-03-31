@@ -88,7 +88,7 @@ class Array_Helper {
 	 * @return array
 	 */
 	public static function before( array $subject, int $position ): array {
-		return Array_Helper::diff( Array_Helper::after( $subject, $position ) );
+		return Array_Helper::diff( Array_Helper::after( $subject, $position ), $subject );
 	}
 
 	/**
@@ -438,7 +438,7 @@ class Array_Helper {
 	 * @return array The normalized array
 	 * @throws \ReflectionException
 	 */
-	public static function normalize( array $array, $convert_colsures = true, $recursive = true ): array {
+	public static function normalize(array $array, $convert_closures = true, $recursive = true ): array {
 
 		foreach ( $array as $key => $value ) {
 			// Normalize recursively.
@@ -449,7 +449,7 @@ class Array_Helper {
 			}
 
 			// If closures need converted, and this is a closure, transform this into an identifiable string.
-			if ( true === $convert_colsures && $value instanceof Closure ) {
+			if (true === $convert_closures && $value instanceof Closure ) {
 				$array[ $key ] = self::convert_closure( $value );
 			}
 		}
