@@ -4,7 +4,7 @@ namespace Underpin\Factories\Data_Providers;
 
 
 use Underpin\Interfaces\Data_Provider;
-use Underpin_WordPress\Interfaces\Base;
+use Underpin\Interfaces\Base;
 
 class Plugin_Provider implements Data_Provider {
 
